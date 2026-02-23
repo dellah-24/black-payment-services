@@ -126,6 +126,14 @@ export const RPC_ENDPOINTS: Record<string, string> = {
   ADA: process.env.ADA_RPC_URL || 'https://cardano-mainnet.blockfrost.io/api/v0',
 };
 
+const EVM_TOKENS = {
+  USDT_ETH: { contractAddress: '0xdAC17F958D2ee523a2206206994597C13D831ec7', decimals: 6 },
+  USDC_ETH: { contractAddress: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', decimals: 6 },
+  USDC_POL: { contractAddress: '0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359', decimals: 6 },
+} as const;
+
+const ERC20_BALANCE_OF_SELECTOR = '0x70a08231';
+
 // API keys
 const CRYPTO_APIS_KEY = process.env.CRYPTO_APIS_KEY || '';
 
@@ -296,6 +304,49 @@ export async function checkEVMBalance(address: string, rpcUrl: string): Promise<
 }
 
 /**
+ * Check ERC-20 token balance for an EVM address using eth_call balanceOf(address)
+ */
+export async function checkEVMTokenBalance(
+  address: string,
+  rpcUrl: string,
+  contractAddress: string,
+  decimals: number = 6
+): Promise<number> {
+  try {
+    const paddedAddress = address.toLowerCase().replace(/^0x/, '').padStart(64, '0');
+    const callData = `${ERC20_BALANCE_OF_SELECTOR}${paddedAddress}`;
+
+    const response = await fetch(rpcUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        jsonrpc: '2.0',
+        method: 'eth_call',
+        params: [{ to: contractAddress, data: callData }, 'latest'],
+        id: 1,
+      }),
+    });
+
+    if (!response.ok) {
+      console.error(`Failed to fetch EVM token balance for ${address}: ${response.status}`);
+      return 0;
+    }
+
+    const data = await response.json();
+    if (data.error) {
+      console.error(`RPC error for token balance ${address}:`, data.error);
+      return 0;
+    }
+
+    const balanceRaw = BigInt(data.result || '0x0');
+    return Number(balanceRaw) / 10 ** decimals;
+  } catch (error) {
+    console.error(`Error checking EVM token balance for ${address}:`, error);
+    return 0;
+  }
+}
+
+/**
  * Check balance for a Solana address
  */
 export async function checkSolanaBalance(address: string, rpcUrl: string): Promise<number> {
@@ -420,13 +471,16 @@ export async function checkBalance(address: string, blockchain: string): Promise
     case 'BCH':
       return checkBCHBalance(address);
     case 'ETH':
-    case 'USDC_ETH':
-    case 'USDT':
-    case 'USDC':
       return checkEVMBalance(address, RPC_ENDPOINTS.ETH);
+    case 'USDT':
+      return checkEVMTokenBalance(address, RPC_ENDPOINTS.ETH, EVM_TOKENS.USDT_ETH.contractAddress, EVM_TOKENS.USDT_ETH.decimals);
+    case 'USDC':
+    case 'USDC_ETH':
+      return checkEVMTokenBalance(address, RPC_ENDPOINTS.ETH, EVM_TOKENS.USDC_ETH.contractAddress, EVM_TOKENS.USDC_ETH.decimals);
     case 'POL':
-    case 'USDC_POL':
       return checkEVMBalance(address, RPC_ENDPOINTS.POL);
+    case 'USDC_POL':
+      return checkEVMTokenBalance(address, RPC_ENDPOINTS.POL, EVM_TOKENS.USDC_POL.contractAddress, EVM_TOKENS.USDC_POL.decimals);
     case 'SOL':
     case 'USDC_SOL':
       return checkSolanaBalance(address, RPC_ENDPOINTS.SOL);
