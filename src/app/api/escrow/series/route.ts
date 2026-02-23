@@ -33,6 +33,7 @@ export async function POST(request: NextRequest) {
       beneficiary_address,
       depositor_address,
       beneficiary_email,
+      allow_auto_release = false,
     } = body;
 
     // Validate required fields before touching DB
@@ -87,6 +88,7 @@ export async function POST(request: NextRequest) {
         max_periods: max_periods || null,
         beneficiary_address,
         depositor_address,
+        allow_auto_release: Boolean(allow_auto_release),
       })
       .select()
       .single();
@@ -115,6 +117,7 @@ export async function POST(request: NextRequest) {
           period: 1,
           description: description || undefined,
         },
+        allow_auto_release: Boolean(allow_auto_release),
         ...(customer_email ? { depositor_email: customer_email } : {}),
         ...(beneficiary_email ? { beneficiary_email } : {}),
       };

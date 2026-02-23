@@ -50,6 +50,7 @@ interface CreatedEscrow {
   status: string;
   release_token: string;
   beneficiary_token: string;
+  allow_auto_release?: boolean;
   expires_at: string;
   created_at: string;
   metadata: Record<string, unknown>;
@@ -76,6 +77,7 @@ export default function CreateEscrowPage() {
     description: '',
     expires_in_hours: 168,
     business_id: '',
+    allow_auto_release: false,
   });
 
   // Recurring escrow state
@@ -272,6 +274,7 @@ export default function CreateEscrowPage() {
         depositor_address: formData.depositor_address.trim(),
         beneficiary_address: formData.beneficiary_address.trim(),
         expires_in_hours: formData.expires_in_hours,
+        allow_auto_release: formData.allow_auto_release,
       };
 
       if (formData.arbiter_address.trim()) {
@@ -487,6 +490,7 @@ export default function CreateEscrowPage() {
                   `Depositor: ${createdEscrow.depositor_address}`,
                   `Beneficiary: ${createdEscrow.beneficiary_address}`,
                   `Expires: ${new Date(createdEscrow.expires_at).toLocaleString()}`,
+                  `Auto-release at expiry: ${createdEscrow.allow_auto_release ? 'Enabled' : 'Disabled'}`,
                   `Release Token: ${createdEscrow.release_token}`,
                   `Beneficiary Token: ${createdEscrow.beneficiary_token}`,
                   ...(createdEscrow.fee_amount ? [`Commission: ${createdEscrow.fee_amount} ${createdEscrow.chain}`] : []),
@@ -659,6 +663,12 @@ export default function CreateEscrowPage() {
                 <span className="text-gray-500 dark:text-gray-400">Expires:</span>
                 <span className="ml-2 text-gray-900 dark:text-white">
                   {new Date(createdEscrow.expires_at).toLocaleString()}
+                </span>
+              </div>
+              <div>
+                <span className="text-gray-500 dark:text-gray-400">Auto-release at expiry:</span>
+                <span className="ml-2 text-gray-900 dark:text-white">
+                  {createdEscrow.allow_auto_release ? 'Enabled' : 'Disabled'}
                 </span>
               </div>
               {createdEscrow.fee_amount != null && createdEscrow.fee_amount > 0 && (
@@ -1027,6 +1037,21 @@ export default function CreateEscrowPage() {
                 <option key={opt.value} value={opt.value}>{opt.label}</option>
               ))}
             </select>
+          </div>
+
+          <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+            <label className="flex items-start gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={formData.allow_auto_release}
+                onChange={(e) => setFormData({ ...formData, allow_auto_release: e.target.checked })}
+                className="mt-0.5 w-4 h-4 text-blue-600 bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-600 rounded focus:ring-blue-500"
+              />
+              <span className="text-sm text-gray-700 dark:text-gray-300">
+                <span className="font-medium">Allow auto-release</span>
+                {' '}to release funds to the beneficiary when the escrow expiry is reached (instead of auto-refund).
+              </span>
+            </label>
           </div>
 
           {/* Description */}

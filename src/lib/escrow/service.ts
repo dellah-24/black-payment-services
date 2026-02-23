@@ -45,6 +45,7 @@ const createEscrowSchema = z.object({
   amount: z.number().positive('Amount must be greater than zero'),
   depositor_address: z.string().min(10, 'Invalid depositor address'),
   beneficiary_address: z.string().min(10, 'Invalid beneficiary address'),
+  allow_auto_release: z.boolean().optional(),
   arbiter_address: z.string().min(10).optional(),
   metadata: z.record(z.unknown()).optional(),
   business_id: z.string().uuid().optional(),
@@ -213,6 +214,7 @@ export async function createEscrow(
       .insert({
         depositor_address: data.depositor_address,
         beneficiary_address: data.beneficiary_address,
+        allow_auto_release: data.allow_auto_release ?? false,
         arbiter_address: data.arbiter_address || null,
         escrow_address_id: addrResult.addressId || null,
         escrow_address: addrResult.address,
@@ -243,6 +245,7 @@ export async function createEscrow(
       amount: data.amount,
       amount_usd: amountUsd,
       beneficiary: data.beneficiary_address,
+      ...(data.allow_auto_release ? { allow_auto_release: true } : {}),
     });
 
     // Fire webhook if tied to a business
@@ -414,7 +417,9 @@ export async function listEscrows(
     business_ids?: string[];
     status?: EscrowStatus;
     depositor_address?: string;
+    depositor_addresses?: string[];
     beneficiary_address?: string;
+    beneficiary_addresses?: string[];
     limit?: number;
     offset?: number;
   } = {}
@@ -425,7 +430,9 @@ export async function listEscrows(
   if (filters.business_ids) query = query.in('business_id', filters.business_ids);
   if (filters.status) query = query.eq('status', filters.status);
   if (filters.depositor_address) query = query.eq('depositor_address', filters.depositor_address);
+  if (filters.depositor_addresses?.length) query = query.in('depositor_address', filters.depositor_addresses);
   if (filters.beneficiary_address) query = query.eq('beneficiary_address', filters.beneficiary_address);
+  if (filters.beneficiary_addresses?.length) query = query.in('beneficiary_address', filters.beneficiary_addresses);
 
   query = query
     .order('created_at', { ascending: false })
@@ -515,6 +522,61 @@ export async function releaseEscrow(
   });
 
   await sendEscrowWebhook(supabase, escrow.business_id, escrowId, 'escrow.released', updated);
+
+  return { success: true, escrow: stripTokens(updated as Escrow) };
+}
+
+/**
+ * Enable/disable auto-release on expiry.
+ * Only the depositor (via release_token) can toggle this.
+ */
+export async function setEscrowAutoRelease(
+  supabase: SupabaseClient,
+  escrowId: string,
+  releaseToken: string,
+  allowAutoRelease: boolean
+): Promise<EscrowActionResult> {
+  const { data, error } = await supabase
+    .from('escrows')
+    .select('*')
+    .eq('id', escrowId)
+    .single();
+
+  if (error || !data) {
+    return { success: false, error: 'Escrow not found' };
+  }
+
+  const escrow = data as Escrow;
+
+  const role = authenticateEscrowAction(escrow, releaseToken);
+  if (role !== 'depositor') {
+    return { success: false, error: 'Unauthorized: invalid release token' };
+  }
+
+  if (['released', 'settled', 'refunded', 'expired'].includes(escrow.status)) {
+    return { success: false, error: `Cannot change auto-release in status: ${escrow.status}` };
+  }
+
+  if (Boolean(escrow.allow_auto_release) === allowAutoRelease) {
+    return { success: true, escrow: stripTokens(escrow) };
+  }
+
+  const { data: updated, error: updateError } = await supabase
+    .from('escrows')
+    .update({ allow_auto_release: allowAutoRelease })
+    .eq('id', escrowId)
+    .eq('status', escrow.status)
+    .select()
+    .single();
+
+  if (updateError || !updated) {
+    return { success: false, error: 'Failed to update auto-release setting' };
+  }
+
+  await logEvent(supabase, escrowId, 'metadata_updated', escrow.depositor_address, {
+    field: 'allow_auto_release',
+    allow_auto_release: allowAutoRelease,
+  });
 
   return { success: true, escrow: stripTokens(updated as Escrow) };
 }

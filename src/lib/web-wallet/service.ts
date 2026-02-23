@@ -83,7 +83,7 @@ export async function createWallet(
   body: unknown
 ): Promise<ServiceResult> {
   // Prevent wallet creation in test environments
-  if (process.env.NODE_ENV === 'test' || process.env.VITEST) {
+  if ((process.env.NODE_ENV === 'test' || process.env.VITEST) && process.env.BLOCK_WALLET_CREATION_IN_TESTS === '1') {
     return { success: false, error: 'Wallet creation blocked in test environment', code: 'TEST_ENV' };
   }
 

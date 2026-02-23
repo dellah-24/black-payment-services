@@ -87,6 +87,7 @@ export async function monitorSeries(
             period: nextPeriod,
             description: series.description || undefined,
           },
+          allow_auto_release: Boolean(series.allow_auto_release),
         }, isPaidTier);
 
         if (escrowResult.success) {

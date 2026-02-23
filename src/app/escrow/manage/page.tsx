@@ -247,6 +247,41 @@ function EscrowManagePage() {
     }
   };
 
+  const toggleAutoRelease = async (enabled: boolean) => {
+    if (!authenticatedData) return;
+
+    setActionLoading('auto-release');
+    setError('');
+
+    try {
+      const response = await fetch(`/api/escrow/${authenticatedData.escrow.id}/auto-release`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          release_token: token,
+          allow_auto_release: enabled,
+        }),
+      });
+
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        setError(data.error || 'Failed to update auto-release');
+        return;
+      }
+
+      setAuthenticatedData({
+        ...authenticatedData,
+        escrow: data,
+      });
+      fetchEvents(authenticatedData.escrow.id);
+    } catch (err) {
+      setError('Failed to update auto-release. Please try again.');
+      console.error(err);
+    } finally {
+      setActionLoading('');
+    }
+  };
+
   // If not authenticated, show the login form
   if (!authenticatedData) {
     return (
@@ -371,6 +406,7 @@ function EscrowManagePage() {
                     `Amount: ${escrow.amount} ${escrow.chain}`,
                     `Chain: ${escrow.chain}`,
                     `Status: ${escrow.status}`,
+                    `Auto-release at expiry: ${escrow.allow_auto_release ? 'Enabled' : 'Disabled'}`,
                     `Created: ${formatDate(escrow.created_at)}`,
                     `Expires: ${formatDate(escrow.expires_at)}`,
                     `Depositor: ${escrow.depositor_address}`,
@@ -455,6 +491,12 @@ function EscrowManagePage() {
                   <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Expires</h3>
                   <p className="text-sm text-gray-900 dark:text-white">{formatDate(escrow.expires_at)}</p>
                 </div>
+                <div>
+                  <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Auto-Release</h3>
+                  <p className="text-sm text-gray-900 dark:text-white">
+                    {escrow.allow_auto_release ? 'Enabled at expiry' : 'Disabled (auto-refund at expiry)'}
+                  </p>
+                </div>
               </div>
 
               {escrow.metadata && Object.keys(escrow.metadata).length > 0 && (
@@ -530,6 +572,26 @@ function EscrowManagePage() {
             )}
 
             <div className="space-y-3">
+              {role === 'depositor' && (
+                <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-3">
+                  <label className="flex items-start gap-3">
+                    <input
+                      type="checkbox"
+                      checked={Boolean(escrow.allow_auto_release)}
+                      disabled={actionLoading !== '' || ['released', 'settled', 'refunded', 'expired'].includes(escrow.status)}
+                      onChange={(e) => toggleAutoRelease(e.target.checked)}
+                      className="mt-0.5 w-4 h-4 text-blue-600 bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-600 rounded focus:ring-blue-500 disabled:opacity-50"
+                    />
+                    <div>
+                      <p className="text-sm font-medium text-gray-900 dark:text-white">Allow auto-release</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
+                        At expiry, funded escrow is released to beneficiary instead of refunded.
+                      </p>
+                    </div>
+                  </label>
+                </div>
+              )}
+
               {role === 'depositor' && (
                 <>
                   {(escrow.status === 'funded' || escrow.status === 'disputed') && (

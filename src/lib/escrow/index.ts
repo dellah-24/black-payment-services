@@ -5,6 +5,7 @@ export {
   getEscrowEvents,
   listEscrows,
   releaseEscrow,
+  setEscrowAutoRelease,
   refundEscrow,
   disputeEscrow,
   markEscrowFunded,

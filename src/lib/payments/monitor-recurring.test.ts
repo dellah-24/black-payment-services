@@ -24,7 +24,7 @@ describe('Monitor Recurring Escrow', () => {
 
     // Monthly
     const monthly = new Date(base);
-    monthly.setMonth(monthly.getMonth() + 1);
+    monthly.setUTCMonth(monthly.getUTCMonth() + 1);
     expect(monthly.toISOString()).toBe('2026-03-14T00:00:00.000Z');
   });
 

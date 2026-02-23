@@ -121,17 +121,42 @@ async function autoRefundExpiredFundedEscrows(
 ): Promise<void> {
   const { data: expiredFundedEscrows } = await supabase
     .from('escrows')
-    .select('id, escrow_address, chain, amount, deposited_amount, depositor_address, expires_at')
+    .select('id, escrow_address, chain, amount, deposited_amount, depositor_address, expires_at, beneficiary_address, allow_auto_release')
     .eq('status', 'funded')
     .lt('expires_at', now.toISOString())
     .limit(20);
 
   if (!expiredFundedEscrows || expiredFundedEscrows.length === 0) return;
 
-  console.log(`Auto-refunding ${expiredFundedEscrows.length} expired funded escrows`);
+  console.log(`Processing ${expiredFundedEscrows.length} expired funded escrows (auto-release/auto-refund)`);
 
   for (const escrow of expiredFundedEscrows) {
     try {
+      if (escrow.allow_auto_release) {
+        await supabase
+          .from('escrows')
+          .update({
+            status: 'released',
+            released_at: now.toISOString(),
+          })
+          .eq('id', escrow.id)
+          .eq('status', 'funded');
+
+        await supabase.from('escrow_events').insert({
+          escrow_id: escrow.id,
+          event_type: 'released',
+          actor: 'system',
+          details: {
+            reason: 'Escrow expired — auto-release enabled',
+            release_to: escrow.beneficiary_address,
+            amount: escrow.deposited_amount || escrow.amount,
+          },
+        });
+
+        console.log(`Escrow ${escrow.id} expired while funded — auto-released`);
+        continue;
+      }
+
       await supabase
         .from('escrows')
         .update({

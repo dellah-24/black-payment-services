@@ -33,6 +33,7 @@ export interface CreateEscrowInput {
   amount: number;                          // crypto amount
   depositor_address: string;               // where refunds go
   beneficiary_address: string;             // where releases go
+  allow_auto_release?: boolean;            // auto-release at expiry instead of auto-refund
   arbiter_address?: string;                // optional dispute resolver
   metadata?: Record<string, unknown>;      // job details, milestones, etc.
   business_id?: string;                    // optional merchant association
@@ -64,6 +65,7 @@ export interface Escrow {
   release_token: string;
   beneficiary_token: string;
   business_id: string | null;
+  allow_auto_release?: boolean;
   created_at: string;
   funded_at: string | null;
   released_at: string | null;
@@ -92,6 +94,7 @@ export interface EscrowPublic {
   metadata: Record<string, unknown>;
   dispute_reason: string | null;
   dispute_resolution: string | null;
+  allow_auto_release?: boolean;
   created_at: string;
   funded_at: string | null;
   released_at: string | null;

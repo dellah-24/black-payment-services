@@ -88,6 +88,7 @@ export async function GET(request: NextRequest) {
     const apiKeyHeader = request.headers.get('x-api-key');
     let merchantId: string | undefined;
     let businessIds: string[] | undefined;
+    let scopedWalletAddresses: string[] = [];
 
     if (authHeader || apiKeyHeader) {
       try {
@@ -115,31 +116,118 @@ export async function GET(request: NextRequest) {
       
       if (businesses && businesses.length > 0) {
         businessIds = businesses.map((b: { id: string }) => b.id);
-      } else {
-        // Merchant has no businesses — return empty
-        return NextResponse.json({ escrows: [], total: 0, limit: filters.limit, offset: filters.offset });
       }
+
+      // Also scope by wallets owned by this merchant (global + business wallets)
+      const walletAddressSet = new Set<string>();
+
+      const { data: merchantWallets } = await supabase
+        .from('merchant_wallets')
+        .select('wallet_address')
+        .eq('merchant_id', merchantId)
+        .eq('is_active', true);
+
+      for (const row of merchantWallets || []) {
+        if (row.wallet_address) walletAddressSet.add(row.wallet_address);
+      }
+
+      if (businessIds && businessIds.length > 0) {
+        const { data: businessWallets } = await supabase
+          .from('business_wallets')
+          .select('wallet_address')
+          .in('business_id', businessIds)
+          .eq('is_active', true);
+
+        for (const row of businessWallets || []) {
+          if (row.wallet_address) walletAddressSet.add(row.wallet_address);
+        }
+      }
+
+      scopedWalletAddresses = Array.from(walletAddressSet);
     }
 
-    // Must have at least one scoping filter (don't allow listing all escrows)
-    const hasFilter = filters.status || filters.depositor_address ||
-      filters.beneficiary_address || filters.business_id || businessIds;
-    if (!hasFilter) {
+    // Must have a scoping filter (status alone must NOT allow listing all escrows)
+    const hasScope = Boolean(
+      filters.depositor_address ||
+      filters.beneficiary_address ||
+      filters.business_id ||
+      (businessIds && businessIds.length > 0) ||
+      (scopedWalletAddresses && scopedWalletAddresses.length > 0)
+    );
+    if (!hasScope) {
       return NextResponse.json(
-        { error: 'At least one filter required (status, depositor, beneficiary, or business_id)' },
+        { error: 'A scoping filter is required (depositor, beneficiary, business_id, or authenticated account scope)' },
         { status: 400 }
       );
     }
 
-    const result = await listEscrows(supabase, { ...filters, business_ids: businessIds } as any);
+    const offset = Number(filters.offset || 0);
+    const limit = Number(filters.limit || 20);
 
-    if (!result.success) {
-      return NextResponse.json({ error: result.error }, { status: 500 });
+    // If the caller explicitly scopes by depositor/beneficiary/business_id, keep direct behavior.
+    const hasExplicitPartyScope = Boolean(filters.depositor_address || filters.beneficiary_address || filters.business_id);
+    if (hasExplicitPartyScope) {
+      const result = await listEscrows(supabase, { ...filters, business_ids: businessIds } as any);
+
+      if (!result.success) {
+        return NextResponse.json({ error: result.error }, { status: 500 });
+      }
+
+      return NextResponse.json({
+        escrows: result.escrows,
+        total: result.total,
+        limit: filters.limit,
+        offset: filters.offset,
+      });
     }
 
+    // Implicit authenticated account scope: union of business escrows + wallet-party escrows.
+    const aggregate = new Map<string, any>();
+    const queries: Array<Promise<{ success: boolean; escrows?: any[]; total?: number; error?: string }>> = [];
+
+    if (businessIds && businessIds.length > 0) {
+      queries.push(listEscrows(supabase, {
+        ...filters,
+        business_ids: businessIds,
+        limit: 500,
+        offset: 0,
+      } as any));
+    }
+
+    if (scopedWalletAddresses.length > 0) {
+      queries.push(listEscrows(supabase, {
+        ...filters,
+        depositor_addresses: scopedWalletAddresses,
+        limit: 500,
+        offset: 0,
+      } as any));
+      queries.push(listEscrows(supabase, {
+        ...filters,
+        beneficiary_addresses: scopedWalletAddresses,
+        limit: 500,
+        offset: 0,
+      } as any));
+    }
+
+    const results = await Promise.all(queries);
+    for (const result of results) {
+      if (!result.success) {
+        return NextResponse.json({ error: result.error }, { status: 500 });
+      }
+      for (const escrow of result.escrows || []) {
+        aggregate.set(escrow.id, escrow);
+      }
+    }
+
+    const mergedEscrows = Array.from(aggregate.values()).sort((a, b) =>
+      new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    );
+
+    const pagedEscrows = mergedEscrows.slice(offset, offset + limit);
+
     return NextResponse.json({
-      escrows: result.escrows,
-      total: result.total,
+      escrows: pagedEscrows,
+      total: mergedEscrows.length,
       limit: filters.limit,
       offset: filters.offset,
     });
