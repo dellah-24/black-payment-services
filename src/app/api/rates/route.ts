@@ -75,6 +75,7 @@ export async function GET(request: NextRequest) {
         .map(c => c.trim().toUpperCase());
 
       const rates: Record<string, number> = {};
+      const errors: Record<string, string> = {};
       let stablecoinRate = 1.0;
 
       // Pre-calculate stablecoin rate for non-USD fiats
@@ -96,14 +97,15 @@ export async function GET(request: NextRequest) {
             const baseCoin = getBaseCoin(coin);
             rates[coin] = await getExchangeRate(baseCoin, fiat);
           }
-        } catch {
-          // Skip coins that fail
+        } catch (err) {
+          errors[coin] = err instanceof Error ? err.message : 'Failed to fetch rate';
         }
       }
 
       return NextResponse.json({
-        success: true,
+        success: Object.keys(errors).length === 0,
         rates,
+        errors: Object.keys(errors).length > 0 ? errors : undefined,
         fiat,
         timestamp: new Date().toISOString(),
       });
