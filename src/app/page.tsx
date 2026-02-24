@@ -743,6 +743,7 @@ coinpay escrow release <id> --token esc_abc...`}
                   'Advanced analytics + webhooks',
                   'Escrow with dispute resolution',
                   'GPG-encrypted seed backups',
+                  'Automated Invoicing (Coming Soon)',
                 ],
                 popular: true,
               },
