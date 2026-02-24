@@ -158,6 +158,9 @@ export default function PricingPage() {
     features.push({ name: 'Custom webhooks', included: plan.features.custom_webhooks });
     features.push({ name: 'White-label option', included: plan.features.white_label });
     features.push({ name: 'Priority support', included: plan.features.priority_support });
+    if (isProfessional) {
+      features.push({ name: 'Automated Invoicing (Coming Soon)', included: true });
+    }
 
     return features;
   };
