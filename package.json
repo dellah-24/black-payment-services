@@ -9,7 +9,6 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.99.3",
     "@web3modal/ethers": "^4.0.0",
     "@web3modal/wagmi": "^4.0.0",
     "ethers": "^6.11.0",
@@ -18,8 +17,7 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-qr-code": "^2.0.18",
-    "wagmi": "^2.5.0",
-    "zod": "^3.22.4"
+    "wagmi": "^2.5.0"
   },
   "devDependencies": {
     "@types/node": "^20.11.0",
