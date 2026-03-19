@@ -104,7 +104,7 @@ export default function AuthPage() {
       const wallet = ethers.Wallet.createRandom();
       
       // Store wallet with password encryption
-      await walletStorage.storeWallet(wallet.address, wallet.privateKey, wallet.mnemonic.phrase, walletPassword);
+      await walletStorage.storeWallet(wallet.address, wallet.privateKey, wallet.mnemonic?.phrase || "", walletPassword);
       walletStorage.setCurrentAccount(wallet.address);
       
       setCurrentAccount(wallet.address);
@@ -234,7 +234,7 @@ export default function AuthPage() {
       const wallet = ethers.Wallet.createRandom();
       
       // Store wallet with password encryption
-      await walletStorage.storeWallet(wallet.address, wallet.privateKey, wallet.mnemonic.phrase, walletPassword);
+      await walletStorage.storeWallet(wallet.address, wallet.privateKey, wallet.mnemonic?.phrase || "", walletPassword);
       walletStorage.setCurrentAccount(wallet.address);
       
       setCurrentAccount(wallet.address);

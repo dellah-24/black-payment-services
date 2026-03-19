@@ -65,7 +65,7 @@ const CHAINS: Record<ChainKey, ChainConfig> = {
     symbol: 'TRX',
     rpcUrl: 'https://api.trongrid.io',
     explorerUrl: 'https://tronscan.org',
-    chainInd: 0,
+    chainId: 0,
     usdtAddress: 'TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t',
   },
   ethereum: {

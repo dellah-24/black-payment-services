@@ -18,6 +18,9 @@ export type Language =
   | 'de'  // German
   | 'vi'  // Vietnamese
   | 'th'  // Thai
+  | 'he'  // Hebrew
+  | 'fa'  // Persian
+  | 'ur'  // Urdu
   | 'id'  // Indonesian
   | 'ms'  // Malay
   | 'fa'  // Persian
@@ -43,7 +46,7 @@ export interface Translation {
 }
 
 export interface Translations {
-  [language: Language]: Translation;
+  [key: string]: Translation;
 }
 
 const translations: Translations = {
