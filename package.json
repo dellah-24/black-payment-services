@@ -1,43 +1,31 @@
 {
-  "name": "blackpayments-wallet",
+  "name": "blackpayments-web",
   "version": "1.0.0",
-  "description": "BlackPayments Wallet - Multi-chain USDT wallet using WDK",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "private": true,
   "scripts": {
-    "build": "tsc",
-    "start": "node dist/index.js",
-    "dev": "ts-node src/index.ts",
-    "test": "jest",
-    "lint": "eslint src/**/*.ts",
-    "format": "prettier --write src/**/*.ts"
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
   },
-  "keywords": [
-    "wallet",
-    "usdt",
-    "blockchain",
-    "evm",
-    "wdk",
-    "tether",
-    "ethereum",
-    "polygon",
-    "bsc"
-  ],
-  "author": "BlackPayments",
-  "license": "MIT",
   "dependencies": {
-    "@supabase/supabase-js": "^2.99.2",
-    "ethers": "^6.11.0"
+    "@web3modal/ethers": "^4.0.0",
+    "@web3modal/wagmi": "^4.0.0",
+    "ethers": "^6.11.0",
+    "lucide-react": "^0.312.0",
+    "next": "14.1.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-qr-code": "^2.0.18",
+    "wagmi": "^2.5.0"
   },
   "devDependencies": {
-    "@types/node": "^20.0.0",
-    "eslint": "^8.0.0",
-    "prettier": "^3.0.0",
-    "ts-node": "^10.9.0",
-    "typescript": "^5.0.0"
-  },
-  "peerDependencies": {
-    "react": "^18.0.0",
-    "react-native": "^0.71.0"
+    "@types/node": "^20.11.0",
+    "@types/react": "^18.2.48",
+    "@types/react-dom": "^18.2.18",
+    "autoprefixer": "^10.4.17",
+    "postcss": "^8.4.33",
+    "tailwindcss": "^3.4.1",
+    "typescript": "^5.3.3"
   }
 }

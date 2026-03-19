@@ -25,6 +25,7 @@ import {
 } from 'lucide-react';
 import { showToast } from '@/components/Toast';
 import { walletStorage } from '@/lib/secureWalletStorage';
+import { supabase, supabaseAuth } from '@/lib/supabaseClient';
 import { profileApi, ProfileDetails, COUNTRIES } from '@/lib/profileApi';
 
 type AuthMode = 'signin' | 'signup';
@@ -56,17 +57,45 @@ export default function AuthPage() {
 
   // Step tracking for signup
   const [signupStep, setSignupStep] = useState<'credentials' | 'profile'>('credentials');
+  // Store user from signUp response
+  const [authUser, setAuthUser] = useState<any>(null);
+  // Store password for wallet encryption
+  const [walletPassword, setWalletPassword] = useState('');
 
   useEffect(() => {
-    // Check if wallet is already connected
-    const savedAccount = walletStorage.getCurrentAccount();
-    if (savedAccount) {
-      setCurrentAccount(savedAccount);
-      setWalletConnected(true);
-    }
+    // Check if user is already logged in with Supabase
+    const checkSession = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) {
+          // Check if user has a profile with wallet
+          // Note: User may not have a profile yet if they just signed up
+          try {
+            const profile = await profileApi.getByUserId(session.user.id);
+            if (profile && profile.wallet_address) {
+              // User has wallet, redirect to home
+              router.push('/');
+            }
+          } catch (profileError) {
+            // Profile doesn't exist yet or other error - continue to auth
+            console.log('Profile check:', profileError);
+          }
+        }
+      } catch (error) {
+        console.log('Session check error:', error);
+        // Continue to auth page
+      }
+    };
+    checkSession();
   }, []);
 
   const handleConnectWallet = async () => {
+    // Need password to encrypt wallet
+    if (!walletPassword) {
+      showToast('error', 'Please enter a wallet password');
+      return;
+    }
+    
     setIsLoading(true);
     try {
       // For demo, we'll create a new wallet
@@ -74,8 +103,8 @@ export default function AuthPage() {
       const { ethers } = await import('ethers');
       const wallet = ethers.Wallet.createRandom();
       
-      // Store wallet
-      await walletStorage.storeWallet(wallet.address, wallet.privateKey, wallet.mnemonic.phrase);
+      // Store wallet with password encryption
+      await walletStorage.storeWallet(wallet.address, wallet.privateKey, wallet.mnemonic.phrase, walletPassword);
       walletStorage.setCurrentAccount(wallet.address);
       
       setCurrentAccount(wallet.address);
@@ -106,22 +135,84 @@ export default function AuthPage() {
         return;
       }
       
-      // Move to profile step
-      setSignupStep('profile');
+      // Create user with Supabase Auth
+      setIsLoading(true);
+      try {
+        const { data, error } = await supabaseAuth.auth.signUp({
+          email,
+          password,
+        });
+
+        if (error) {
+          showToast('error', error.message);
+          return;
+        }
+
+        // Store user from signUp response
+        if (data?.user) {
+          setAuthUser(data.user);
+        }
+
+        // Move to profile step
+        setSignupStep('profile');
+        showToast('success', 'Account created! Please complete your profile.');
+      } catch (error: any) {
+        showToast('error', error.message || 'Failed to create account');
+      } finally {
+        setIsLoading(false);
+      }
     } else {
-      // Sign in - for demo, just redirect to dashboard
-      // In production, this would validate credentials
-      showToast('success', 'Signed in successfully!');
-      router.push('/');
+      // Sign in with Supabase Auth
+      setIsLoading(true);
+      try {
+        const { data, error } = await supabaseAuth.auth.signInWithPassword({
+          email,
+          password,
+        });
+
+        if (error) {
+          showToast('error', error.message);
+          setIsLoading(false);
+          return;
+        }
+
+        // Get user and their profile to retrieve wallet
+        const { data: { user } } = await supabaseAuth.auth.getUser();
+        
+        if (user) {
+          // Try to get profile and wallet from database
+          try {
+            const { data: profile, error: profileError } = await supabase
+              .from('profiles')
+              .select('wallet_address')
+              .eq('id', user.id)
+              .maybeSingle();
+
+            if (profileError) {
+              console.warn('Profile query error:', profileError.message);
+            }
+
+            if (profile?.wallet_address) {
+              // Wallet is stored in Supabase, will need password to decrypt on home page
+              console.log('Found wallet address:', profile.wallet_address);
+            }
+          } catch (e) {
+            console.warn('Profile query failed:', e);
+          }
+        }
+
+        showToast('success', 'Signed in successfully!');
+        setIsLoading(false);
+        router.push('/');
+      } catch (error: any) {
+        showToast('error', error.message || 'Failed to sign in');
+      } finally {
+        setIsLoading(false);
+      }
     }
   };
 
   const handleCompleteSignup = async () => {
-    if (!currentAccount) {
-      showToast('error', 'Please connect your wallet first');
-      return;
-    }
-
     // Validate required profile fields
     if (!firstName || !lastName || !email || !dateOfBirth || !country || !city || !addressLine1 || !postalCode) {
       showToast('error', 'Please fill in all required fields');
@@ -130,8 +221,28 @@ export default function AuthPage() {
 
     setIsLoading(true);
     try {
-      // Save profile to database
+      // Use the user stored from signUp response
+      const user = authUser;
+      
+      if (!user) {
+        showToast('error', 'Please sign up first');
+        return;
+      }
+
+      // Create wallet for the user (required for the app)
+      const { ethers } = await import('ethers');
+      const wallet = ethers.Wallet.createRandom();
+      
+      // Store wallet with password encryption
+      await walletStorage.storeWallet(wallet.address, wallet.privateKey, wallet.mnemonic.phrase, walletPassword);
+      walletStorage.setCurrentAccount(wallet.address);
+      
+      setCurrentAccount(wallet.address);
+      setWalletConnected(true);
+
+      // Save profile to database with user ID
       const updates: ProfileDetails = {
+        id: user.id, // Link to Supabase Auth user
         username: email.split('@')[0],
         first_name: firstName,
         last_name: lastName,
@@ -146,10 +257,10 @@ export default function AuthPage() {
         postal_code: postalCode,
       };
 
-      await profileApi.update(currentAccount, updates);
+      await profileApi.update(wallet.address, updates);
       
       // Store session
-      walletStorage.setCurrentAccount(currentAccount);
+      walletStorage.setCurrentAccount(wallet.address);
       
       showToast('success', 'Account created successfully!');
       router.push('/');
@@ -264,32 +375,20 @@ export default function AuthPage() {
               </button>
             </div>
 
-            {/* Wallet Connection - Required for signup */}
-            {mode === 'signup' && (
+            {/* Wallet Connection - Auto-created after profile */}
+            {mode === 'signup' && signupStep === 'profile' && (
               <div className="mb-8 p-4 rounded-xl bg-indigo-900/20 border border-indigo-700/30">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <Wallet className="h-6 w-6 text-indigo-400" />
                     <div>
-                      <p className="text-sm font-medium text-white">Wallet Connection</p>
+                      <p className="text-sm font-medium text-white">Wallet</p>
                       <p className="text-xs text-gray-400">
-                        {walletConnected 
-                          ? `Connected: ${currentAccount?.slice(0, 10)}...${currentAccount?.slice(-8)}`
-                          : 'Required for P2P trading'}
+                        A wallet will be created for you automatically
                       </p>
                     </div>
                   </div>
-                  {walletConnected ? (
-                    <CheckCircle className="h-6 w-6 text-green-400" />
-                  ) : (
-                    <button
-                      onClick={handleConnectWallet}
-                      disabled={isLoading}
-                      className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-sm font-medium transition-colors"
-                    >
-                      {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Connect'}
-                    </button>
-                  )}
+                  <CheckCircle className="h-6 w-6 text-green-400" />
                 </div>
               </div>
             )}

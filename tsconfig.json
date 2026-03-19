@@ -1,33 +1,26 @@
 {
   "compilerOptions": {
-    "target": "ES2020",
-    "module": "commonjs",
-    "lib": ["ES2020", "DOM"],
-    "outDir": "./dist",
-    "rootDir": "./src",
-    "strict": false,
-    "noImplicitAny": false,
-    "esModuleInterop": true,
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "allowJs": true,
     "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true,
-    "declaration": true,
-    "declarationMap": true,
-    "sourceMap": true,
-    "moduleResolution": "node",
-    "resolveJsonModule": true
+    "strict": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "preserve",
+    "incremental": true,
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "paths": {
+      "@/*": ["./src/*"]
+    }
   },
-  "include": ["src/**/*"],
-  "exclude": [
-    "node_modules", 
-    "dist", 
-    "src/react/**/*", 
-    "src/examples/**/*", 
-    "src/test-local.ts",
-    "src/supabase/api.ts",
-    "src/browser/**/*",
-    "src/i18n/**/*",
-    "src/kyc/**/*",
-    "src/wallet/WalletConnectProvider.ts",
-    "src/index.ts"
-  ]
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
+  "exclude": ["node_modules"]
 }

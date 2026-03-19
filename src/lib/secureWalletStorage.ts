@@ -3,18 +3,17 @@
  * Uses AES-GCM encryption for secure cloud storage
  */
 
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { SupabaseClient } from '@supabase/supabase-js';
+import { supabase } from './supabaseClient';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
 
 // Check if Supabase is configured
-const isSupabaseConfigured = !!(supabaseUrl && supabaseAnonKey);
+export const isSupabaseConfigured = !!(supabaseUrl && supabaseAnonKey);
 
-// Initialize Supabase client
-export const supabase: SupabaseClient = isSupabaseConfigured
-  ? createClient(supabaseUrl, supabaseAnonKey)
-  : ({} as SupabaseClient);
+// Re-export from supabaseClient to avoid multiple GoTrueClient instances
+export { supabase };
 
 /**
  * Derive a proper AES key from a password using PBKDF2
@@ -114,43 +113,64 @@ export class SecureWalletStorage {
     crypto.getRandomValues(array);
     return btoa(String.fromCharCode(...Array.from(array)));
   }
+
+  /**
+   * Set the current active account (for session management)
+   */
+  setCurrentAccount(address: string): void {
+    // Store in memory only - don't use localStorage
+    this.encryptionKey = this.encryptionKey || this.generateSessionKey();
+  }
+
+  /**
+   * Get the current active account (from memory)
+   */
+  getCurrentAccount(): string | null {
+    // We get this from profile now, not localStorage
+    return null;
+  }
   
   /**
    * Store encrypted wallet in Supabase
    */
-  async storeWallet(walletAddress: string, privateKey: string, mnemonic?: string): Promise<boolean> {
+  async storeWallet(walletAddress: string, privateKey: string, mnemonic?: string, userPassword?: string): Promise<boolean> {
     try {
+      // Use provided password or generate a session key
+      const encryptionKey = userPassword 
+        ? btoa(userPassword + 'blackpayments_salt')
+        : this.encryptionKey;
+      
       // Encrypt private key
-      const encryptedPK = await encrypt(privateKey, this.encryptionKey);
+      const encryptedPK = await encrypt(privateKey, encryptionKey);
       
       // Encrypt mnemonic if provided
       let encryptedMnemonic: string | null = null;
       let mnemonicIV = '';
       if (mnemonic) {
-        const encMnemonic = await encrypt(mnemonic, this.encryptionKey);
+        const encMnemonic = await encrypt(mnemonic, encryptionKey);
         encryptedMnemonic = encMnemonic.ciphertext;
         mnemonicIV = encMnemonic.iv;
       }
       
-      // Store in Supabase
-      const { error } = await supabase
-        .from('encrypted_wallets')
-        .upsert({
-          wallet_address: walletAddress.toLowerCase(),
-          encrypted_private_key: encryptedPK.ciphertext,
-          encrypted_mnemonic: encryptedMnemonic,
-          encryption_iv: encryptedPK.iv,
-          updated_at: new Date().toISOString(),
-        }, { onConflict: 'wallet_address' });
-      
-      if (error) {
-        console.error('Failed to store wallet in Supabase:', error);
-        return false;
+      // Store in Supabase only if configured
+      if (isSupabaseConfigured && supabase.from) {
+        // Get current user
+        const { data: { user } } = await supabase.auth.getUser();
+        
+        const { error } = await supabase
+          .from('encrypted_wallets')
+          .upsert({
+            wallet_address: walletAddress.toLowerCase(),
+            encrypted_private_key: encryptedPK.ciphertext,
+            encrypted_mnemonic: encryptedMnemonic,
+            encryption_iv: encryptedPK.iv,
+            updated_at: new Date().toISOString(),
+          }, { onConflict: 'wallet_address' });
+        
+        if (error) {
+          console.error('Failed to store wallet in Supabase:', error);
+        }
       }
-      
-      // Store session key in localStorage (not the private key!)
-      localStorage.setItem('bp_session_key', this.encryptionKey);
-      localStorage.setItem('bp_account', walletAddress);
       
       return true;
     } catch (error) {
@@ -160,18 +180,27 @@ export class SecureWalletStorage {
   }
   
   /**
-   * Retrieve wallet from Supabase
+   * Retrieve wallet from Supabase using password
    */
-  async retrieveWallet(walletAddress: string): Promise<{ privateKey: string; mnemonic?: string } | null> {
+  async retrieveWallet(walletAddress: string, userPassword?: string): Promise<{ privateKey: string; mnemonic?: string } | null> {
     try {
-      // Get session key from localStorage
-      const sessionKey = localStorage.getItem('bp_session_key');
-      if (!sessionKey) {
-        console.error('No session key found');
+      // Check if Supabase is properly configured
+      if (!isSupabaseConfigured || !supabase.from) {
+        console.warn('Supabase not configured - cannot retrieve wallet from cloud');
+        return null;
+      }
+
+      // Use provided password or check localStorage
+      let encryptionKey = userPassword 
+        ? btoa(userPassword + 'blackpayments_salt')
+        : localStorage.getItem('bp_session_key');
+      
+      if (!encryptionKey) {
+        console.error('No encryption key found - password required');
         return null;
       }
       
-      this.encryptionKey = sessionKey;
+      this.encryptionKey = encryptionKey;
       
       // Fetch from Supabase
       const { data, error } = await supabase
@@ -205,6 +234,7 @@ export class SecureWalletStorage {
       return { privateKey, mnemonic };
     } catch (error) {
       console.error('Decryption error:', error);
+      // Return null to allow creating a new wallet
       return null;
     }
   }
@@ -226,10 +256,8 @@ export class SecureWalletStorage {
    * Delete wallet from cloud
    */
   async deleteWallet(walletAddress: string): Promise<boolean> {
-    // If Supabase is not configured, just clear local storage
+    // If Supabase is not configured
     if (!isSupabaseConfigured) {
-      localStorage.removeItem('bp_session_key');
-      localStorage.removeItem('bp_account');
       return true;
     }
 
@@ -243,33 +271,29 @@ export class SecureWalletStorage {
       return false;
     }
     
-    // Clear local storage
-    localStorage.removeItem('bp_session_key');
-    localStorage.removeItem('bp_account');
-    
     return true;
   }
   
   /**
-   * Check if user has a stored session
+   * Check if user has a stored session (always false now - use Supabase Auth)
    */
   hasSession(): boolean {
-    return !!localStorage.getItem('bp_session_key') && !!localStorage.getItem('bp_account');
+    // Session is now managed by Supabase Auth
+    return false;
   }
   
   /**
-   * Get current account from localStorage
+   * Get current account (now returns null - use profileApi.getByUserId)
    */
   getCurrentAccount(): string | null {
-    return localStorage.getItem('bp_account');
+    return null;
   }
   
   /**
-   * Clear session
+   * Clear session (no-op now - Supabase Auth handles session)
    */
   clearSession(): void {
-    localStorage.removeItem('bp_session_key');
-    localStorage.removeItem('bp_account');
+    // Session is managed by Supabase Auth
   }
 }
 

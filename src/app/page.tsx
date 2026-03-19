@@ -44,6 +44,7 @@ import {
 import { showToast } from '@/components/Toast';
 import { WalletConnectModal } from '@/components/WalletConnectModal';
 import { walletStorage } from '@/lib/secureWalletStorage';
+import { supabase } from '@/lib/supabaseClient';
 import { profileApi } from '@/lib/profileApi';
 
 // Chain types
@@ -119,6 +120,29 @@ export default function Dashboard() {
   const [showWalletModal, setShowWalletModal] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isAuthLoading, setIsAuthLoading] = useState(true);
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [walletPassword, setWalletPassword] = useState('');
+  const [pendingWalletAddress, setPendingWalletAddress] = useState<string | null>(null);
+
+  // Handle password submission for wallet decryption
+  const handlePasswordSubmit = async () => {
+    if (!walletPassword || !pendingWalletAddress) return;
+    
+    try {
+      const walletData = await walletStorage.retrieveWallet(pendingWalletAddress, walletPassword);
+      if (walletData) {
+        setAccount(pendingWalletAddress);
+        setIsAuthenticated(true);
+        setShowPasswordModal(false);
+        setWalletPassword('');
+        fetchBalances(pendingWalletAddress, selectedChain);
+      } else {
+        showToast('error', 'Invalid password or wallet not found');
+      }
+    } catch (e) {
+      showToast('error', 'Failed to decrypt wallet');
+    }
+  };
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -127,45 +151,88 @@ export default function Dashboard() {
         setTheme(savedTheme);
       }
       
-      // Check for existing session
-      if (walletStorage.hasSession()) {
-        const savedAccount = walletStorage.getCurrentAccount();
-        if (savedAccount) {
-          // Try to retrieve wallet from Supabase
-          const walletData = await walletStorage.retrieveWallet(savedAccount);
-          if (walletData) {
-            // Check if profile exists and has required fields
+      // Check for Supabase Auth session first
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (session) {
+        // User is logged in with Supabase Auth - get wallet address from profile
+        try {
+          // Get profile by user ID to find wallet address
+          const profile = await profileApi.getByUserId(session.user.id);
+          
+          if (profile && profile.wallet_address) {
+            const savedAccount = profile.wallet_address;
+            
+            // Try to retrieve wallet from Supabase - show password modal if needed
             try {
-              const profile = await profileApi.getByAddress(savedAccount);
-              const hasProfile = profile && profile.first_name && profile.last_name && profile.email;
-              
-              if (hasProfile) {
-                setAccount(savedAccount);
-                setIsAuthenticated(true);
-                fetchBalances(savedAccount, selectedChain);
+              const walletData = await walletStorage.retrieveWallet(savedAccount);
+              if (walletData) {
+                // Check if profile exists and has required fields
+                const hasProfile = profile.first_name && profile.last_name && profile.email;
+                
+                if (hasProfile) {
+                  setAccount(savedAccount);
+                  setIsAuthenticated(true);
+                  fetchBalances(savedAccount, selectedChain);
+                } else {
+                  // Has wallet but no complete profile - redirect to auth
+                  router.push('/auth');
+                }
               } else {
-                // Has wallet but no profile - redirect to auth
-                router.push('/auth');
+                // No wallet in storage - show password modal to decrypt
+                setPendingWalletAddress(savedAccount);
+                setShowPasswordModal(true);
               }
             } catch (e) {
-              // If profile check fails, allow access (for demo without Supabase)
-              setAccount(savedAccount);
-              setIsAuthenticated(true);
-              fetchBalances(savedAccount, selectedChain);
+              // Decryption error - show password modal
+              setPendingWalletAddress(savedAccount);
+              setShowPasswordModal(true);
             }
           } else {
-            // Session invalid, redirect to auth
-            walletStorage.clearSession();
-            router.push('/auth');
+            // Has auth session but no profile/wallet
+            // Allow user to stay on home and create wallet from here
+            console.log('User has auth but no profile - can create wallet from home');
           }
-        } else {
-          // No account, redirect to auth
-          router.push('/auth');
+        } catch (e) {
+          // Error getting profile - allow user to stay and create wallet from home
+          console.warn('Profile fetch error, allowing access:', e);
         }
-      } else {
-        // No session, redirect to auth
-        router.push('/auth');
-      }
+       } else {
+         // Legacy: Check for existing wallet-only session
+         const savedAccount = walletStorage.getCurrentAccount();
+         if (savedAccount) {
+           // Try to retrieve wallet from Supabase
+           const walletData = await walletStorage.retrieveWallet(savedAccount);
+           if (walletData) {
+             // Check if profile exists and has required fields
+             try {
+               const profile = await profileApi.getByAddress(savedAccount);
+               const hasProfile = profile && profile.first_name && profile.last_name && profile.email;
+               
+               if (hasProfile) {
+                 setAccount(savedAccount);
+                 setIsAuthenticated(true);
+                 fetchBalances(savedAccount, selectedChain);
+               } else {
+                 // Has wallet but no profile - redirect to auth
+                 router.push('/auth');
+               }
+             } catch (e) {
+               // If profile check fails, allow access (for demo without Supabase)
+               setAccount(savedAccount);
+               setIsAuthenticated(true);
+               fetchBalances(savedAccount, selectedChain);
+             }
+           } else {
+             // Session invalid, redirect to auth
+             walletStorage.clearSession();
+             router.push('/auth');
+           }
+         } else {
+           // No account, redirect to auth
+           router.push('/auth');
+         }
+       }
       
       setIsAuthLoading(false);
     };
@@ -356,6 +423,44 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-900 to-indigo-950">
+      {/* Password Modal */}
+      {showPasswordModal && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50">
+          <div className="bg-gray-800 rounded-xl p-6 w-full max-w-md mx-4">
+            <h2 className="text-xl font-bold text-white mb-4">Enter Wallet Password</h2>
+            <p className="text-gray-400 mb-4">Enter your password to decrypt your wallet from the cloud.</p>
+            <input
+              type="password"
+              value={walletPassword}
+              onChange={(e) => setWalletPassword(e.target.value)}
+              placeholder="Wallet password"
+              className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 mb-4"
+              onKeyDown={(e) => e.key === 'Enter' && handlePasswordSubmit()}
+            />
+            <div className="flex gap-3">
+              <button
+                onClick={() => {
+                  setShowPasswordModal(false);
+                  setWalletPassword('');
+                  router.push('/auth');
+                }}
+                className="flex-1 px-4 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-500 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handlePasswordSubmit}
+                disabled={!walletPassword}
+                className="flex-1 px-4 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Decrypt Wallet
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Main content */}
       <main className="max-w-6xl mx-auto px-4 py-8">
         {!account ? (
           /* Welcome Screen with Visual Elements */
