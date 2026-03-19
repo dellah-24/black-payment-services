@@ -1,0 +1,33 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "commonjs",
+    "lib": ["ES2020", "DOM"],
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "strict": false,
+    "noImplicitAny": false,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "moduleResolution": "node",
+    "resolveJsonModule": true
+  },
+  "include": ["src/**/*"],
+  "exclude": [
+    "node_modules", 
+    "dist", 
+    "src/react/**/*", 
+    "src/examples/**/*", 
+    "src/test-local.ts",
+    "src/supabase/api.ts",
+    "src/browser/**/*",
+    "src/i18n/**/*",
+    "src/kyc/**/*",
+    "src/wallet/WalletConnectProvider.ts",
+    "src/index.ts"
+  ]
+}

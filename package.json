@@ -1,0 +1,43 @@
+{
+  "name": "blackpayments-wallet",
+  "version": "1.0.0",
+  "description": "BlackPayments Wallet - Multi-chain USDT wallet using WDK",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "ts-node src/index.ts",
+    "test": "jest",
+    "lint": "eslint src/**/*.ts",
+    "format": "prettier --write src/**/*.ts"
+  },
+  "keywords": [
+    "wallet",
+    "usdt",
+    "blockchain",
+    "evm",
+    "wdk",
+    "tether",
+    "ethereum",
+    "polygon",
+    "bsc"
+  ],
+  "author": "BlackPayments",
+  "license": "MIT",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.99.2",
+    "ethers": "^6.11.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "eslint": "^8.0.0",
+    "prettier": "^3.0.0",
+    "ts-node": "^10.9.0",
+    "typescript": "^5.0.0"
+  },
+  "peerDependencies": {
+    "react": "^18.0.0",
+    "react-native": "^0.71.0"
+  }
+}
