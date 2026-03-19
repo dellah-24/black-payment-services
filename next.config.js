@@ -18,7 +18,6 @@ const nextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
-  // trailing comma test
 }
 
 module.exports = nextConfig
