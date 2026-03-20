@@ -1,0 +1,7 @@
+# Cloudflare Workers/Pages Configuration
+name = "black-payment-services"
+compatibility_date = "2024-01-01"
+compatibility_flags = ["nodejs_compat"]
+
+# Pages configuration
+pages_build_output_dir = ".vercel/output/static"

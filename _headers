@@ -1,5 +1,7 @@
 # Cloudflare Pages Headers
-# Enable Node.js compatibility for the entire site
+# Enable Node.js compatibility
 
 /*
-  X-NODEJS-COMPAT: 1
+  X-CF-CACHE-Status: REPLAY
+  X-NODEJS-COMPAT: true
+  compatibility_flags: nodejs_compat
