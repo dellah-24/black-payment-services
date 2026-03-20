@@ -351,4 +351,39 @@ export function createSupabaseClient(): SupabaseClient<Database> {
   });
 }
 
-export const supabase = createSupabaseClient();
+// Lazy client initialization
+let supabaseInstance: SupabaseClient<Database> | null = null;
+
+/**
+ * Get the Supabase client instance - lazy initialization
+ */
+export function getSupabaseClient(): SupabaseClient<Database> {
+  if (supabaseInstance) {
+    return supabaseInstance;
+  }
+  
+  if (!supabaseUrl || !supabaseAnonKey) {
+    console.warn('Supabase credentials not configured during build');
+  }
+  
+  supabaseInstance = createClient<Database>(supabaseUrl, supabaseAnonKey, {
+    auth: {
+      persistSession: true,
+      autoRefreshToken: true,
+    },
+  });
+  
+  return supabaseInstance;
+}
+
+// Export for backward compatibility - uses Proxy for lazy initialization
+export const supabase = new Proxy({} as SupabaseClient<Database>, {
+  get(_target, prop) {
+    return () => getSupabaseClient()[prop];
+  },
+  apply(_target, _thisArg, args) {
+    return getSupabaseClient()(...args);
+  }
+});
+
+export { createSupabaseClient };
