@@ -1,0 +1,5 @@
+# Cloudflare Pages Headers
+# Enable Node.js compatibility for the entire site
+
+/*
+  X-NODEJS-COMPAT: 1

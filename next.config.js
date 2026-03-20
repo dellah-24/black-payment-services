@@ -1,6 +1,10 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  // Cloudflare Pages configuration
+  cloudflare: {
+    nodejsCompat: true,
+  },
   // Exclude mobile app from Next.js web build
   webpack: (config, { isServer }) => {
     // Ignore react-native related files in web build
