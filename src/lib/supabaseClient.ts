@@ -5,21 +5,26 @@
 
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
-// Create client only in browser with valid credentials
-const supabaseUrl = typeof window !== 'undefined' ? process.env.NEXT_PUBLIC_SUPABASE_URL : undefined;
-const supabaseAnonKey = typeof window !== 'undefined' ? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY : undefined;
-
+// Get env vars - works in both SSR and client
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 const isConfigured = supabaseUrl && supabaseAnonKey;
 
 // Create client at module load in browser only
 let supabaseClient: SupabaseClient | null = null;
 
-if (typeof window !== 'undefined' && isConfigured) {
+if (isConfigured) {
   supabaseClient = createClient(supabaseUrl, supabaseAnonKey, {
     auth: {
       persistSession: true,
       autoRefreshToken: true,
       detectSessionInUrl: true,
+    },
+    global: {
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      },
     },
   });
 }
@@ -30,13 +35,30 @@ export function getSupabaseClient(): SupabaseClient {
     return supabaseClient;
   }
   
-  // SSR or client without config - return a dummy client
+  // SSR or client without config - try to get env vars now
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  
+  if (url && key) {
+    supabaseClient = createClient(url, key, {
+      auth: { persistSession: true, autoRefreshToken: true },
+      global: {
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+      },
+    });
+    return supabaseClient;
+  }
+  
+  // No config - return dummy client
   return createClient('https://placeholder.supabase.co', 'placeholder', {
     auth: { persistSession: false, autoRefreshToken: false },
   });
 }
 
-// Export supabase directly - use getSupabaseClient() for guaranteed client
+// Export supabase directly
 export const supabase: SupabaseClient = supabaseClient || getSupabaseClient();
 
 export const supabaseAuth = supabase;

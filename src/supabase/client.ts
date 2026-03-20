@@ -5,6 +5,12 @@
 
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
+// Get env vars at runtime
+function getEnvVar(key: string): string | undefined {
+  if (typeof window === 'undefined') return undefined;
+  return (process.env as any)[key];
+}
+
 // Database types
 export interface Database {
   public: {
@@ -182,15 +188,14 @@ export interface Database {
   };
 }
 
-// Create client only in browser
-const supabaseUrl = typeof window !== 'undefined' ? process.env.NEXT_PUBLIC_SUPABASE_URL : undefined;
-const supabaseAnonKey = typeof window !== 'undefined' ? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY : undefined;
+const supabaseUrl = getEnvVar('NEXT_PUBLIC_SUPABASE_URL');
+const supabaseAnonKey = getEnvVar('NEXT_PUBLIC_SUPABASE_ANON_KEY');
 const isConfigured = supabaseUrl && supabaseAnonKey;
 
 // Create client at module load in browser only
 let supabaseClient: SupabaseClient<Database> | null = null;
 
-if (typeof window !== 'undefined' && isConfigured) {
+if (isConfigured) {
   supabaseClient = createClient<Database>(supabaseUrl, supabaseAnonKey, {
     auth: {
       persistSession: true,
@@ -203,7 +208,19 @@ export function getSupabaseClient(): SupabaseClient<Database> {
   if (supabaseClient) {
     return supabaseClient;
   }
-  // SSR fallback
+  
+  // Try to get env vars now
+  const url = getEnvVar('NEXT_PUBLIC_SUPABASE_URL');
+  const key = getEnvVar('NEXT_PUBLIC_SUPABASE_ANON_KEY');
+  
+  if (url && key) {
+    supabaseClient = createClient<Database>(url, key, {
+      auth: { persistSession: true, autoRefreshToken: true },
+    });
+    return supabaseClient;
+  }
+  
+  // No config - return dummy client
   return createClient<Database>('https://placeholder.supabase.co', 'placeholder', {
     auth: { persistSession: false, autoRefreshToken: false },
   });
@@ -212,10 +229,5 @@ export function getSupabaseClient(): SupabaseClient<Database> {
 export const supabase: SupabaseClient<Database> = supabaseClient || getSupabaseClient();
 
 export function createSupabaseClient(): SupabaseClient<Database> {
-  if (isConfigured && supabaseUrl && supabaseAnonKey) {
-    return createClient<Database>(supabaseUrl, supabaseAnonKey, {
-      auth: { persistSession: true, autoRefreshToken: true },
-    });
-  }
   return getSupabaseClient();
 }

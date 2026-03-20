@@ -153,22 +153,25 @@ export class SecureWalletStorage {
       }
       
       // Store in Supabase only if configured
-      if (isSupabaseConfigured && supabase.from) {
-        // Get current user
-        const { data: { user } } = await supabase.auth.getUser();
-        
-        const { error } = await supabase
-          .from('encrypted_wallets')
-          .upsert({
-            wallet_address: walletAddress.toLowerCase(),
-            encrypted_private_key: encryptedPK.ciphertext,
-            encrypted_mnemonic: encryptedMnemonic,
-            encryption_iv: encryptedPK.iv,
-            updated_at: new Date().toISOString(),
-          }, { onConflict: 'wallet_address' });
-        
-        if (error) {
-          console.error('Failed to store wallet in Supabase:', error);
+      if (isSupabaseConfigured && supabase?.from) {
+        try {
+          const { error } = await supabase
+            .from('encrypted_wallets')
+            .upsert({
+              wallet_address: walletAddress.toLowerCase(),
+              encrypted_private_key: encryptedPK.ciphertext,
+              encrypted_mnemonic: encryptedMnemonic,
+              encryption_iv: encryptedPK.iv,
+              updated_at: new Date().toISOString(),
+            }, { onConflict: 'wallet_address' });
+          
+          if (error) {
+            // Table might not exist - ignore error
+            console.warn('Wallet storage warning:', error.message);
+          }
+        } catch (e) {
+          // Ignore storage errors - wallet is still usable locally
+          console.warn('Wallet storage error:', e);
         }
       }
       

@@ -56,9 +56,11 @@ export default function AuthPage() {
   const [postalCode, setPostalCode] = useState('');
 
   // Step tracking for signup
-  const [signupStep, setSignupStep] = useState<'credentials' | 'profile'>('credentials');
+  const [signupStep, setSignupStep] = useState<'credentials' | 'email_sent' | 'profile'>('credentials');
   // Store user from signUp response
   const [authUser, setAuthUser] = useState<any>(null);
+  // Store email for resend functionality
+  const [pendingEmail, setPendingEmail] = useState('');
   // Store password for wallet encryption
   const [walletPassword, setWalletPassword] = useState('');
 
@@ -68,17 +70,34 @@ export default function AuthPage() {
       try {
         const { data: { session } } = await supabase.auth.getSession();
         if (session) {
-          // Check if user has a profile with wallet
-          // Note: User may not have a profile yet if they just signed up
-          try {
-            const profile = await profileApi.getByUserId(session.user.id);
-            if (profile && profile.wallet_address) {
-              // User has wallet, redirect to home
-              router.push('/');
+          // Check if email is confirmed
+          const hasConfirmedEmail = !!session.user?.email_confirmed_at;
+          
+          if (hasConfirmedEmail) {
+            // Check if user has a profile with wallet
+            try {
+              const profile = await profileApi.getByUserId(session.user.id);
+              if (profile && profile.wallet_address) {
+                // User has wallet, redirect to home
+                window.location.href = '/';
+              } else {
+                // Email confirmed but no wallet - go to profile step
+                setAuthUser(session.user);
+                setEmail(session.user.email || '');
+                setSignupStep('profile');
+              }
+            } catch (profileError) {
+              // Profile doesn't exist - go to profile step
+              setAuthUser(session.user);
+              setEmail(session.user.email || '');
+              setSignupStep('profile');
             }
-          } catch (profileError) {
-            // Profile doesn't exist yet or other error - continue to auth
-            console.log('Profile check:', profileError);
+          } else {
+            // Email not confirmed - show email sent step
+            setAuthUser(session.user);
+            setEmail(session.user.email || '');
+            setPendingEmail(session.user.email || '');
+            setSignupStep('email_sent');
           }
         }
       } catch (error) {
@@ -151,11 +170,12 @@ export default function AuthPage() {
         // Store user from signUp response
         if (data?.user) {
           setAuthUser(data.user);
+          setPendingEmail(email);
         }
 
-        // Move to profile step
-        setSignupStep('profile');
-        showToast('success', 'Account created! Please complete your profile.');
+        // Move to email sent step - user needs to confirm email first
+        setSignupStep('email_sent');
+        showToast('success', 'Confirmation email sent! Please check your inbox.');
       } catch (error: any) {
         showToast('error', error.message || 'Failed to create account');
       } finally {
@@ -189,7 +209,11 @@ export default function AuthPage() {
               .maybeSingle();
 
             if (profileError) {
-              console.warn('Profile query error:', profileError.message);
+              // Ignore 406 and PGRST errors - profile might not exist yet
+              if (!profileError.message?.includes('406') && 
+                  !profileError.code?.startsWith('PGRST')) {
+                console.warn('Profile query error:', profileError.message);
+              }
             }
 
             if (profile?.wallet_address) {
@@ -197,13 +221,15 @@ export default function AuthPage() {
               console.log('Found wallet address:', profile.wallet_address);
             }
           } catch (e) {
+            // Ignore errors - profile might not exist yet
             console.warn('Profile query failed:', e);
           }
         }
 
         showToast('success', 'Signed in successfully!');
         setIsLoading(false);
-        router.push('/');
+        // Use window.location for more reliable redirect
+        window.location.href = '/';
       } catch (error: any) {
         showToast('error', error.message || 'Failed to sign in');
       } finally {
@@ -263,7 +289,7 @@ export default function AuthPage() {
       walletStorage.setCurrentAccount(wallet.address);
       
       showToast('success', 'Account created successfully!');
-      router.push('/');
+      window.location.href = '/';
     } catch (error) {
       console.error('Error saving profile:', error);
       showToast('error', 'Failed to create account');
@@ -412,13 +438,87 @@ export default function AuthPage() {
                     <Loader2 className="h-5 w-5 animate-spin" />
                   ) : mode === 'signup' ? (
                     <>
-                      Continue to Profile <ArrowLeft className="h-4 w-4 rotate-180" />
+                      Sign Up <UserPlus className="h-4 w-4" />
                     </>
                   ) : (
                     <>
                       Sign In <LogIn className="h-4 w-4" />
                     </>
                   )}
+                </button>
+              </div>
+            )}
+
+            {/* Email Confirmation Step */}
+            {signupStep === 'email_sent' && mode === 'signup' && (
+              <div className="space-y-6 text-center">
+                <div className="w-20 h-20 rounded-full bg-blue-500/20 flex items-center justify-center mx-auto mb-4">
+                  <Mail className="h-10 w-10 text-blue-400" />
+                </div>
+                <h2 className="text-xl font-bold text-white">Check your email!</h2>
+                <p className="text-gray-400">
+                  We've sent a confirmation link to<br />
+                  <span className="text-indigo-400 font-medium">{pendingEmail}</span>
+                </p>
+                <p className="text-sm text-gray-500">
+                  Click the link in the email to verify your account, then come back here to complete your profile.
+                </p>
+                <div className="pt-4">
+                  <button
+                    onClick={async () => {
+                      setIsLoading(true);
+                      try {
+                        // Check if user has confirmed their email
+                        const { data: { session } } = await supabase.auth.getSession();
+                        if (session?.user?.email_confirmed_at) {
+                          // Email is confirmed, proceed to profile
+                          setSignupStep('profile');
+                          showToast('success', 'Email verified! Please complete your profile.');
+                        } else {
+                          showToast('error', 'Please verify your email first. Check your inbox for the confirmation link.');
+                        }
+                      } catch (error) {
+                        showToast('error', 'Error checking verification status');
+                      } finally {
+                        setIsLoading(false);
+                      }
+                    }}
+                    disabled={isLoading}
+                    className="w-full py-4 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white rounded-xl font-medium transition-all transform hover:scale-[1.02] flex items-center justify-center gap-2"
+                  >
+                    {isLoading ? (
+                      <Loader2 className="h-5 w-5 animate-spin" />
+                    ) : (
+                      <>
+                        I've confirmed my email <CheckCircle className="h-4 w-4" />
+                      </>
+                    )}
+                  </button>
+                </div>
+                <div className="text-sm text-gray-500">
+                  Didn't receive the email?
+                  <button
+                    onClick={async () => {
+                      try {
+                        await supabase.auth.resend({ type: 'signup', email: pendingEmail });
+                        showToast('success', 'Email resent! Check your inbox.');
+                      } catch (error) {
+                        showToast('error', 'Failed to resend email');
+                      }
+                    }}
+                    className="ml-2 text-indigo-400 hover:text-indigo-300"
+                  >
+                    Resend
+                  </button>
+                </div>
+                <button
+                  onClick={() => {
+                    setSignupStep('credentials');
+                    setMode('signin');
+                  }}
+                  className="text-sm text-gray-500 hover:text-gray-400"
+                >
+                  Already verified? Sign in
                 </button>
               </div>
             )}

@@ -62,13 +62,9 @@ export const profileApi = {
           .single();
 
         if (createError) {
-          console.warn('Error creating profile:', createError.message);
-          // Return a basic profile object if creation fails
-          return {
-            wallet_address: walletAddress.toLowerCase(),
-            kyc_level: 0,
-            kyc_status: 'none',
-          };
+          console.error('Error creating profile:', createError.message);
+          // Throw error so caller knows profile creation failed
+          throw new Error(`Failed to create profile: ${createError.message}`);
         }
         profile = newProfile;
 
@@ -115,15 +111,24 @@ export const profileApi = {
         .single();
 
       // PGRST116 = No rows found
+      // PGRST204 = Could not find a row
+      // 406 = Not Acceptable (can happen with RLS issues)
       if (error) {
-        if (error.code === 'PGRST116' || error.code === 'PGRST204') {
+        if (error.code === 'PGRST116' || 
+            error.code === 'PGRST204' ||
+            error.code === '406' ||
+            error.message?.includes('406')) {
           return null;
         }
         console.warn('Profile fetch by address warning:', error.message);
         return null;
       }
       return data;
-    } catch (err) {
+    } catch (err: any) {
+      // Handle 406 error gracefully
+      if (err?.message?.includes('406') || err?.status === 406) {
+        return null;
+      }
       console.warn('Profile getByAddress error:', err);
       return null;
     }
@@ -145,8 +150,13 @@ export const profileApi = {
         .single();
 
       // PGRST116 = No rows found (expected when user doesn't have a profile yet)
+      // PGRST204 = Could not find a row
+      // 406 = Not Acceptable (can happen with RLS or config issues)
       if (error) {
-        if (error.code === 'PGRST116' || error.code === 'PGRST204') {
+        if (error.code === 'PGRST116' || 
+            error.code === 'PGRST204' || 
+            error.code === '406' ||
+            error.message?.includes('406')) {
           // No profile exists yet for this user
           return null;
         }
@@ -155,8 +165,11 @@ export const profileApi = {
         return null;
       }
       return data;
-    } catch (err) {
-      // Catch any network or other errors
+    } catch (err: any) {
+      // Catch any network or other errors (including 406)
+      if (err?.message?.includes('406') || err?.status === 406) {
+        return null; // Treat 406 as no profile
+      }
       console.warn('Profile fetch error:', err);
       return null;
     }
