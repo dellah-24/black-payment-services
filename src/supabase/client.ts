@@ -9,7 +9,6 @@ import { createClient, SupabaseClient } from '@supabase/supabase-js';
 export interface Database {
   public: {
     Tables: {
-      // User profiles
       profiles: {
         Row: {
           id: string;
@@ -38,8 +37,6 @@ export interface Database {
           kyc_status?: 'none' | 'pending' | 'approved' | 'rejected';
         };
       };
-
-      // P2P Orders
       p2p_orders: {
         Row: {
           id: string;
@@ -96,8 +93,6 @@ export interface Database {
           terms?: string;
         };
       };
-
-      // P2P Trades
       p2p_trades: {
         Row: {
           id: string;
@@ -138,7 +133,6 @@ export interface Database {
           status?: 'created' | 'waiting_payment' | 'paid' | 'released' | 'refunded' | 'disputed';
         };
         Update: {
-          id?: string;
           order_id?: string;
           maker_id?: string;
           taker_id?: string | null;
@@ -153,77 +147,6 @@ export interface Database {
           status?: 'created' | 'waiting_payment' | 'paid' | 'released' | 'refunded' | 'disputed';
         };
       };
-
-      // Disputes
-      disputes: {
-        Row: {
-          id: string;
-          trade_id: string;
-          opened_by: string;
-          reason: string;
-          description: string;
-          evidence: string[];
-          status: 'open' | 'under_review' | 'maker_wins' | 'taker_wins' | 'cancelled';
-          resolution: string | null;
-          resolved_at: string | null;
-          resolved_by: string | null;
-          created_at: string;
-          updated_at: string;
-        };
-        Insert: {
-          trade_id: string;
-          opened_by: string;
-          reason: string;
-          description: string;
-          evidence?: string[];
-          status?: 'open' | 'under_review' | 'maker_wins' | 'taker_wins' | 'cancelled';
-        };
-        Update: {
-          status?: 'open' | 'under_review' | 'maker_wins' | 'taker_wins' | 'cancelled';
-          resolution?: string | null;
-          resolved_at?: string | null;
-          resolved_by?: string | null;
-        };
-      };
-
-      // User Reputation
-      user_reputation: {
-        Row: {
-          user_id: string;
-          trade_count: number;
-          total_volume: string;
-          completion_rate: number;
-          avg_release_time: number;
-          rating: number;
-          review_count: number;
-          positive_reviews: number;
-          negative_reviews: number;
-          updated_at: string;
-        };
-        Insert: {
-          user_id: string;
-          trade_count?: number;
-          total_volume?: string;
-          completion_rate?: number;
-          avg_release_time?: number;
-          rating?: number;
-          review_count?: number;
-          positive_reviews?: number;
-          negative_reviews?: number;
-        };
-        Update: {
-          trade_count?: number;
-          total_volume?: string;
-          completion_rate?: number;
-          avg_release_time?: number;
-          rating?: number;
-          review_count?: number;
-          positive_reviews?: number;
-          negative_reviews?: number;
-        };
-      };
-
-      // Transactions history
       transactions: {
         Row: {
           id: string;
@@ -255,95 +178,18 @@ export interface Database {
           status?: 'pending' | 'confirmed' | 'failed';
         };
       };
-
-      // Chat messages
-      chat_messages: {
-        Row: {
-          id: string;
-          trade_id: string;
-          sender_id: string;
-          content: string;
-          type: 'text' | 'image' | 'system';
-          created_at: string;
-        };
-        Insert: {
-          trade_id: string;
-          sender_id: string;
-          content: string;
-          type?: 'text' | 'image' | 'system';
-        };
-        Update: {
-          content?: string;
-        };
-      };
-
-      // Reviews
-      reviews: {
-        Row: {
-          id: string;
-          trade_id: string;
-          reviewer_id: string;
-          reviewed_user_id: string;
-          rating: number;
-          comment: string | null;
-          created_at: string;
-        };
-        Insert: {
-          trade_id: string;
-          reviewer_id: string;
-          reviewed_user_id: string;
-          rating: number;
-          comment?: string | null;
-        };
-        Update: {
-          rating?: number;
-          comment?: string | null;
-        };
-      };
-
-      // Encrypted Wallets
-      encrypted_wallets: {
-        Row: {
-          id: string;
-          wallet_address: string;
-          encrypted_private_key: string;
-          encrypted_mnemonic: string | null;
-          encryption_iv: string;
-          created_at: string;
-          updated_at: string;
-        };
-        Insert: {
-          wallet_address: string;
-          encrypted_private_key: string;
-          encrypted_mnemonic?: string | null;
-          encryption_iv: string;
-        };
-        Update: {
-          encrypted_private_key?: string;
-          encrypted_mnemonic?: string | null;
-          encryption_iv?: string;
-          updated_at?: string;
-        };
-      };
     };
   };
 }
 
-/**
- * Supabase client configuration
- */
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+const supabaseUrl = typeof window !== 'undefined' ? process.env.NEXT_PUBLIC_SUPABASE_URL : undefined;
+const supabaseAnonKey = typeof window !== 'undefined' ? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY : undefined;
 
-/**
- * Create Supabase client
- */
-export function createSupabaseClient(): SupabaseClient<Database> {
-  if (!supabaseUrl || !supabaseAnonKey) {
-    console.warn('Supabase credentials not configured. Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY');
-  }
+function createClientInstance(): SupabaseClient<Database> {
+  const url = supabaseUrl || 'https://placeholder.supabase.co';
+  const key = supabaseAnonKey || 'placeholder';
   
-  return createClient<Database>(supabaseUrl, supabaseAnonKey, {
+  return createClient<Database>(url, key, {
     auth: {
       persistSession: true,
       autoRefreshToken: true,
@@ -351,65 +197,29 @@ export function createSupabaseClient(): SupabaseClient<Database> {
   });
 }
 
-// Lazy client initialization
-let supabaseInstance: SupabaseClient<Database> | null = null;
+// Create client only in browser
+const supabaseInstance = (typeof window !== 'undefined' && supabaseUrl && supabaseAnonKey)
+  ? createClientInstance()
+  : null;
 
-/**
- * Get the Supabase client instance - lazy initialization
- */
-export function getSupabaseClient(): SupabaseClient<Database> {
+function getClient(): SupabaseClient<Database> {
   if (supabaseInstance) {
     return supabaseInstance;
   }
-  
-  if (!supabaseUrl || !supabaseAnonKey) {
-    console.warn('Supabase credentials not configured during build');
-  }
-  
-  supabaseInstance = createClient<Database>(supabaseUrl, supabaseAnonKey, {
-    auth: {
-      persistSession: true,
-      autoRefreshToken: true,
-    },
-  });
-  
-  return supabaseInstance;
+  return createClientInstance();
 }
 
-// Export backward compatible supabase
-export const supabase = {
-  get client() {
-    return getSupabaseClient();
-  },
-  from(table: string) {
-    return getSupabaseClient().from(table);
-  },
-  auth: {
-    getSession() {
-      return getSupabaseClient().auth.getSession();
-    },
-    getUser() {
-      return getSupabaseClient().auth.getUser();
-    },
-    signOut() {
-      return getSupabaseClient().auth.signOut();
-    },
-    onAuthStateChange(callback: (event: string, session: any) => void) {
-      return getSupabaseClient().auth.onAuthStateChange(callback);
-    },
-    signInWithPassword(credentials: { email: string; password: string }) {
-      return getSupabaseClient().auth.signInWithPassword(credentials);
-    },
-    signUp(credentials: { email: string; password: string }) {
-      return getSupabaseClient().auth.signUp(credentials);
-    },
-  },
-  channel(name: string) {
-    return getSupabaseClient().channel(name);
-  },
-  removeChannel(channel: any) {
-    return getSupabaseClient().removeChannel(channel);
-  },
-} as unknown as SupabaseClient<Database>;
+export function getSupabaseClient(): SupabaseClient<Database> {
+  return getClient();
+}
 
-export { createSupabaseClient };
+// Export supabase with proxy for lazy initialization
+export const supabase = new Proxy({} as SupabaseClient<Database>, {
+  get(_target, prop) {
+    return (getClient() as any)[prop];
+  },
+}) as SupabaseClient<Database>;
+
+export function createSupabaseClient(): SupabaseClient<Database> {
+  return createClientInstance();
+}
