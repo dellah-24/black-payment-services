@@ -192,10 +192,12 @@ export default function Dashboard() {
             // Has auth session but no profile/wallet
             // Allow user to stay on home and create wallet from here
             console.log('User has auth but no profile - can create wallet from home');
+            setIsAuthenticated(true); // Allow access even without wallet
           }
         } catch (e) {
-          // Error getting profile - allow user to stay and create wallet from home
+          // Error getting profile (like 406 RLS) - allow user to stay and create wallet from home
           console.warn('Profile fetch error, allowing access:', e);
+          setIsAuthenticated(true); // Allow access even if profile check fails
         }
        } else {
          // Legacy: Check for existing wallet-only session
