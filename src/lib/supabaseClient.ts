@@ -22,7 +22,7 @@ export function getSupabaseClient(): SupabaseClient {
   // For build time, return a mock client that will work when env vars are available at runtime
   if (!supabaseUrl || !supabaseAnonKey) {
     console.warn('Supabase credentials not configured. Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY environment variables.');
-    // Return a minimal client that won't crash during build
+    // Return a placeholder URL client
     supabaseInstance = createClient('https://placeholder.supabase.co', 'placeholder', {
       auth: {
         persistSession: false,
@@ -49,22 +49,42 @@ export function getSupabaseClient(): SupabaseClient {
   return supabaseInstance;
 }
 
-// Export the supabase client as a getter for backward compatibility
-export const supabase: SupabaseClient = new Proxy({} as SupabaseClient, {
-  get(_target, prop) {
-    return () => getSupabaseClient()[prop];
+// Export backward compatible supabase - use getSupabaseClient() for direct access
+// This object proxies to the client lazily
+export const supabase = {
+  get client() {
+    return getSupabaseClient();
   },
-  apply(_target, _thisArg, args) {
-    return getSupabaseClient()(...args);
-  }
-});
+  from(table: string) {
+    return getSupabaseClient().from(table);
+  },
+  auth: {
+    getSession() {
+      return getSupabaseClient().auth.getSession();
+    },
+    getUser() {
+      return getSupabaseClient().auth.getUser();
+    },
+    signOut() {
+      return getSupabaseClient().auth.signOut();
+    },
+    onAuthStateChange(callback: (event: string, session: any) => void) {
+      return getSupabaseClient().auth.onAuthStateChange(callback);
+    },
+    signInWithPassword(credentials: { email: string; password: string }) {
+      return getSupabaseClient().auth.signInWithPassword(credentials);
+    },
+    signUp(credentials: { email: string; password: string }) {
+      return getSupabaseClient().auth.signUp(credentials);
+    },
+  },
+  channel(name: string) {
+    return getSupabaseClient().channel(name);
+  },
+  removeChannel(channel: any) {
+    return getSupabaseClient().removeChannel(channel);
+  },
+} as unknown as SupabaseClient;
 
 // Re-export for auth operations
-export const supabaseAuth: SupabaseClient = new Proxy({} as SupabaseClient, {
-  get(_target, prop) {
-    return () => getSupabaseClient()[prop];
-  },
-  apply(_target, _thisArg, args) {
-    return getSupabaseClient()(...args);
-  }
-});
+export const supabaseAuth = supabase;

@@ -376,14 +376,40 @@ export function getSupabaseClient(): SupabaseClient<Database> {
   return supabaseInstance;
 }
 
-// Export for backward compatibility - uses Proxy for lazy initialization
-export const supabase = new Proxy({} as SupabaseClient<Database>, {
-  get(_target, prop) {
-    return () => getSupabaseClient()[prop];
+// Export backward compatible supabase
+export const supabase = {
+  get client() {
+    return getSupabaseClient();
   },
-  apply(_target, _thisArg, args) {
-    return getSupabaseClient()(...args);
-  }
-});
+  from(table: string) {
+    return getSupabaseClient().from(table);
+  },
+  auth: {
+    getSession() {
+      return getSupabaseClient().auth.getSession();
+    },
+    getUser() {
+      return getSupabaseClient().auth.getUser();
+    },
+    signOut() {
+      return getSupabaseClient().auth.signOut();
+    },
+    onAuthStateChange(callback: (event: string, session: any) => void) {
+      return getSupabaseClient().auth.onAuthStateChange(callback);
+    },
+    signInWithPassword(credentials: { email: string; password: string }) {
+      return getSupabaseClient().auth.signInWithPassword(credentials);
+    },
+    signUp(credentials: { email: string; password: string }) {
+      return getSupabaseClient().auth.signUp(credentials);
+    },
+  },
+  channel(name: string) {
+    return getSupabaseClient().channel(name);
+  },
+  removeChannel(channel: any) {
+    return getSupabaseClient().removeChannel(channel);
+  },
+} as unknown as SupabaseClient<Database>;
 
 export { createSupabaseClient };
