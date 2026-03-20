@@ -5,55 +5,38 @@
 
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
-// Only create client in browser environment
+// Create client only in browser with valid credentials
 const supabaseUrl = typeof window !== 'undefined' ? process.env.NEXT_PUBLIC_SUPABASE_URL : undefined;
 const supabaseAnonKey = typeof window !== 'undefined' ? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY : undefined;
 
-// Create client only in browser with valid credentials
-const supabaseInstance = (typeof window !== 'undefined' && supabaseUrl && supabaseAnonKey)
-  ? createClient(supabaseUrl, supabaseAnonKey, {
-      auth: {
-        persistSession: true,
-        autoRefreshToken: true,
-        detectSessionInUrl: true,
-      },
-    })
-  : null;
+const isConfigured = supabaseUrl && supabaseAnonKey;
 
-// Fallback for SSR/build - creates client when first accessed in browser
-function getClient(): SupabaseClient {
-  if (supabaseInstance) {
-    return supabaseInstance;
+// Create client at module load in browser only
+let supabaseClient: SupabaseClient | null = null;
+
+if (typeof window !== 'undefined' && isConfigured) {
+  supabaseClient = createClient(supabaseUrl, supabaseAnonKey, {
+    auth: {
+      persistSession: true,
+      autoRefreshToken: true,
+      detectSessionInUrl: true,
+    },
+  });
+}
+
+// Get the client - fallback for SSR
+export function getSupabaseClient(): SupabaseClient {
+  if (supabaseClient) {
+    return supabaseClient;
   }
   
-  // If we're in browser and no client exists, create one now
-  if (typeof window !== 'undefined') {
-    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-    
-    if (url && key) {
-      return createClient(url, key, {
-        auth: {
-          persistSession: true,
-          autoRefreshToken: true,
-          detectSessionInUrl: true,
-        },
-      });
-    }
-  }
-  
-  // Return a dummy client for SSR
+  // SSR or client without config - return a dummy client
   return createClient('https://placeholder.supabase.co', 'placeholder', {
     auth: { persistSession: false, autoRefreshToken: false },
   });
 }
 
-// Export supabase with proper method forwarding
-export const supabase: SupabaseClient = new Proxy({} as SupabaseClient, {
-  get(_target, prop) {
-    const client = getClient();
-    return (client as any)[prop];
-  },
-}) as SupabaseClient;
+// Export supabase directly - use getSupabaseClient() for guaranteed client
+export const supabase: SupabaseClient = supabaseClient || getSupabaseClient();
 
 export const supabaseAuth = supabase;

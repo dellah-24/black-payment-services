@@ -182,14 +182,16 @@ export interface Database {
   };
 }
 
+// Create client only in browser
 const supabaseUrl = typeof window !== 'undefined' ? process.env.NEXT_PUBLIC_SUPABASE_URL : undefined;
 const supabaseAnonKey = typeof window !== 'undefined' ? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY : undefined;
+const isConfigured = supabaseUrl && supabaseAnonKey;
 
-function createClientInstance(): SupabaseClient<Database> {
-  const url = supabaseUrl || 'https://placeholder.supabase.co';
-  const key = supabaseAnonKey || 'placeholder';
-  
-  return createClient<Database>(url, key, {
+// Create client at module load in browser only
+let supabaseClient: SupabaseClient<Database> | null = null;
+
+if (typeof window !== 'undefined' && isConfigured) {
+  supabaseClient = createClient<Database>(supabaseUrl, supabaseAnonKey, {
     auth: {
       persistSession: true,
       autoRefreshToken: true,
@@ -197,29 +199,23 @@ function createClientInstance(): SupabaseClient<Database> {
   });
 }
 
-// Create client only in browser
-const supabaseInstance = (typeof window !== 'undefined' && supabaseUrl && supabaseAnonKey)
-  ? createClientInstance()
-  : null;
-
-function getClient(): SupabaseClient<Database> {
-  if (supabaseInstance) {
-    return supabaseInstance;
-  }
-  return createClientInstance();
-}
-
 export function getSupabaseClient(): SupabaseClient<Database> {
-  return getClient();
+  if (supabaseClient) {
+    return supabaseClient;
+  }
+  // SSR fallback
+  return createClient<Database>('https://placeholder.supabase.co', 'placeholder', {
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
 }
 
-// Export supabase with proxy for lazy initialization
-export const supabase = new Proxy({} as SupabaseClient<Database>, {
-  get(_target, prop) {
-    return (getClient() as any)[prop];
-  },
-}) as SupabaseClient<Database>;
+export const supabase: SupabaseClient<Database> = supabaseClient || getSupabaseClient();
 
 export function createSupabaseClient(): SupabaseClient<Database> {
-  return createClientInstance();
+  if (isConfigured && supabaseUrl && supabaseAnonKey) {
+    return createClient<Database>(supabaseUrl, supabaseAnonKey, {
+      auth: { persistSession: true, autoRefreshToken: true },
+    });
+  }
+  return getSupabaseClient();
 }
