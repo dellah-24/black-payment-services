@@ -199,7 +199,7 @@ export const CHAIN_CONFIGS: Record<WalletChain, ChainConfig> = {
     chainId: 0x000000001, // Tron chain ID (network)
     name: 'Tron',
     symbol: 'TRX',
-    rpcUrl: 'https://api.trongrid.io',
+    rpcUrl: 'https://rpc.ankr.com/tron/',
     explorerUrl: 'https://tronscan.org',
   },
 };

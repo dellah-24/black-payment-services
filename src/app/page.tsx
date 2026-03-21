@@ -320,7 +320,7 @@ export default function Dashboard() {
   const router = useRouter();
   const [theme, setTheme] = useState<'dark' | 'light'>('dark');
   const [account, setAccount] = useState<string | null>(null);
-  const [selectedChain, setSelectedChain] = useState<ChainKey>('tron');
+  const [selectedChain, setSelectedChain] = useState<ChainKey>('ethereum');
   const [balance, setBalance] = useState<string>('0');
   const [usdtBalance, setUsdtBalance] = useState<string>('0');
   const [isLoading, setIsLoading] = useState(false);
