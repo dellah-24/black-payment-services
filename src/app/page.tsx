@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { ethers } from 'ethers';
+import TronWeb from 'tronweb';
 import Link from 'next/link';
 import { 
   TrendingUp, 
@@ -62,7 +63,7 @@ interface ChainConfig {
 const CHAINS: Record<ChainKey, ChainConfig> = {
   tron: {
     name: 'TRON',
-    rpcUrls: ['https://api.trongrid.io'],
+    rpcUrls: ['https://rpc.ankr.com/tron/'],
     explorerUrl: 'https://tronscan.org',
     symbol: 'TRX',
     chainId: 0,
@@ -70,7 +71,7 @@ const CHAINS: Record<ChainKey, ChainConfig> = {
   },
   ethereum: {
     name: 'Ethereum',
-    rpcUrls: ['https://eth.llamarpc.com', 'https://rpc.ankr.com/eth'],
+    rpcUrls: ['https://rpc.ankr.com/eth'],
     explorerUrl: 'https://etherscan.io',
     symbol: 'ETH',
     chainId: 1,
@@ -168,6 +169,7 @@ const KeystoreRawCache = (() => {
 
 // Provider selection cache
 const providerCache = new Map<string, ethers.JsonRpcProvider>();
+const tronWebCache = new Map<string, TronWeb>();
 
 async function pingProvider(url: string, timeoutMs = 2000) {
   try {
@@ -183,7 +185,24 @@ async function pingProvider(url: string, timeoutMs = 2000) {
   }
 }
 
-async function getProviderForChain(chainKey: ChainKey): Promise<ethers.JsonRpcProvider> {
+// Get TronWeb provider for TRON chain
+function getTronWebProvider(rpcUrl?: string): TronWeb {
+  const cacheKey = rpcUrl || 'tron';
+  if (tronWebCache.has(cacheKey)) return tronWebCache.get(cacheKey)!;
+  
+  const tronWeb = new TronWeb({
+    fullHost: rpcUrl || 'https://api.trongrid.io',
+  });
+  tronWebCache.set(cacheKey, tronWeb);
+  return tronWeb;
+}
+
+async function getProviderForChain(chainKey: ChainKey): Promise<ethers.JsonRpcProvider | TronWeb> {
+  // Special handling for Tron
+  if (chainKey === 'tron') {
+    return getTronWebProvider();
+  }
+  
   const chain = CHAINS[chainKey];
   const cacheKey = chainKey;
   if (providerCache.has(cacheKey)) return providerCache.get(cacheKey)!;
