@@ -124,7 +124,6 @@ export async function initialize(config?: {
  */
 export async function quickStart(options?: {
   chains?: import('./wallet/types').WalletChain[];
-  isGasless?: boolean;
 }): Promise<import('./wallet/BlackPaymentsWallet').BlackPaymentsWallet> {
   const { createWallet } = await import('./wallet/factory');
   const chains = options?.chains || [
@@ -133,5 +132,5 @@ export async function quickStart(options?: {
     (await import('./wallet/types')).WalletChain.TRON,
   ];
   
-  return createWallet(chains, { isGasless: options?.isGasless });
+  return createWallet(chains);
 }

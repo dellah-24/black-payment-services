@@ -286,13 +286,6 @@ export class SecureWalletStorage {
   }
   
   /**
-   * Get current account (now returns null - use profileApi.getByUserId)
-   */
-  getCurrentAccount(): string | null {
-    return null;
-  }
-  
-  /**
    * Clear session (no-op now - Supabase Auth handles session)
    */
   clearSession(): void {

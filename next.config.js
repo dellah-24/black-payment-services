@@ -15,7 +15,7 @@ const nextConfig = {
     };
     return config;
   },
-  // Disable TypeScript type checking during build
+  // Disable TypeScript type checking during build (for faster builds)
   typescript: {
     ignoreBuildErrors: true,
   },

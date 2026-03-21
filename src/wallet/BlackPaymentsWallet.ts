@@ -135,6 +135,13 @@ export class BlackPaymentsWallet {
   }
 
   /**
+   * Get seed phrase (alias for getMnemonic)
+   */
+  getSeedPhrase(): string {
+    return this.getMnemonic();
+  }
+
+  /**
    * Get private key for a specific chain
    * WARNING: Keep private keys secure
    */
@@ -464,6 +471,20 @@ export class BlackPaymentsWallet {
     }
 
     return `${baseUrl}?${urlParams.toString()}`;
+  }
+
+  /**
+   * Buy USDT (alias for getMoonPayBuyUrl)
+   */
+  async buyUSDT(params: FiatRequestParams): Promise<string> {
+    return this.getMoonPayBuyUrl(params);
+  }
+
+  /**
+   * Sell USDT (alias for getMoonPaySellUrl)
+   */
+  async sellUSDT(params: FiatRequestParams): Promise<string> {
+    return this.getMoonPaySellUrl(params);
   }
 
   /**

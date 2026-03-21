@@ -361,9 +361,40 @@ CREATE POLICY "Users can manage own wallet"
     )
   );
 
--- Policy: Anyone can check if wallet exists (for login)
-CREATE POLICY "Public can check wallet exists" 
-  ON encrypted_wallets FOR SELECT USING (true);
+-- Policy: Only allow authenticated users to check if wallet exists
+-- This is needed for login but only for authenticated users
+CREATE POLICY "Authenticated users can check wallet exists" 
+  ON encrypted_wallets FOR SELECT USING (auth.uid() IS NOT NULL);
+
+-- =============================================
+-- AUDIT LOGS
+-- =============================================
+CREATE TABLE IF NOT EXISTS audit_logs (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID REFERENCES auth.users(id),
+  event_type TEXT NOT NULL,
+  metadata JSONB DEFAULT '{}',
+  ip_address TEXT,
+  user_agent TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Index for event type lookup
+CREATE INDEX idx_audit_logs_event_type ON audit_logs(event_type);
+
+-- Index for user lookup
+CREATE INDEX idx_audit_logs_user_id ON audit_logs(user_id);
+
+-- Enable RLS for audit logs
+ALTER TABLE audit_logs ENABLE ROW LEVEL SECURITY;
+
+-- Policy: Users can insert their own audit logs
+CREATE POLICY "Users can insert audit logs" 
+  ON audit_logs FOR INSERT WITH CHECK (auth.uid() = user_id OR user_id IS NULL);
+
+-- Policy: Only authenticated users can view audit logs (admins should be added)
+CREATE POLICY "Authenticated users can view audit logs" 
+  ON audit_logs FOR SELECT USING (auth.uid() IS NOT NULL);
 
 -- =============================================
 -- SEED DATA

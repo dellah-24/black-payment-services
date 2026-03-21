@@ -297,6 +297,30 @@ CREATE POLICY "Users can update own wallet"
   ON encrypted_wallets FOR UPDATE USING (true);
 
 -- =============================================
+-- AUDIT LOGS
+-- =============================================
+CREATE TABLE IF NOT EXISTS audit_logs (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID REFERENCES auth.users(id),
+  event_type TEXT NOT NULL,
+  metadata JSONB DEFAULT '{}',
+  ip_address TEXT,
+  user_agent TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE INDEX idx_audit_logs_event_type ON audit_logs(event_type);
+CREATE INDEX idx_audit_logs_user_id ON audit_logs(user_id);
+
+ALTER TABLE audit_logs ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can insert audit logs" 
+  ON audit_logs FOR INSERT WITH CHECK (auth.uid() = user_id OR user_id IS NULL);
+
+CREATE POLICY "Anyone can view audit logs" 
+  ON audit_logs FOR SELECT USING (true);
+
+-- =============================================
 -- STEP 7: Create Trigger Functions
 -- =============================================
 

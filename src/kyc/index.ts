@@ -247,7 +247,7 @@ export class KYCManager {
    */
   addEventListener(listener: (event: KYCEvent) => void): void {
     this.eventListeners.push(listener);
-    this.provider.addEventListener(listener);
+    // Note: External provider event listeners handled separately if needed
   }
 
   /**

@@ -201,6 +201,12 @@ if (isConfigured) {
       persistSession: true,
       autoRefreshToken: true,
     },
+    global: {
+      headers: {
+        'Accept': 'application/json',
+        'Prefer': 'return=representation',
+      },
+    },
   });
 }
 
@@ -216,6 +222,12 @@ export function getSupabaseClient(): SupabaseClient<Database> {
   if (url && key) {
     supabaseClient = createClient<Database>(url, key, {
       auth: { persistSession: true, autoRefreshToken: true },
+      global: {
+        headers: {
+          'Accept': 'application/json',
+          'Prefer': 'return=representation',
+        },
+      },
     });
     return supabaseClient;
   }
@@ -223,6 +235,12 @@ export function getSupabaseClient(): SupabaseClient<Database> {
   // No config - return dummy client
   return createClient<Database>('https://placeholder.supabase.co', 'placeholder', {
     auth: { persistSession: false, autoRefreshToken: false },
+    global: {
+      headers: {
+        'Accept': 'application/json',
+        'Prefer': 'return=representation',
+      },
+    },
   });
 }
 

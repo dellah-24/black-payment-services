@@ -24,6 +24,7 @@ if (isConfigured) {
       headers: {
         'Accept': 'application/json',
         'Content-Type': 'application/json',
+        'Prefer': 'return=representation',
       },
     },
   });
@@ -46,6 +47,7 @@ export function getSupabaseClient(): SupabaseClient {
         headers: {
           'Accept': 'application/json',
           'Content-Type': 'application/json',
+          'Prefer': 'return=representation',
         },
       },
     });
@@ -55,6 +57,12 @@ export function getSupabaseClient(): SupabaseClient {
   // No config - return dummy client
   return createClient('https://placeholder.supabase.co', 'placeholder', {
     auth: { persistSession: false, autoRefreshToken: false },
+    global: {
+      headers: {
+        'Accept': 'application/json',
+        'Prefer': 'return=representation',
+      },
+    },
   });
 }
 
