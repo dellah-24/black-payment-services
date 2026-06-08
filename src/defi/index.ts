@@ -4,6 +4,7 @@
  */
 
 import { ethers, Contract, JsonRpcProvider } from 'ethers';
+import { logger } from '@/lib/logger';
 
 export type DeFiProtocol = 
   | 'aave_v3'
@@ -87,27 +88,27 @@ class AaveV3Service {
     };
   }
 
-  async supply(userAddress: string, token: string, amount: bigint, chainId: number): Promise<string> {
-    // In production: call Aave pool.supply()
-    console.log('Supplying to Aave:', { token, amount, chainId });
-    return '0x...';
-  }
+   async supply(userAddress: string, token: string, amount: bigint, chainId: number): Promise<string> {
+     // In production: call Aave pool.supply()
+     logger.info('Supplying to Aave', { token, amount, chainId });
+     return '0x...';
+   }
 
-  async borrow(userAddress: string, token: string, amount: bigint, chainId: number): Promise<string> {
-    // In production: call Aave pool.borrow()
-    console.log('Borrowing from Aave:', { token, amount, chainId });
-    return '0x...';
-  }
+   async borrow(userAddress: string, token: string, amount: bigint, chainId: number): Promise<string> {
+     // In production: call Aave pool.borrow()
+     logger.info('Borrowing from Aave', { token, amount, chainId });
+     return '0x...';
+   }
 
-  async repay(userAddress: string, token: string, amount: bigint, chainId: number): Promise<string> {
-    console.log('Repaying to Aave:', { token, amount, chainId });
-    return '0x...';
-  }
+   async repay(userAddress: string, token: string, amount: bigint, chainId: number): Promise<string> {
+     logger.info('Repaying to Aave', { token, amount, chainId });
+     return '0x...';
+   }
 
-  async withdraw(userAddress: string, token: string, amount: bigint, chainId: number): Promise<string> {
-    console.log('Withdrawing from Aave:', { token, amount, chainId });
-    return '0x...';
-  }
+   async withdraw(userAddress: string, token: string, amount: bigint, chainId: number): Promise<string> {
+     logger.info('Withdrawing from Aave', { token, amount, chainId });
+     return '0x...';
+   }
 }
 
 /**
@@ -126,11 +127,11 @@ class LidoService {
     this.provider = new JsonRpcProvider(rpcUrl);
   }
 
-  async stake(userAddress: string, amount: bigint): Promise<string> {
-    // In production: call stETH.submit()
-    console.log('Staking with Lido:', { amount });
-    return '0x...';
-  }
+   async stake(userAddress: string, amount: bigint): Promise<string> {
+     // In production: call stETH.submit()
+     logger.info('Staking with Lido', { amount });
+     return '0x...';
+   }
 
   async getStakingPosition(userAddress: string): Promise<StakingPosition | null> {
     if (!this.provider) return null;
@@ -147,10 +148,10 @@ class LidoService {
     };
   }
 
-  async requestWithdrawal(amount: bigint): Promise<string> {
-    console.log('Requesting Lido withdrawal:', { amount });
-    return '0x...';
-  }
+   async requestWithdrawal(amount: bigint): Promise<string> {
+     logger.info('Requesting Lido withdrawal', { amount });
+     return '0x...';
+   }
 }
 
 /**
@@ -168,15 +169,15 @@ class YearnService {
     this.provider = new JsonRpcProvider(rpcUrl);
   }
 
-  async deposit(vaultAddress: string, amount: bigint): Promise<string> {
-    console.log('Depositing to Yearn:', { vaultAddress, amount });
-    return '0x...';
-  }
+   async deposit(vaultAddress: string, amount: bigint): Promise<string> {
+     logger.info('Depositing to Yearn', { vaultAddress, amount });
+     return '0x...';
+   }
 
-  async withdraw(vaultAddress: string, amount: bigint): Promise<string> {
-    console.log('Withdrawing from Yearn:', { vaultAddress, amount });
-    return '0x...';
-  }
+   async withdraw(vaultAddress: string, amount: bigint): Promise<string> {
+     logger.info('Withdrawing from Yearn', { vaultAddress, amount });
+     return '0x...';
+   }
 
   async getVaultAPY(vaultAddress: string): Promise<number> {
     // In production: query Yearn API

@@ -6,6 +6,7 @@
 export type KYCLevel = 0 | 1 | 2 | 3;
 export type KYCStatus = 'none' | 'pending' | 'approved' | 'rejected' | 'expired';
 export type DocumentType = 'passport' | 'national_id' | 'drivers_license' | 'residence_permit';
+import { logger } from '../lib/logger';
 
 export interface KYCProfile {
   userId: string;
@@ -89,7 +90,7 @@ class DefaultKYCProvider implements KYCProvider {
 
   initialize(config: unknown): void {
     // Initialize KYC provider with config
-    console.log('KYC Provider initialized', config);
+    logger.info('KYC Provider initialized', config);
   }
 
   async startVerification(userId: string): Promise<string> {
@@ -303,7 +304,7 @@ export class KYCManager {
     const updatedProfile = { ...profile, ...updates };
     
     // In production, this would update the backend
-    console.log('Profile updated', updatedProfile);
+    logger.info('Profile updated', updatedProfile);
   }
 
   /**

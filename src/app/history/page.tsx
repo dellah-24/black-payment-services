@@ -2,12 +2,15 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { 
-  History, 
-  ArrowLeft, 
+import { useRouter } from 'next/navigation';
+import { supabase } from '@/lib/supabaseClient';
+import { profileApi } from '@/lib/profileApi';
+import {
+  History,
+  ArrowLeft,
   ArrowRight,
-  ArrowUpRight, 
-  ArrowDownLeft, 
+  ArrowUpRight,
+  ArrowDownLeft,
   ExternalLink,
   Wallet,
   Filter,
@@ -34,13 +37,37 @@ export default function HistoryPage() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [filter, setFilter] = useState<'all' | 'send' | 'receive' | 'p2p'>('all');
   const [searchTerm, setSearchTerm] = useState('');
+  const router = useRouter();
 
   useEffect(() => {
+    if (typeof window === 'undefined') return;
+    
     const savedTheme = localStorage.getItem('theme') as 'dark' | 'light' | null;
     if (savedTheme) setTheme(savedTheme);
     
-    const savedAccount = localStorage.getItem('account');
-    if (savedAccount) setAccount(savedAccount);
+    // Check authentication - redirect to auth if not logged in
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        router.push('/auth');
+        return;
+      }
+      
+      // Check for profile with wallet
+      try {
+        const profile = await profileApi.getByUserId(session.user.id);
+        if (!profile || !profile.wallet_address) {
+          router.push('/auth');
+          return;
+        }
+        
+        setAccount(profile.wallet_address.toLowerCase());
+      } catch (e) {
+        router.push('/auth');
+      }
+    };
+    
+    checkAuth();
 
     // Load transactions from localStorage
     const savedTransactions = localStorage.getItem('transactions');

@@ -1,0 +1,1 @@
+src/middleware.ts(79,1): error TS2304: Cannot find name 'all'.

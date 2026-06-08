@@ -16,6 +16,11 @@ export enum WalletChain {
   LINEA = 'linea',
   BASE = 'base',
   TRON = 'tron', // TRC-20 - Essential for P2P (low fees)
+  SOLANA = 'solana',
+  BITCOIN = 'bitcoin',
+  COSMOS = 'cosmos',
+  TON = 'ton',
+  APTOS = 'aptos',
 }
 
 /**

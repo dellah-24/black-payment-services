@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { 
   Settings, 
   ArrowLeft, 
@@ -13,27 +14,175 @@ import {
   Trash2,
   ExternalLink,
   Wallet,
-  CheckCircle
+  CheckCircle,
+  Lock,
+  Clock,
+  Fingerprint,
+  Eye,
+  EyeOff
 } from 'lucide-react';
+import { getAutoLockTimeout, setAutoLockTimeout } from '@/lib/walletUtils';
+import { walletStorage } from '@/lib/secureWalletStorage';
+import { supabase } from '@/lib/supabaseClient';
+import { profileApi } from '@/lib/profileApi';
+import { useTestnetStore } from '@/stores/testnetStore';
+import { getSupportedTestnetChains, getFaucetInfo, formatAddress, requestTestnetUSDT } from '@/lib/faucet';
+import { ChainKey } from '@/config/chains';
 
 export default function SettingsPage() {
+  const router = useRouter();
   const [account, setAccount] = useState<string | null>(null);
+  const [walletAddress, setWalletAddress] = useState<string>('');
   const [notifications, setNotifications] = useState(true);
   const [twoFactor, setTwoFactor] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [autoLockTimeout, setAutoLockTimeoutState] = useState(0);
+  const [biometricEnabled, setBiometricEnabled] = useState(false);
+  const [showSeedPhrase, setShowSeedPhrase] = useState(false);
+  const [seedPhrase, setSeedPhrase] = useState<string>('');
+  
+  // Testnet state
+  const { isTestnetMode, selectedTestnetChain, setTestnetMode, setSelectedTestnetChain } = useTestnetStore();
+  const [showFaucetModal, setShowFaucetModal] = useState(false);
+  const [selectedFaucetChain, setSelectedFaucetChain] = useState<ChainKey>('ethereum');
+  const [isLoadingFaucet, setIsLoadingFaucet] = useState(false);
+  const [faucetResult, setFaucetResult] = useState<{success: boolean; message: string; explorerUrl?: string; amount?: string} | null>(null);
+  const supportedTestnets = getSupportedTestnetChains();
+
+  // Faucet request handler
+  const handleFaucetRequest = async () => {
+    setIsLoadingFaucet(true);
+    setFaucetResult(null);
+    
+    try {
+      const address = walletAddress || account;
+      if (!address) {
+        setFaucetResult({ success: false, message: 'Please connect your wallet first' });
+        setIsLoadingFaucet(false);
+        return;
+      }
+      
+      const result = await requestTestnetUSDT(selectedFaucetChain, address, '100');
+      setFaucetResult(result);
+    } catch (error) {
+      setFaucetResult({ success: false, message: 'Failed to request testnet USDT' });
+    }
+    
+    setIsLoadingFaucet(false);
+  };
 
   useEffect(() => {
-    const savedAccount = localStorage.getItem('account');
-    if (savedAccount) {
-      setAccount(savedAccount);
+    if (typeof window === 'undefined') return;
+    
+    // Check authentication - redirect to auth if not logged in
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        router.push('/auth');
+        return;
+      }
+      
+      // Check for profile with wallet
+      try {
+        const profile = await profileApi.getByUserId(session.user.id);
+        if (!profile || !profile.wallet_address) {
+          router.push('/auth');
+          return;
+        }
+        
+        const savedAccount = profile.wallet_address.toLowerCase();
+        setAccount(savedAccount);
+        loadWalletData(savedAccount);
+      } catch (e) {
+        router.push('/auth');
+      }
+    };
+    
+    checkAuth();
+    
+    // Load settings
+    const savedNotifications = localStorage.getItem('notifications');
+    if (savedNotifications !== null) {
+      setNotifications(savedNotifications === 'true');
+    }
+    
+    const savedTwoFactor = localStorage.getItem('twoFactor');
+    if (savedTwoFactor !== null) {
+      setTwoFactor(savedTwoFactor === 'true');
+    }
+    
+    // Load auto-lock timeout
+    const timeout = getAutoLockTimeout();
+    setAutoLockTimeoutState(timeout);
+    
+    // Load biometric preference
+    const biometric = localStorage.getItem('biometricEnabled');
+    if (biometric !== null) {
+      setBiometricEnabled(biometric === 'true');
     }
   }, []);
+
+  const loadWalletData = async (accountAddress: string) => {
+    try {
+      // Try to load wallet data, but don't fail if encryption key is missing
+      const walletData = await walletStorage.retrieveWallet(accountAddress);
+      if (walletData) {
+        setWalletAddress(accountAddress);
+      } else {
+        // Wallet data not available - that's okay
+        setWalletAddress(accountAddress);
+      }
+    } catch (err) {
+      // Encryption key not found - this is expected on fresh page load
+      setWalletAddress(accountAddress);
+    }
+  };
 
   const saveSettings = () => {
     localStorage.setItem('notifications', notifications.toString());
     localStorage.setItem('twoFactor', twoFactor.toString());
+    localStorage.setItem('biometricEnabled', biometricEnabled.toString());
+    setAutoLockTimeout(autoLockTimeout);
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
+  };
+
+  const handleAutoLockChange = (minutes: number) => {
+    setAutoLockTimeoutState(minutes);
+  };
+
+  const handleBiometricToggle = async () => {
+    if (!biometricEnabled) {
+      // Try to enable biometric
+      if (typeof window !== 'undefined' && window.isSecureContext) {
+        try {
+          const available = await window.navigator.credentials?.get({ mediation: 'optional' });
+          setBiometricEnabled(true);
+          localStorage.setItem('biometricEnabled', 'true');
+        } catch (err) {
+          alert('Biometric authentication not available on this device');
+        }
+      }
+    } else {
+      setBiometricEnabled(false);
+      localStorage.setItem('biometricEnabled', 'false');
+    }
+  };
+
+  const viewSeedPhrase = async () => {
+    if (!account) return;
+    
+    try {
+      const walletData = await walletStorage.retrieveWallet(account);
+      if (walletData && walletData.mnemonic) {
+        setSeedPhrase(walletData.mnemonic);
+        setShowSeedPhrase(true);
+      } else {
+        alert('No seed phrase available for this wallet');
+      }
+    } catch (err) {
+      alert('Failed to retrieve seed phrase');
+    }
   };
 
   const clearData = () => {
@@ -41,6 +190,12 @@ export default function SettingsPage() {
       localStorage.clear();
       window.location.reload();
     }
+  };
+
+  const lockWallet = () => {
+    localStorage.removeItem('account');
+    localStorage.removeItem('currentAccount');
+    router.push('/');
   };
 
   if (!account) {
@@ -82,6 +237,105 @@ export default function SettingsPage() {
           </h1>
         </div>
 
+        {/* Quick Actions */}
+        <div className="flex gap-3 mb-6">
+          <button
+            onClick={lockWallet}
+            className="flex-1 flex items-center justify-center gap-2 py-3 bg-gray-800/50 hover:bg-gray-700/50 rounded-xl border border-gray-700/50 transition-colors"
+          >
+            <Lock className="h-5 w-5 text-red-400" />
+            <span className="text-gray-300">Lock Wallet</span>
+          </button>
+        </div>
+
+        {/* Security Settings */}
+        <div className="rounded-2xl bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 p-6 mb-6">
+          <h2 className="text-lg font-semibold mb-4 flex items-center gap-2 text-white">
+            <Shield className="h-5 w-5" />
+            Security
+          </h2>
+          
+          {/* Auto-Lock Timeout */}
+          <div className="py-3 border-b border-gray-700">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <Clock className="h-5 w-5 text-gray-400" />
+                <div>
+                  <p className="font-medium text-white">
+                    Auto-Lock
+                  </p>
+                  <p className="text-sm text-gray-400">
+                    Automatically lock wallet after inactivity
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div className="grid grid-cols-4 gap-2">
+              {[0, 1, 5, 15].map((minutes) => (
+                <button
+                  key={minutes}
+                  onClick={() => handleAutoLockChange(minutes)}
+                  className={`p-2 rounded-lg text-sm transition-colors ${
+                    autoLockTimeout === minutes
+                      ? 'bg-indigo-600 text-white'
+                      : 'bg-gray-700 text-gray-400 hover:bg-gray-600'
+                  }`}
+                >
+                  {minutes === 0 ? 'Off' : `${minutes}m`}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Biometric Authentication */}
+          <div className="py-3 border-b border-gray-700">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Fingerprint className="h-5 w-5 text-gray-400" />
+                <div>
+                  <p className="font-medium text-white">
+                    Biometric Authentication
+                  </p>
+                  <p className="text-sm text-gray-400">
+                    Use fingerprint or face to unlock
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={handleBiometricToggle}
+                className={`relative w-14 h-8 rounded-full transition-colors ${
+                  biometricEnabled ? 'bg-indigo-600' : 'bg-gray-600'
+                }`}
+              >
+                <span className={`absolute top-1 left-1 w-6 h-6 bg-white rounded-full transition-transform ${
+                  biometricEnabled ? 'translate-x-6' : 'translate-x-0'
+                }`} />
+              </button>
+            </div>
+          </div>
+
+          {/* Connected Wallet */}
+          <div className="py-3 border-b border-gray-700">
+            <p className="font-medium text-white mb-1">
+              Connected Wallet
+            </p>
+            <p className="text-sm font-mono text-gray-400 break-all">
+              {walletAddress || account.slice(0, 20)}...{account.slice(-10)}
+            </p>
+          </div>
+
+          {/* View Recovery Phrase */}
+          <div className="py-3">
+            <button 
+              onClick={viewSeedPhrase}
+              className="flex items-center gap-2 text-indigo-400 hover:text-indigo-300 transition-colors"
+            >
+              <Key className="h-4 w-4" />
+              View Recovery Phrase
+            </button>
+          </div>
+        </div>
+
         {/* Notifications */}
         <div className="rounded-2xl bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 p-6 mb-6">
           <h2 className="text-lg font-semibold mb-4 flex items-center gap-2 text-white">
@@ -101,57 +355,12 @@ export default function SettingsPage() {
             <button
               onClick={() => setNotifications(!notifications)}
               className={`relative w-14 h-8 rounded-full transition-colors ${
-                notifications ? 'bg-primary-600' : 'bg-gray-600'
+                notifications ? 'bg-indigo-600' : 'bg-gray-600'
               }`}
             >
               <span className={`absolute top-1 left-1 w-6 h-6 bg-white rounded-full transition-transform ${
                 notifications ? 'translate-x-6' : 'translate-x-0'
               }`} />
-            </button>
-          </div>
-        </div>
-
-        {/* Security */}
-        <div className="rounded-2xl bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 p-6 mb-6">
-          <h2 className="text-lg font-semibold mb-4 flex items-center gap-2 text-white">
-            <Shield className="h-5 w-5" />
-            Security
-          </h2>
-          
-          <div className="flex items-center justify-between py-3 border-b border-gray-700">
-            <div>
-              <p className="font-medium text-white">
-                Two-Factor Authentication
-              </p>
-              <p className="text-sm text-gray-400">
-                Add an extra layer of security
-              </p>
-            </div>
-            <button
-              onClick={() => setTwoFactor(!twoFactor)}
-              className={`relative w-14 h-8 rounded-full transition-colors ${
-                twoFactor ? 'bg-primary-600' : 'bg-gray-600'
-              }`}
-            >
-              <span className={`absolute top-1 left-1 w-6 h-6 bg-white rounded-full transition-transform ${
-                twoFactor ? 'translate-x-6' : 'translate-x-0'
-              }`} />
-            </button>
-          </div>
-
-          <div className="py-3 border-b border-gray-700">
-            <p className="font-medium text-white">
-              Connected Wallet
-            </p>
-            <p className="text-sm font-mono text-gray-400">
-              {account.slice(0, 10)}...{account.slice(-10)}
-            </p>
-          </div>
-
-          <div className="py-3">
-            <button className={`flex items-center gap-2 text-primary-600 hover:text-primary-700`}>
-              <Key className="h-4 w-4" />
-              View Recovery Phrase
             </button>
           </div>
         </div>
@@ -206,6 +415,75 @@ export default function SettingsPage() {
           </div>
         </div>
 
+        {/* Testnet Mode */}
+        <div className="rounded-2xl bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 p-6 mb-6">
+          <h2 className="text-lg font-semibold mb-4 flex items-center gap-2 text-white">
+            <Globe className="h-5 w-5" />
+            Testnet Mode
+          </h2>
+          
+          <div className="space-y-4">
+            {/* Testnet Toggle */}
+            <div className="flex items-center justify-between py-3 border-b border-gray-700">
+              <div>
+                <p className="font-medium text-white">
+                  Enable Testnet
+                </p>
+                <p className="text-sm text-gray-400">
+                  Use test networks for development
+                </p>
+              </div>
+              <button
+                onClick={() => setTestnetMode(!isTestnetMode)}
+                className={`relative w-14 h-8 rounded-full transition-colors ${
+                  isTestnetMode ? 'bg-green-600' : 'bg-gray-600'
+                }`}
+              >
+                <span className={`absolute top-1 left-1 w-6 h-6 bg-white rounded-full transition-transform ${
+                  isTestnetMode ? 'translate-x-6' : 'translate-x-0'
+                }`} />
+              </button>
+            </div>
+
+            {/* Testnet Chain Selector */}
+            {isTestnetMode && (
+              <div className="py-3 border-b border-gray-700">
+                <p className="font-medium text-white mb-3">
+                  Select Testnet Chain
+                </p>
+                <div className="grid grid-cols-2 gap-2">
+                  {supportedTestnets.map((testnet) => (
+                    <button
+                      key={testnet.chain}
+                      onClick={() => setSelectedTestnetChain(testnet.chain)}
+                      className={`p-3 rounded-lg text-sm transition-colors ${
+                        selectedTestnetChain === testnet.chain
+                          ? 'bg-indigo-600 text-white'
+                          : 'bg-gray-700 text-gray-400 hover:bg-gray-600'
+                      }`}
+                    >
+                      {testnet.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Faucet Button */}
+            {isTestnetMode && (
+              <div className="py-3">
+                <button
+                  onClick={() => setShowFaucetModal(true)}
+                  className="w-full flex items-center justify-center gap-2 p-3 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white rounded-xl font-medium transition-colors"
+                >
+                  <ExternalLink className="h-5 w-5" />
+                  Get Testnet USDT (Faucet)
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+
         {/* Danger Zone */}
         <div className={`rounded-2xl p-6 mb-6 border border-red-500/30 bg-red-900/10`}>
           <h2 className={`text-lg font-semibold mb-4 flex items-center gap-2 text-red-500`}>
@@ -234,7 +512,7 @@ export default function SettingsPage() {
         {/* Save Button */}
         <button
           onClick={saveSettings}
-          className="w-full py-4 bg-primary-600 hover:bg-primary-700 text-white rounded-xl font-bold text-lg transition-colors"
+          className="w-full py-4 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white rounded-xl font-bold text-lg transition-colors"
         >
           {saved ? 'Settings Saved!' : 'Save Settings'}
         </button>
@@ -243,6 +521,195 @@ export default function SettingsPage() {
         <p className="text-center text-sm mt-6 text-gray-500">
           BlackPayments v1.0.0 • Built with Next.js
         </p>
+
+        {/* Seed Phrase Modal */}
+        {showSeedPhrase && (
+          <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+            <div className="relative overflow-hidden rounded-2xl bg-gray-800 p-6 max-w-md w-full border border-gray-700">
+              <h3 className="text-xl font-bold text-white mb-4">
+                Recovery Phrase
+              </h3>
+              
+              <div className="p-4 rounded-xl bg-yellow-500/10 border border-yellow-500/30 mb-4">
+                <p className="text-sm text-yellow-400">
+                  ⚠️ Never share your recovery phrase with anyone. Anyone with this phrase can access your wallet.
+                </p>
+              </div>
+              
+              <div className="p-4 rounded-xl bg-gray-900/50 border border-gray-700">
+                <p className="font-mono text-sm text-white break-words">
+                  {seedPhrase}
+                </p>
+              </div>
+              
+              <div className="flex gap-3 mt-6">
+                <button
+                  onClick={() => { setShowSeedPhrase(false); setSeedPhrase(''); }}
+                  className="flex-1 py-3 bg-gray-700 text-white rounded-xl font-medium hover:bg-gray-600"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Faucet Modal */}
+        {showFaucetModal && (
+          <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+            <div className="relative overflow-hidden rounded-2xl bg-gray-800 p-6 max-w-md w-full border border-gray-700">
+              <h3 className="text-xl font-bold text-white mb-4">
+                Get Testnet USDT
+              </h3>
+              
+              <p className="text-sm text-gray-400 mb-4">
+                To increase your testnet USDT balance, you can use the following methods:
+              </p>
+
+              {/* Chain Selection */}
+              <div className="mb-4">
+                <p className="font-medium text-white mb-2">Select Chain:</p>
+                <div className="grid grid-cols-2 gap-2">
+                  {supportedTestnets.map((testnet) => (
+                    <button
+                      key={testnet.chain}
+                      onClick={() => setSelectedFaucetChain(testnet.chain)}
+                      className={`p-2 rounded-lg text-sm transition-colors ${
+                        selectedFaucetChain === testnet.chain
+                          ? 'bg-indigo-600 text-white'
+                          : 'bg-gray-700 text-gray-400 hover:bg-gray-600'
+                      }`}
+                    >
+                      {testnet.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Faucet Instructions */}
+              {(() => {
+                const faucet = getFaucetInfo(selectedFaucetChain);
+                if (!faucet) return null;
+                return (
+                  <div className="p-4 rounded-xl bg-gray-900/50 border border-gray-700 mb-4">
+                    <p className="text-white font-medium mb-2">{faucet.name}</p>
+                    <p className="text-sm text-gray-400 mb-3">
+                      Your wallet address for this network:
+                    </p>
+                    <p className="font-mono text-xs text-indigo-400 break-all mb-3">
+                      {walletAddress || account || 'Connect wallet to see address'}
+                    </p>
+                    {faucet.tokenAddress && (
+                      <p className="text-sm text-gray-400 mb-2">
+                        USDT Token: <span className="font-mono text-xs">{faucet.tokenAddress}</span>
+                      </p>
+                    )}
+                    <p className="text-sm text-gray-400 mt-3">
+                      Visit the block explorer to find faucets or bridges to get testnet tokens.
+                    </p>
+                  </div>
+                );
+              })()}
+
+              {/* External Links */}
+              <div className="flex gap-3 mb-4">
+                {(() => {
+                  const faucet = getFaucetInfo(selectedFaucetChain);
+                  if (!faucet) return null;
+                  return (
+                    <a
+                      href={faucet.explorerUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex-1 flex items-center justify-center gap-2 p-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-medium transition-colors"
+                    >
+                      <ExternalLink className="h-4 w-4" />
+                      Open Block Explorer
+                    </a>
+                  );
+                })()}
+              </div>
+
+              {/* Request USDT Button */}
+              <button
+                onClick={handleFaucetRequest}
+                disabled={isLoadingFaucet}
+                className="w-full py-3 bg-green-600 hover:bg-green-500 disabled:bg-gray-600 text-white rounded-xl font-medium transition-colors mb-3 flex items-center justify-center gap-2"
+              >
+                {isLoadingFaucet ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                    Processing...
+                  </>
+                ) : (
+                  <>
+                    <Wallet className="h-4 w-4" />
+                    Request Testnet USDT
+                  </>
+                )}
+              </button>
+
+              {/* Faucet Result */}
+              {faucetResult && (
+                <div className={`p-4 rounded-xl mb-4 ${faucetResult.success ? 'bg-green-900/50 border border-green-700' : 'bg-red-900/50 border border-red-700'}`}>
+                  <p className={`text-sm ${faucetResult.success ? 'text-green-400' : 'text-red-400'} mb-3`}>
+                    {faucetResult.message}
+                  </p>
+                  {faucetResult.success && (
+                    <div className="space-y-2">
+                      {faucetResult.amount && (
+                        <p className="text-sm text-green-400">
+                          Amount: {faucetResult.amount} USDT
+                        </p>
+                      )}
+                      {/* Direct faucet links for Ethereum */}
+                      {selectedFaucetChain === 'ethereum' && (
+                        <div className="mt-3 pt-3 border-t border-green-700">
+                          <p className="text-xs text-gray-400 mb-2">Get test USDT directly from:</p>
+                          <a
+                            href="https://dashboard.pimlico.io/test-erc20-faucet"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="block text-sm text-indigo-400 hover:text-indigo-300 mb-1"
+                          >
+                            → Pimlico Faucet
+                          </a>
+                          <a
+                            href="https://dashboard.candide.dev/faucet"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="block text-sm text-indigo-400 hover:text-indigo-300"
+                          >
+                            → Candide Faucet
+                          </a>
+                        </div>
+                      )}
+                      {faucetResult.explorerUrl && selectedFaucetChain !== 'ethereum' && (
+                        <a
+                          href={faucetResult.explorerUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="block text-sm text-indigo-400 hover:text-indigo-300 mt-2"
+                        >
+                          → Visit Faucet
+                        </a>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setShowFaucetModal(false)}
+                  className="flex-1 py-3 bg-gray-700 text-white rounded-xl font-medium hover:bg-gray-600"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

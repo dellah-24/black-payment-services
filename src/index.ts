@@ -12,6 +12,8 @@ export { SplitCustodyManager, createSplitCustodySystem } from './wallet/SplitCus
 
 // Wallet Factory Functions
 export { createWallet, createWalletWithExistingSeed, createWalletWithPrivateKey, validatePrivateKey, getAddressFromMnemonic, generateMnemonic, validateMnemonic } from './wallet/factory';
+export { createFullWallet } from './wallet/factory';
+import { logger } from './lib/logger';
 
 // Wallet Types
 export type { 
@@ -41,6 +43,7 @@ export type { AddressBookEntry, AppSettings } from './wallet/SecureStorage';
 export { authManager, AuthManager } from './wallet/AuthManager';
 export type { AuthState, AuthConfig, AuthEvent, AuthEventType, AuthMethod } from './wallet/AuthManager';
 export { encrypt, decrypt, sha256 } from './wallet/crypto';
+export { logger } from './lib/logger';
 
 // WalletConnect
 export { walletConnect, WalletConnectProvider } from './wallet/WalletConnectProvider';
@@ -86,12 +89,42 @@ export type { Language, Translation, Translations } from './i18n';
 // Chain Configurations
 export { 
   CHAIN_CONFIGS, 
-  TESTNET_CONFIGS, 
   USDT_TOKENS, 
   getChainConfig, 
   getUSDTConfig,
   getSupportedChains 
 } from './wallet/chains';
+
+// Provider System
+export {
+  providerRegistry,
+  ProviderRegistry,
+  RPCError,
+  BaseProvider,
+  EthereumProvider,
+  SolanaProvider,
+  BitcoinProvider,
+  CosmosProvider,
+  TONProvider,
+  AptosProvider,
+  Web3Provider,
+  MobileAdapter,
+  Adapter,
+  AdapterStrategy,
+  PromiseAdapter,
+  CallbackAdapter,
+} from './wallet/providers';
+export type {
+  ChainType,
+  ProviderConfig,
+  IRequestArguments,
+  IBaseProvider,
+  IAdapter,
+  ResponseCallback,
+  ErrorCallback,
+  MobileAdapterConfig,
+  Web3ProviderConfig,
+} from './wallet/providers';
 
 // Version
 export const VERSION = '1.0.0';
@@ -101,7 +134,6 @@ export const VERSION = '1.0.0';
  */
 export async function initialize(config?: {
   defaultChain?: import('./wallet/types').WalletChain;
-  isTestnet?: boolean;
   customRpcUrls?: Record<string, string>;
   encryptionKey?: string;
 }): Promise<void> {
@@ -116,7 +148,7 @@ export async function initialize(config?: {
     secureStorage.initialize(config.encryptionKey);
   }
 
-  console.log('BlackPayments Wallet SDK initialized');
+  logger.info('BlackPayments Wallet SDK initialized');
 }
 
 /**

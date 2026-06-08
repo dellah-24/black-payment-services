@@ -17,6 +17,8 @@ DROP TABLE IF EXISTS p2p_trades CASCADE;
 DROP TABLE IF EXISTS p2p_orders CASCADE;
 DROP TABLE IF EXISTS encrypted_wallets CASCADE;
 DROP TABLE IF EXISTS profiles CASCADE;
+DROP TABLE IF EXISTS audit_logs CASCADE;
+DROP TABLE IF EXISTS rate_limits CASCADE;
 
 -- =============================================
 -- STEP 2: Enable UUID extension
@@ -196,14 +198,34 @@ CREATE INDEX idx_reviews_user ON reviews(reviewed_user_id);
 
 -- ENCRYPTED WALLETS
 CREATE TABLE encrypted_wallets (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  wallet_address TEXT UNIQUE NOT NULL,
-  encrypted_private_key TEXT NOT NULL,
-  encrypted_mnemonic TEXT,
-  encryption_iv TEXT NOT NULL,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+   wallet_address TEXT UNIQUE NOT NULL,
+   encrypted_private_key TEXT NOT NULL,
+   encrypted_mnemonic TEXT,
+   encryption_iv TEXT NOT NULL,
+   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
+
+-- RATE LIMITING
+CREATE TABLE rate_limits (
+   ip VARCHAR(45) PRIMARY KEY,
+   count INTEGER NOT NULL DEFAULT 1,
+   window_start TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_rate_limits_updated 
+ON rate_limits(updated_at);
+
+-- Auto-cleanup old records (older than 1 hour)
+CREATE OR REPLACE FUNCTION cleanup_rate_limits()
+RETURNS void AS $$
+BEGIN
+   DELETE FROM rate_limits 
+   WHERE updated_at < NOW() - INTERVAL '1 hour';
+END;
+$$ LANGUAGE plpgsql;
 
 CREATE INDEX idx_encrypted_wallets_address ON encrypted_wallets(wallet_address);
 
@@ -226,6 +248,7 @@ ALTER TABLE transactions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE chat_messages ENABLE ROW LEVEL SECURITY;
 ALTER TABLE reviews ENABLE ROW LEVEL SECURITY;
 ALTER TABLE encrypted_wallets ENABLE ROW LEVEL SECURITY;
+ALTER TABLE rate_limits ENABLE ROW LEVEL SECURITY;
 
 -- =============================================
 -- STEP 6: Create RLS Policies
@@ -294,19 +317,31 @@ CREATE POLICY "Users can insert own wallet"
   ON encrypted_wallets FOR INSERT WITH CHECK (true);
 
 CREATE POLICY "Users can update own wallet" 
-  ON encrypted_wallets FOR UPDATE USING (true);
+   ON encrypted_wallets FOR UPDATE USING (true);
+
+-- =============================================
+-- RATE LIMITING POLICIES
+-- =============================================
+CREATE POLICY "Anyone can view rate limits" 
+   ON rate_limits FOR SELECT USING (true);
+CREATE POLICY "Users can insert own rate limit" 
+   ON rate_limits FOR INSERT WITH CHECK (true);
+CREATE POLICY "Users can update own rate limit" 
+   ON rate_limits FOR UPDATE USING (true);
+CREATE POLICY "Users can delete own rate limit" 
+   ON rate_limits FOR DELETE USING (true);
 
 -- =============================================
 -- AUDIT LOGS
 -- =============================================
-CREATE TABLE IF NOT EXISTS audit_logs (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  user_id UUID REFERENCES auth.users(id),
-  event_type TEXT NOT NULL,
-  metadata JSONB DEFAULT '{}',
-  ip_address TEXT,
-  user_agent TEXT,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+CREATE TABLE audit_logs (
+   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+   user_id UUID REFERENCES auth.users(id),
+   event_type TEXT NOT NULL,
+   metadata JSONB DEFAULT '{}',
+   ip_address TEXT,
+   user_agent TEXT,
+   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
 CREATE INDEX idx_audit_logs_event_type ON audit_logs(event_type);
@@ -367,6 +402,13 @@ CREATE TRIGGER update_disputes_timestamp
 CREATE TRIGGER update_wallets_timestamp
   BEFORE UPDATE ON encrypted_wallets
   FOR EACH ROW EXECUTE FUNCTION update_timestamp();
+
+-- =============================================
+-- STEP 8: Grant Privileges
+-- =============================================
+-- Allow anon and authenticated roles to perform DML on all tables
+GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO anon, authenticated;
+GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO anon, authenticated;
 
 -- =============================================
 -- DONE!

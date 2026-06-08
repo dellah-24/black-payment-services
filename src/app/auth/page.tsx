@@ -27,6 +27,9 @@ import { showToast } from '@/components/Toast';
 import { walletStorage } from '@/lib/secureWalletStorage';
 import { supabase, supabaseAuth } from '@/lib/supabaseClient';
 import { profileApi, ProfileDetails, COUNTRIES } from '@/lib/profileApi';
+import { logger } from '@/lib/logger';
+import { SigninSchema, SignupCredentialsSchema, SignupProfileSchema, PasswordSchema } from '@/lib/validation';
+import { setCsrfToken } from '@/lib/csrfClient';
 
 type AuthMode = 'signin' | 'signup';
 
@@ -35,8 +38,6 @@ export default function AuthPage() {
   const [mode, setMode] = useState<AuthMode>('signup');
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [walletConnected, setWalletConnected] = useState(false);
-  const [currentAccount, setCurrentAccount] = useState<string | null>(null);
   
   // Auth form
   const [email, setEmail] = useState('');
@@ -58,18 +59,36 @@ export default function AuthPage() {
   // Step tracking for signup
   const [signupStep, setSignupStep] = useState<'credentials' | 'email_sent' | 'profile'>('credentials');
   // Store user from signUp response
-  const [authUser, setAuthUser] = useState<any>(null);
-  // Store email for resend functionality
-  const [pendingEmail, setPendingEmail] = useState('');
-  // Store password for wallet encryption
-  const [walletPassword, setWalletPassword] = useState('');
+   const [authUser, setAuthUser] = useState<{ id: string; email?: string; email_confirmed_at?: string; phone?: string; phone_confirmed_at?: string; app_metadata: { [key: string]: any }; user_metadata: { [key: string]: any }; role?: string; aud?: string; confirmed_at?: string; last_sign_in_at?: string; created_at?: string; updated_at?: string; } | null>(null);
+ // Store email for resend functionality
+ const [pendingEmail, setPendingEmail] = useState('');
+
+  // CSRF token initialization
+  const initializeCsrf = async () => {
+    try {
+      const response = await fetch('/api/csrf', { method: 'GET', credentials: 'same-origin' });
+      if (response.ok) {
+        const { csrfToken } = await response.json();
+        setCsrfToken(csrfToken);
+        // Also store in localStorage for persistence across page reloads
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('csrfToken', csrfToken);
+        }
+      } else {
+        logger.warn('Failed to initialize CSRF token', { status: response.status });
+      }
+    } catch (error) {
+      logger.error('CSRF initialization error', error as Error);
+    }
+  };
 
   useEffect(() => {
     // Check if user is already logged in with Supabase
     const checkSession = async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session) {
+       try {
+         const { data: { session }, error } = await supabase.auth.getSession();
+         if (error) throw error;
+         if (session) {
           // Check if email is confirmed
           const hasConfirmedEmail = !!session.user?.email_confirmed_at;
           
@@ -101,59 +120,33 @@ export default function AuthPage() {
           }
         }
       } catch (error) {
-        console.log('Session check error:', error);
+        logger.debug('Session check error', error as Error);
         // Continue to auth page
       }
     };
     checkSession();
   }, []);
 
-  const handleConnectWallet = async () => {
-    // Need password to encrypt wallet
-    if (!walletPassword) {
-      showToast('error', 'Please enter a wallet password');
-      return;
-    }
-    
-    setIsLoading(true);
-    try {
-      // For demo, we'll create a new wallet
-      // In production, this would use WalletConnect or MetaMask
-      const { ethers } = await import('ethers');
-      const wallet = ethers.Wallet.createRandom();
-      
-      // Store wallet with password encryption
-      await walletStorage.storeWallet(wallet.address, wallet.privateKey, wallet.mnemonic?.phrase || "", walletPassword);
-      walletStorage.setCurrentAccount(wallet.address);
-      
-      setCurrentAccount(wallet.address);
-      setWalletConnected(true);
-      
-      showToast('success', 'Wallet connected successfully!');
-    } catch (error) {
-      console.error('Error connecting wallet:', error);
-      showToast('error', 'Failed to connect wallet');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   const handleAuth = async () => {
-    if (!email || !password) {
-      showToast('error', 'Please fill in all fields');
-      return;
+    // Validate inputs using Zod
+    if (mode === 'signup') {
+      const credsResult = SignupCredentialsSchema.safeParse({ email, password, confirmPassword });
+      if (!credsResult.success) {
+        const errorMsg = credsResult.error.errors[0].message;
+        showToast('error', errorMsg);
+        return;
+      }
+    } else {
+      const signinResult = SigninSchema.safeParse({ email, password });
+      if (!signinResult.success) {
+        const errorMsg = signinResult.error.errors[0].message;
+        showToast('error', errorMsg);
+        return;
+      }
     }
 
     if (mode === 'signup') {
-      if (password !== confirmPassword) {
-        showToast('error', 'Passwords do not match');
-        return;
-      }
-      if (password.length < 8) {
-        showToast('error', 'Password must be at least 8 characters');
-        return;
-      }
-      
+      // Signup flow
       // Create user with Supabase Auth
       setIsLoading(true);
       try {
@@ -167,13 +160,11 @@ export default function AuthPage() {
           return;
         }
 
-        // Store user from signUp response
         if (data?.user) {
           setAuthUser(data.user);
           setPendingEmail(email);
         }
 
-        // Move to email sent step - user needs to confirm email first
         setSignupStep('email_sent');
         showToast('success', 'Confirmation email sent! Please check your inbox.');
       } catch (error: any) {
@@ -182,6 +173,7 @@ export default function AuthPage() {
         setIsLoading(false);
       }
     } else {
+      // Signin flow
       // Sign in with Supabase Auth
       setIsLoading(true);
       try {
@@ -196,39 +188,36 @@ export default function AuthPage() {
           return;
         }
 
-        // Get user and their profile to retrieve wallet
         const { data: { user } } = await supabaseAuth.auth.getUser();
-        
+
         if (user) {
-          // Try to get profile and wallet from database
-          try {
-            const { data: profile, error: profileError } = await supabase
-              .from('profiles')
-              .select('wallet_address')
-              .eq('id', user.id)
-              .maybeSingle();
+           try {
+             // Query by wallet_address since profile id is auto-generated
+             // We need to get the current account from storage
+             const storedAccount = walletStorage.getCurrentAccount();
+             if (storedAccount) {
+               const { data: profile, error: profileError } = await supabase
+                 .from('profiles')
+                 .select('wallet_address')
+                 .eq('wallet_address', storedAccount.toLowerCase())
+                 .maybeSingle();
 
-            if (profileError) {
-              // Ignore 406 and PGRST errors - profile might not exist yet
-              if (!profileError.message?.includes('406') && 
-                  !profileError.code?.startsWith('PGRST')) {
-                console.warn('Profile query error:', profileError.message);
-              }
-            }
+               if (profileError && !profileError.message?.includes('406')) {
+                 logger.warn('Profile query error', { message: profileError.message });
+               }
 
-            if (profile?.wallet_address) {
-              // Wallet is stored in Supabase, will need password to decrypt on home page
-              console.log('Found wallet address:', profile.wallet_address);
-            }
-          } catch (e) {
-            // Ignore errors - profile might not exist yet
-            console.warn('Profile query failed:', e);
-          }
-        }
+               if (profile?.wallet_address) {
+                 logger.info('Found wallet address', { address: profile.wallet_address });
+               }
+             }
+           } catch (e) {
+             logger.warn('Profile query failed', e as Error);
+           }
+         }
 
         showToast('success', 'Signed in successfully!');
+        await initializeCsrf();
         setIsLoading(false);
-        // Use window.location for more reliable redirect
         window.location.href = '/';
       } catch (error: any) {
         showToast('error', error.message || 'Failed to sign in');
@@ -260,38 +249,35 @@ export default function AuthPage() {
       const wallet = ethers.Wallet.createRandom();
       
       // Store wallet with password encryption
-      await walletStorage.storeWallet(wallet.address, wallet.privateKey, wallet.mnemonic?.phrase || "", walletPassword);
+      await walletStorage.storeWallet(wallet.address, wallet.privateKey, wallet.mnemonic?.phrase || "", password);
       walletStorage.setCurrentAccount(wallet.address);
-      
-      setCurrentAccount(wallet.address);
-      setWalletConnected(true);
 
       // Save profile to database with user ID
-      const updates: ProfileDetails = {
-        id: user.id, // Link to Supabase Auth user
-        username: email.split('@')[0],
-        first_name: firstName,
-        last_name: lastName,
-        email,
-        phone,
-        date_of_birth: dateOfBirth,
-        country,
-        nationality,
-        state,
-        city,
-        address_line1: addressLine1,
-        postal_code: postalCode,
-      };
+       const updates: ProfileDetails = {
+         username: email.split('@')[0],
+         first_name: firstName,
+         last_name: lastName,
+         email,
+         phone,
+         date_of_birth: dateOfBirth,
+         country,
+         nationality,
+         state,
+         city,
+         address_line1: addressLine1,
+         postal_code: postalCode,
+       };
 
-      await profileApi.update(wallet.address, updates);
+       await profileApi.createForAuthUser(user.id, wallet.address, updates);
       
       // Store session
       walletStorage.setCurrentAccount(wallet.address);
       
-      showToast('success', 'Account created successfully!');
-      window.location.href = '/';
+       showToast('success', 'Account created successfully!');
+       await initializeCsrf();
+       window.location.href = '/';
     } catch (error) {
-      console.error('Error saving profile:', error);
+      logger.error('Error saving profile', error as Error);
       showToast('error', 'Failed to create account');
     } finally {
       setIsLoading(false);
@@ -430,7 +416,10 @@ export default function AuthPage() {
                 )}
 
                 <button
-                  onClick={handleAuth}
+                  onClick={(e) => {
+                    logger.debug('[Auth] Sign In button clicked');
+                    handleAuth();
+                  }}
                   disabled={isLoading}
                   className="w-full py-4 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white rounded-xl font-medium transition-all transform hover:scale-[1.02] flex items-center justify-center gap-2"
                 >
@@ -593,6 +582,20 @@ export default function AuthPage() {
                         Create Account <CheckCircle className="h-4 w-4" />
                       </>
                     )}
+                  </button>
+                </div>
+                
+                {/* Skip Option */}
+                <div className="text-center pt-3">
+                  <button
+                    onClick={() => {
+                      // Skip profile and go directly to dashboard
+                      showToast('info', 'You can complete your profile anytime from the Profile page');
+                      router.push('/');
+                    }}
+                    className="text-sm text-gray-500 hover:text-gray-400"
+                  >
+                    Skip for now • Complete profile later
                   </button>
                 </div>
               </div>

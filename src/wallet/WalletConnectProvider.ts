@@ -163,7 +163,7 @@ export class WalletConnectProvider {
   /**
    * Reject session
    */
-  async rejectSession(): void {
+  rejectSession(): void {
     this.emit('session_rejected', { reason: 'User rejected' });
   }
 
@@ -241,7 +241,8 @@ export class WalletConnectProvider {
     }
 
     const signer = await this.provider.getSigner();
-    return await signer.signTypedData(domain, types, value);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return await signer.signTypedData(domain as any, types as any, value as any);
   }
 
   /**

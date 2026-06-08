@@ -1,11 +1,19 @@
 'use client';
 
+import { logger } from '@/lib/logger';
 import { SupabaseClient } from '@supabase/supabase-js';
 import { supabase } from './supabaseClient';
 
 // Re-export for external use
 export { supabase };
-export const isSupabaseConfigured = true;
+
+// Check if Supabase is properly configured
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+export const isSupabaseConfigured = !!(supabaseUrl && 
+  supabaseAnonKey && 
+  !supabaseUrl.includes('your-project') &&
+  !supabaseAnonKey.includes('your-anon-key'));
 
 export interface ProfileDetails {
   id?: string;
@@ -38,12 +46,7 @@ export const profileApi = {
    */
   async getOrCreate(walletAddress: string): Promise<ProfileDetails> {
     if (!isSupabaseConfigured) {
-      // Return mock data when Supabase is not configured
-      return {
-        wallet_address: walletAddress.toLowerCase(),
-        kyc_level: 0,
-        kyc_status: 'none',
-      };
+      throw new Error('Supabase is not configured. Please set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY environment variables.');
     }
 
     try {
@@ -62,7 +65,7 @@ export const profileApi = {
           .single();
 
         if (createError) {
-          console.error('Error creating profile:', createError.message);
+          logger.error('Error creating profile', createError);
           // Throw error so caller knows profile creation failed
           throw new Error(`Failed to create profile: ${createError.message}`);
         }
@@ -74,10 +77,10 @@ export const profileApi = {
             .from('user_reputation')
             .insert({ user_id: profile.id });
         } catch (repError) {
-          console.warn('Error creating reputation:', repError);
+          logger.warn('Error creating reputation', repError);
         }
       } else if (error) {
-        console.warn('Error fetching profile:', error.message);
+        logger.warn('Error fetching profile', error);
       }
       return profile || {
         wallet_address: walletAddress.toLowerCase(),
@@ -85,7 +88,7 @@ export const profileApi = {
         kyc_status: 'none',
       };
     } catch (err) {
-      console.warn('Profile getOrCreate error:', err);
+      logger.warn('Profile getOrCreate error', err as Error);
       // Return a basic profile object on error
       return {
         wallet_address: walletAddress.toLowerCase(),
@@ -100,7 +103,7 @@ export const profileApi = {
    */
   async getByAddress(walletAddress: string): Promise<ProfileDetails | null> {
     if (!isSupabaseConfigured) {
-      return null;
+      throw new Error('Supabase is not configured.');
     }
 
     try {
@@ -120,7 +123,7 @@ export const profileApi = {
             error.message?.includes('406')) {
           return null;
         }
-        console.warn('Profile fetch by address warning:', error.message);
+        logger.warn('Profile fetch by address warning', error);
         return null;
       }
       return data;
@@ -129,49 +132,90 @@ export const profileApi = {
       if (err?.message?.includes('406') || err?.status === 406) {
         return null;
       }
-      console.warn('Profile getByAddress error:', err);
+      logger.warn('Profile getByAddress error', err as Error);
       return null;
     }
   },
 
   /**
    * Get profile by Supabase Auth user ID
+   * Note: This requires the profile to have been created with the auth user's ID
    */
   async getByUserId(userId: string): Promise<ProfileDetails | null> {
     if (!isSupabaseConfigured) {
-      return null;
+      throw new Error('Supabase is not configured.');
     }
 
     try {
+      // Use maybeSingle to avoid 406 errors when no profile exists
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', userId)
-        .single();
+        .maybeSingle();
 
       // PGRST116 = No rows found (expected when user doesn't have a profile yet)
       // PGRST204 = Could not find a row
       // 406 = Not Acceptable (can happen with RLS or config issues)
       if (error) {
-        if (error.code === 'PGRST116' || 
-            error.code === 'PGRST204' || 
-            error.code === '406' ||
-            error.message?.includes('406')) {
-          // No profile exists yet for this user
-          return null;
-        }
-        // Log other errors but don't throw - return null instead
-        console.warn('Profile fetch warning:', error.message);
+        // Log but don't throw - return null instead
+        logger.warn('Profile fetch warning', { error, userId });
         return null;
       }
-      return data;
+      return data || null;
     } catch (err: any) {
       // Catch any network or other errors (including 406)
-      if (err?.message?.includes('406') || err?.status === 406) {
-        return null; // Treat 406 as no profile
-      }
-      console.warn('Profile fetch error:', err);
+      logger.warn('Profile fetch error', { error: err, userId });
       return null;
+    }
+  },
+
+  /**
+   * Create or update profile for a Supabase Auth user
+   * This creates a profile with the auth user's ID as the profile ID
+   */
+  async createForAuthUser(
+    userId: string,
+    walletAddress: string,
+    updates: Partial<ProfileDetails>
+  ): Promise<ProfileDetails> {
+    if (!isSupabaseConfigured) {
+      throw new Error('Supabase is not configured.');
+    }
+
+    try {
+      // First check if profile exists with this user ID
+      const existing = await this.getByUserId(userId);
+      
+      if (existing) {
+        // Update existing profile
+        const { data, error } = await supabase
+          .from('profiles')
+          .update({ ...updates, updated_at: new Date().toISOString() })
+          .eq('id', userId)
+          .select()
+          .single();
+        
+        if (error) throw error;
+        return data;
+      }
+      
+      // Create new profile with the auth user's ID
+      const { data, error } = await supabase
+        .from('profiles')
+        .insert({
+          id: userId,
+          wallet_address: walletAddress.toLowerCase(),
+          ...updates,
+        })
+        .select()
+        .single();
+      
+      if (error) throw error;
+      return data;
+    } catch (err) {
+      logger.error('Error creating profile for auth user', err as Error);
+      throw err;
     }
   },
 
@@ -183,12 +227,7 @@ export const profileApi = {
     updates: Partial<ProfileDetails>
   ): Promise<ProfileDetails> {
     if (!isSupabaseConfigured) {
-      // Simulate update when Supabase is not configured
-      console.warn('Supabase not configured - profile update simulated');
-      return {
-        ...updates,
-        wallet_address: walletAddress.toLowerCase(),
-      } as ProfileDetails;
+      throw new Error('Supabase is not configured.');
     }
 
     const profile = await this.getOrCreate(walletAddress);

@@ -337,14 +337,48 @@ CREATE TRIGGER on_trade_completion
 -- ENCRYPTED WALLETS (Secure Cloud Storage)
 -- =============================================
 CREATE TABLE IF NOT EXISTS encrypted_wallets (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  wallet_address TEXT UNIQUE NOT NULL,
-  encrypted_private_key TEXT NOT NULL,  -- AES-GCM encrypted
-  encrypted_mnemonic TEXT,               -- AES-GCM encrypted (optional backup)
-  encryption_iv TEXT NOT NULL,          -- Initialization vector for AES-GCM
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+   wallet_address TEXT UNIQUE NOT NULL,
+   encrypted_private_key TEXT NOT NULL,  -- AES-GCM encrypted
+   encrypted_mnemonic TEXT,               -- AES-GCM encrypted (optional backup)
+   encryption_iv TEXT NOT NULL,          -- Initialization vector for AES-GCM
+   encryption_salt TEXT NOT NULL,         -- PBKDF2 salt for key derivation
+   mnemonic_iv TEXT,                     -- IV for mnemonic encryption
+   mnemonic_salt TEXT,                     -- Salt for mnemonic encryption
+   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
+
+-- =============================================
+-- RATE LIMITING
+-- =============================================
+CREATE TABLE IF NOT EXISTS rate_limits (
+   ip VARCHAR(45) PRIMARY KEY,
+   count INTEGER NOT NULL DEFAULT 1,
+   window_start TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_rate_limits_updated 
+ON rate_limits(updated_at);
+
+-- Auto-cleanup old records (older than 1 hour)
+CREATE OR REPLACE FUNCTION cleanup_rate_limits()
+RETURNS void AS $$
+BEGIN
+   DELETE FROM rate_limits 
+   WHERE updated_at < NOW() - INTERVAL '1 hour';
+END;
+$$ LANGUAGE plpgsql;
+
+-- Enable RLS for rate_limits (required for upserts from anon key)
+ALTER TABLE rate_limits ENABLE ROW LEVEL SECURITY;
+
+-- Policy: Allow anonymous upserts for rate limiting (IP-based)
+CREATE POLICY "Allow rate limit upserts" 
+  ON rate_limits FOR ALL 
+  USING (true)
+  WITH CHECK (true);
 
 -- Index for wallet address lookup
 CREATE INDEX idx_encrypted_wallets_address ON encrypted_wallets(wallet_address);

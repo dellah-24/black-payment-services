@@ -1,11 +1,12 @@
 /**
  * BlackPayments Wallet - Cold Wallet Implementation
- * 
+ *
  * Secure offline wallet for long-term USDT storage.
  * Provides maximum security with multi-sig support.
  */
 
 import { ethers, Wallet, JsonRpcProvider, HDNodeWallet } from 'ethers';
+import { logger } from '@/lib/logger';
 import {
   WalletChain,
   WalletType,
@@ -111,7 +112,7 @@ export class ColdWallet {
       const chainConfig = chainConfigs[chain];
       
       if (!chainConfig) {
-        console.warn(`Chain ${chain} not configured, skipping`);
+        logger.warn(`Chain ${chain} not configured, skipping`);
         continue;
       }
       
@@ -228,7 +229,7 @@ export class ColdWallet {
         const balance = await this.getBalance(chain);
         balances.push(balance);
       } catch (error) {
-        console.error(`Error getting balance for ${chain}:`, error);
+        logger.error(`Error getting balance for ${chain}`, error as Error);
       }
     }
 

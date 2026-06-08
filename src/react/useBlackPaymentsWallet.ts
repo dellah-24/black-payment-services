@@ -31,7 +31,7 @@ export function useWallet(chains?: WalletChain[]) {
    */
   const createNewWallet = useCallback(async (
     walletChains: WalletChain[] = chains || [WalletChain.ETHEREUM],
-    options?: { isGasless?: boolean; isTestnet?: boolean }
+    options?: { customRpcUrls?: Record<WalletChain, string> }
   ) => {
     setIsLoading(true);
     setError(null);
@@ -55,7 +55,7 @@ export function useWallet(chains?: WalletChain[]) {
   const importWallet = useCallback(async (
     seedPhrase: string,
     walletChains: WalletChain[] = chains || [WalletChain.ETHEREUM],
-    options?: { isGasless?: boolean; isTestnet?: boolean }
+    options?: { customRpcUrls?: Record<WalletChain, string> }
   ) => {
     setIsLoading(true);
     setError(null);
@@ -74,10 +74,10 @@ export function useWallet(chains?: WalletChain[]) {
   }, [chains]);
 
   /**
-   * Get the seed phrase
+   * Get the wallet address
    */
-  const getSeedPhrase = useCallback(() => {
-    return wallet?.getSeedPhrase() || '';
+  const getAddress = useCallback(() => {
+    return wallet?.getAddress(WalletChain.ETHEREUM) || '';
   }, [wallet]);
 
   /**
@@ -96,7 +96,7 @@ export function useWallet(chains?: WalletChain[]) {
     error,
     createNewWallet,
     importWallet,
-    getSeedPhrase,
+    getAddress,
     dispose,
   };
 }
@@ -213,73 +213,11 @@ export function useTransfer(wallet: BlackPaymentsWallet | null) {
 }
 
 /**
- * Hook for MoonPay fiat on/off-ramp
- */
-export function useMoonPay(wallet: BlackPaymentsWallet | null) {
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  /**
-   * Configure MoonPay
-   */
-  const configure = useCallback((config: MoonPayConfig) => {
-    if (!wallet) throw new Error('Wallet not initialized');
-    wallet.configureMoonPay(config);
-  }, [wallet]);
-
-  /**
-   * Buy USDT with fiat
-   */
-  const buyUSDT = useCallback(async (params: FiatRequestParams): Promise<string> => {
-    if (!wallet) throw new Error('Wallet not initialized');
-    
-    setIsLoading(true);
-    setError(null);
-    try {
-      return await wallet.buyUSDT(params);
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Buy failed';
-      setError(errorMessage);
-      throw err;
-    } finally {
-      setIsLoading(false);
-    }
-  }, [wallet]);
-
-  /**
-   * Sell USDT for fiat
-   */
-  const sellUSDT = useCallback(async (params: FiatRequestParams): Promise<string> => {
-    if (!wallet) throw new Error('Wallet not initialized');
-    
-    setIsLoading(true);
-    setError(null);
-    try {
-      return await wallet.sellUSDT(params);
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Sell failed';
-      setError(errorMessage);
-      throw err;
-    } finally {
-      setIsLoading(false);
-    }
-  }, [wallet]);
-
-  return {
-    isLoading,
-    error,
-    configure,
-    buyUSDT,
-    sellUSDT,
-  };
-}
-
-/**
  * Hook to validate addresses
  */
 export function useAddressValidation(wallet: BlackPaymentsWallet | null) {
-  return useCallback((address: string, chain: WalletChain): boolean => {
+  return useCallback((address: string): boolean => {
     if (!wallet) return false;
-    return wallet.isValidAddress(address, chain);
+    return wallet.isValidAddress(address);
   }, [wallet]);
 }

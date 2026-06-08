@@ -1,6 +1,7 @@
+/// <reference path="../types/global.d.ts" />
 /**
  * BlackPayments Wallet - React Native Example Screens
- * 
+ *
  * Example screens demonstrating how to use the wallet in React Native
  */
 
@@ -15,12 +16,11 @@ import {
   Alert,
   ActivityIndicator,
   Linking,
-} from 'react-native';
+} from 'react-native'; // @ts-ignore - react-native types not installed in web project
 import {
   useWallet,
   useBalance,
   useTransfer,
-  useMoonPay,
   useAddressValidation,
 } from './useBlackPaymentsWallet';
 import { WalletChain } from '../wallet/types';
@@ -47,7 +47,7 @@ export function WalletSetupScreen() {
       
       Alert.alert(
         'Wallet Created!',
-        `Your seed phrase is:\n\n${newWallet.getSeedPhrase()}\n\n⚠️ Save this securely!`,
+        `Your address is:\n\n${newWallet.getAddress(WalletChain.ETHEREUM)}\n\n⚠️ Save this securely!`,
         [{ text: 'I Saved It' }]
       );
     } catch (err) {
@@ -214,7 +214,7 @@ export function SendScreen({ wallet }: SendScreenProps) {
       return;
     }
 
-    if (!isValidAddress(recipient, selectedChain)) {
+    if (!isValidAddress(recipient)) {
       Alert.alert('Error', 'Invalid recipient address');
       return;
     }
@@ -402,98 +402,7 @@ export function ReceiveScreen({ wallet }: ReceiveScreenProps) {
   );
 }
 
-/**
- * Example: Buy/Sell with MoonPay
- */
-interface FiatRampScreenProps {
-  wallet: ReturnType<typeof useWallet>['wallet'];
-}
-
-export function FiatRampScreen({ wallet }: FiatRampScreenProps) {
-  const { configure, buyUSDT, sellUSDT, isLoading } = useMoonPay(wallet);
-  const [fiatAmount, setFiatAmount] = useState('');
-  const [selectedChain, setSelectedChain] = useState<WalletChain>(WalletChain.ETHEREUM);
-
-  const handleBuy = async () => {
-    // Configure with your MoonPay API keys
-    configure({
-      apiKey: 'pk_test_xxx', // Use test key for development
-    });
-
-    try {
-      const buyUrl = await buyUSDT({
-        cryptoAsset: 'usdt',
-        fiatCurrency: 'usd',
-        fiatAmount: BigInt(Math.floor(parseFloat(fiatAmount) * 100)), // Convert to cents
-        chain: selectedChain,
-        config: {
-          theme: 'dark',
-        },
-      });
-
-      // Open the MoonPay widget
-      Linking.openURL(buyUrl);
-    } catch (err) {
-      Alert.alert('Error', 'Failed to create buy URL');
-    }
-  };
-
-  return (
-    <ScrollView style={styles.container}>
-      <Text style={styles.title}>Buy/Sell USDT</Text>
-
-      {/* Chain Selector */}
-      <View style={styles.chainSelector}>
-        {[WalletChain.ETHEREUM, WalletChain.POLYGON].map((chain) => (
-          <TouchableOpacity
-            key={chain}
-            style={[
-              styles.chainButton,
-              selectedChain === chain && styles.chainButtonActive,
-            ]}
-            onPress={() => setSelectedChain(chain)}
-          >
-            <Text
-              style={[
-                styles.chainButtonText,
-                selectedChain === chain && styles.chainButtonTextActive,
-              ]}
-            >
-              {chain.toUpperCase()}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </View>
-
-      {/* Amount Input */}
-      <Text style={styles.label}>Amount (USD)</Text>
-      <TextInput
-        style={styles.input}
-        value={fiatAmount}
-        onChangeText={setFiatAmount}
-        placeholder="100"
-        keyboardType="number-pad"
-      />
-
-      {/* Buy Button */}
-      <TouchableOpacity
-        style={[styles.button, styles.successButton]}
-        onPress={handleBuy}
-        disabled={isLoading}
-      >
-        <Text style={styles.buttonText}>Buy USDT</Text>
-      </TouchableOpacity>
-
-      {/* Sell Button */}
-      <TouchableOpacity
-        style={[styles.button, styles.secondaryButton]}
-        onPress={() => Alert.alert('Info', 'Sell feature coming soon')}
-      >
-        <Text style={styles.buttonText}>Sell USDT</Text>
-      </TouchableOpacity>
-    </ScrollView>
-  );
-}
+// Fiat on-ramp has been removed. Use P2P trading to buy USDT.
 
 // Basic Styles
 const styles = StyleSheet.create({

@@ -20,9 +20,8 @@ export function setGetBlockApiKey(apiKey: string): void {
 /**
  * Get GetBlock RPC URL for a chain
  */
-function getGetBlockRpcUrl(chain: WalletChain, isTestnet: boolean): string {
-  const network = isTestnet ? 'testnet' : 'mainnet';
-  const path = isTestnet ? 'testnet' : 'mainnet';
+function getGetBlockRpcUrl(chain: WalletChain): string {
+  const path = 'mainnet';
   
   if (!getBlockApiKey) {
     // Fallback to public RPCs if no API key
@@ -40,6 +39,11 @@ function getGetBlockRpcUrl(chain: WalletChain, isTestnet: boolean): string {
     [WalletChain.LINEA]: `https://linea.getblock.io/${getBlockApiKey}/${path}/`,
     [WalletChain.BASE]: `https://base.getblock.io/${getBlockApiKey}/${path}/`,
     [WalletChain.TRON]: `https://tron.getblock.io/${getBlockApiKey}/${path}/`,
+    [WalletChain.SOLANA]: `https://solana.getblock.io/${getBlockApiKey}/${path}/`,
+    [WalletChain.BITCOIN]: `https://bitcoin.getblock.io/${getBlockApiKey}/${path}/`,
+    [WalletChain.COSMOS]: `https://cosmos.getblock.io/${getBlockApiKey}/${path}/`,
+    [WalletChain.TON]: `https://ton.getblock.io/${getBlockApiKey}/${path}/`,
+    [WalletChain.APTOS]: `https://aptos.getblock.io/${getBlockApiKey}/${path}/`,
   };
   
   return chainEndpoints[chain] || '';
@@ -126,6 +130,41 @@ export const USDT_TOKENS: Record<WalletChain, USDTTokenConfig> = {
     name: 'Tether USD (TRC-20)',
     symbol: 'USDT',
   },
+  [WalletChain.SOLANA]: {
+    chain: WalletChain.SOLANA,
+    tokenAddress: 'Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB', // USDT on Solana
+    decimals: 6,
+    name: 'Tether USD (SPL)',
+    symbol: 'USDT',
+  },
+  [WalletChain.BITCOIN]: {
+    chain: WalletChain.BITCOIN,
+    tokenAddress: '',
+    decimals: 0,
+    name: 'Tether USD (Omni)',
+    symbol: 'USDT',
+  },
+  [WalletChain.COSMOS]: {
+    chain: WalletChain.COSMOS,
+    tokenAddress: '',
+    decimals: 6,
+    name: 'Tether USD (Cosmos)',
+    symbol: 'USDT',
+  },
+  [WalletChain.TON]: {
+    chain: WalletChain.TON,
+    tokenAddress: '',
+    decimals: 6,
+    name: 'Tether USD (TON)',
+    symbol: 'USDT',
+  },
+  [WalletChain.APTOS]: {
+    chain: WalletChain.APTOS,
+    tokenAddress: '',
+    decimals: 6,
+    name: 'Tether USD (Aptos)',
+    symbol: 'USDT',
+  },
 };
 
 /**
@@ -199,94 +238,43 @@ export const CHAIN_CONFIGS: Record<WalletChain, ChainConfig> = {
     chainId: 0x000000001, // Tron chain ID (network)
     name: 'Tron',
     symbol: 'TRX',
-    rpcUrl: 'https://rpc.ankr.com/tron/',
+    rpcUrl: 'https://api.trongrid.io/',
     explorerUrl: 'https://tronscan.org',
   },
-};
-
-/**
- * Testnet configurations
- */
-export const TESTNET_CONFIGS: Record<WalletChain, ChainConfig> = {
-  [WalletChain.ETHEREUM]: {
-    chainId: 11155111,
-    name: 'Ethereum Sepolia',
-    symbol: 'ETH',
-    rpcUrl: 'https://sepolia.drpc.org',
-    explorerUrl: 'https://sepolia.etherscan.io',
-    isTestnet: true,
+  [WalletChain.SOLANA]: {
+    chainId: 0, // Solana uses different chain ID scheme
+    name: 'Solana',
+    symbol: 'SOL',
+    rpcUrl: 'https://api.mainnet-beta.solana.com',
+    explorerUrl: 'https://solscan.io',
   },
-  [WalletChain.POLYGON]: {
-    chainId: 80002,
-    name: 'Polygon Amoy',
-    symbol: 'MATIC',
-    rpcUrl: 'https://rpc-amoy.polygon.technology',
-    explorerUrl: 'https://amoy.polygonscan.com',
-    isTestnet: true,
+  [WalletChain.BITCOIN]: {
+    chainId: 0, // Bitcoin uses different chain ID scheme
+    name: 'Bitcoin',
+    symbol: 'BTC',
+    rpcUrl: 'https://blockstream.info/api',
+    explorerUrl: 'https://blockstream.info',
   },
-  [WalletChain.BSC]: {
-    chainId: 97,
-    name: 'BSC Testnet',
-    symbol: 'BNB',
-    rpcUrl: 'https://data-seed-prebsc-1-s1.bnbchain.org:8545',
-    explorerUrl: 'https://testnet.bscscan.com',
-    isTestnet: true,
+  [WalletChain.COSMOS]: {
+    chainId: 0, // Cosmos uses different chain ID scheme
+    name: 'Cosmos',
+    symbol: 'ATOM',
+    rpcUrl: 'https://cosmos-rpc.publicnode.com',
+    explorerUrl: 'https://mintscan.io/cosmos',
   },
-  [WalletChain.ARBITRUM]: {
-    chainId: 421614,
-    name: 'Arbitrum Sepolia',
-    symbol: 'ETH',
-    rpcUrl: 'https://sepolia-rollup.arbitrum.io/rpc',
-    explorerUrl: 'https://sepolia.arbiscan.io',
-    isTestnet: true,
+  [WalletChain.TON]: {
+    chainId: 0, // TON uses different chain ID scheme
+    name: 'TON',
+    symbol: 'TON',
+    rpcUrl: 'https://toncenter.com/api/v2/jsonRPC',
+    explorerUrl: 'https://tonscan.org',
   },
-  [WalletChain.OPTIMISM]: {
-    chainId: 11155420,
-    name: 'Optimism Sepolia',
-    symbol: 'ETH',
-    rpcUrl: 'https://sepolia.optimism.io',
-    explorerUrl: 'https://sepolia-optimism.etherscan.io',
-    isTestnet: true,
-  },
-  [WalletChain.AVALANCHE]: {
-    chainId: 43113,
-    name: 'Avalanche Fuji',
-    symbol: 'AVAX',
-    rpcUrl: 'https://api.avax-test.network/ext/bc/C/rpc',
-    explorerUrl: 'https://testnet.snowtrace.io',
-    isTestnet: true,
-  },
-  [WalletChain.CELO]: {
-    chainId: 44787,
-    name: 'Celo Alfajores',
-    symbol: 'CELO',
-    rpcUrl: 'https://alfajores-forno.celo-testnet.org',
-    explorerUrl: 'https://alfajores.celoscan.io',
-    isTestnet: true,
-  },
-  [WalletChain.LINEA]: {
-    chainId: 59140,
-    name: 'Linea Sepolia',
-    symbol: 'ETH',
-    rpcUrl: 'https://rpc.sepolia.linea.build',
-    explorerUrl: 'https://sepolia.lineascan.build',
-    isTestnet: true,
-  },
-  [WalletChain.BASE]: {
-    chainId: 84532,
-    name: 'Base Sepolia',
-    symbol: 'ETH',
-    rpcUrl: 'https://sepolia.base.org',
-    explorerUrl: 'https://sepolia.basescan.org',
-    isTestnet: true,
-  },
-  [WalletChain.TRON]: {
-    chainId: 0x000000002, // Tron Nile testnet
-    name: 'Tron Nile Testnet',
-    symbol: 'TRX',
-    rpcUrl: 'https://api.nileex.io',
-    explorerUrl: 'https://nile.tronscan.org',
-    isTestnet: true,
+  [WalletChain.APTOS]: {
+    chainId: 0, // Aptos uses different chain ID scheme
+    name: 'Aptos',
+    symbol: 'APT',
+    rpcUrl: 'https://fullnode.mainnet.aptoslabs.com/v1',
+    explorerUrl: 'https://aptoscan.com',
   },
 };
 
@@ -298,18 +286,14 @@ export function getSupportedChains(): WalletChain[] {
 }
 
 /**
- * Get chain config by chain type
+ * Get chain config
  */
 export function getChainConfig(chain: WalletChain, isTestnet = false): ChainConfig {
-  const baseConfig = isTestnet ? TESTNET_CONFIGS[chain] : CHAIN_CONFIGS[chain];
-  
-  // Try to use GetBlock if API key is configured
-  const getBlockRpc = getGetBlockRpcUrl(chain, isTestnet);
-  
-  return {
-    ...baseConfig,
-    rpcUrl: getBlockRpc || baseConfig.rpcUrl,
-  };
+  if (isTestnet) {
+    const testnetConfig = TESTNET_CONFIGS[chain];
+    if (testnetConfig) return testnetConfig;
+  }
+  return CHAIN_CONFIGS[chain];
 }
 
 /**
@@ -318,3 +302,116 @@ export function getChainConfig(chain: WalletChain, isTestnet = false): ChainConf
 export function getUSDTConfig(chain: WalletChain): USDTTokenConfig {
   return USDT_TOKENS[chain];
 }
+
+/**
+ * Testnet configurations for EVM networks
+ * Uses public testnet RPCs
+ */
+export const TESTNET_CONFIGS: Partial<Record<WalletChain, ChainConfig>> = {
+  [WalletChain.ETHEREUM]: {
+    chainId: 11155111, // Sepolia
+    name: 'Ethereum Sepolia',
+    symbol: 'ETH',
+    rpcUrl: 'https://sepolia.drpc.org',
+    explorerUrl: 'https://sepolia.etherscan.io',
+  },
+  [WalletChain.POLYGON]: {
+    chainId: 80002, // Mumbai
+    name: 'Polygon Mumbai',
+    symbol: 'MATIC',
+    rpcUrl: 'https://rpc-mumbai.maticvigil.com',
+    explorerUrl: 'https://mumbai.polygonscan.com',
+  },
+  [WalletChain.BSC]: {
+    chainId: 97, // BSC Testnet
+    name: 'BNB Smart Chain Testnet',
+    symbol: 'BNB',
+    rpcUrl: 'https://data-seed-prebsc-1-s1.binance.org:8545',
+    explorerUrl: 'https://testnet.bscscan.com',
+  },
+  [WalletChain.ARBITRUM]: {
+    chainId: 421614, // Arbitrum Sepolia
+    name: 'Arbitrum Sepolia',
+    symbol: 'ETH',
+    rpcUrl: 'https://sepolia-rollup.arbitrum.io/rpc',
+    explorerUrl: 'https://sepolia.arbiscan.io',
+  },
+  [WalletChain.OPTIMISM]: {
+    chainId: 11155420, // Optimism Sepolia
+    name: 'Optimism Sepolia',
+    symbol: 'ETH',
+    rpcUrl: 'https://sepolia.optimism.io',
+    explorerUrl: 'https://sepolia-optimistic.etherscan.io',
+  },
+  [WalletChain.AVALANCHE]: {
+    chainId: 43113, // Avalanche Fuji
+    name: 'Avalanche Fuji',
+    symbol: 'AVAX',
+    rpcUrl: 'https://api.avax-test.network/ext/bc/C/rpc',
+    explorerUrl: 'https://testnet.snowtrace.io',
+  },
+  [WalletChain.CELO]: {
+    chainId: 44787, // Celo Alfajores
+    name: 'Celo Alfajores',
+    symbol: 'CELO',
+    rpcUrl: 'https://alfajores-forno.celo-testnet.org',
+    explorerUrl: 'https://alfajores-blockscout.celo-testnet.org',
+  },
+  [WalletChain.LINEA]: {
+    chainId: 59141, // Linea Sepolia
+    name: 'Linea Sepolia',
+    symbol: 'ETH',
+    rpcUrl: 'https://sepolia.linea.build',
+    explorerUrl: 'https://sepolia.lineascan.build',
+  },
+  [WalletChain.BASE]: {
+    chainId: 84532, // Base Sepolia
+    name: 'Base Sepolia',
+    symbol: 'ETH',
+    rpcUrl: 'https://sepolia.base.org',
+    explorerUrl: 'https://sepolia.basescan.org',
+  },
+  [WalletChain.TRON]: {
+    chainId: 0x00000001, // Tron testnet (nile)
+    name: 'Tron Nile Testnet',
+    symbol: 'TRX',
+    rpcUrl: 'https://api.nileex.io',
+    explorerUrl: 'https://nile.tronscan.org',
+  },
+  // Non-EVM chains don't have standard testnet configs yet
+  [WalletChain.SOLANA]: {
+    chainId: 0,
+    name: 'Solana Devnet',
+    symbol: 'SOL',
+    rpcUrl: 'https://api.devnet.solana.com',
+    explorerUrl: 'https://solscan.io',
+  },
+  [WalletChain.BITCOIN]: {
+    chainId: 0,
+    name: 'Bitcoin Testnet',
+    symbol: 'BTC',
+    rpcUrl: 'https://blockstream.info/testnet/api',
+    explorerUrl: 'https://blockstream.info/testnet',
+  },
+  [WalletChain.COSMOS]: {
+    chainId: 0,
+    name: 'Cosmos Testnet',
+    symbol: 'ATOM',
+    rpcUrl: 'https://cosmos-rpc.publicnode.com',
+    explorerUrl: 'https://mintscan.io/cosmos',
+  },
+  [WalletChain.TON]: {
+    chainId: 0,
+    name: 'TON Testnet',
+    symbol: 'TON',
+    rpcUrl: 'https://toncenter.com/api/v2/jsonRPC',
+    explorerUrl: 'https://tonscan.org',
+  },
+  [WalletChain.APTOS]: {
+    chainId: 0,
+    name: 'Aptos Testnet',
+    symbol: 'APT',
+    rpcUrl: 'https://fullnode.testnet.aptoslabs.com/v1',
+    explorerUrl: 'https://aptoscan.com',
+  },
+};

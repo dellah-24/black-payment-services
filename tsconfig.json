@@ -4,7 +4,15 @@
     "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
     "skipLibCheck": true,
-    "strict": false,
+    "strict": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "strictFunctionTypes": true,
+    "strictBindCallApply": true,
+    "strictPropertyInitialization": true,
+    "noImplicitThis": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
     "noEmit": true,
     "skipLibCheck": true,
     "esModuleInterop": true,
@@ -21,8 +29,9 @@
     ],
     "paths": {
       "@/*": ["./src/*"]
-    }
+    },
+    "typeRoots": ["./node_modules/@types", "./src/types"]
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
-  "exclude": ["node_modules", "mobile", "wdk-docs-main", "src/examples", "src/i18n"]
+  "exclude": ["node_modules", "mobile", "wdk-docs-main", "src/examples", "src/i18n", "src/react", "trust-wallet-reference"]
 }

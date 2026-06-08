@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { 
   Lock, 
   ArrowLeft, 
@@ -16,6 +17,9 @@ import {
   AlertTriangle,
   Zap
 } from 'lucide-react';
+import { supabase } from '@/lib/supabaseClient';
+import { profileApi } from '@/lib/profileApi';
+import { logger } from '@/lib/logger';
 
 interface WalletData {
   address: string;
@@ -44,21 +48,43 @@ export default function WalletsPage() {
   });
   const [copied, setCopied] = useState<string | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
+    if (typeof window === 'undefined') return;
+    
     const savedTheme = localStorage.getItem('theme') as 'dark' | 'light' | null;
     if (savedTheme) setTheme(savedTheme);
     
-    const savedAccount = localStorage.getItem('account');
-    if (savedAccount) {
-      setAccount(savedAccount);
-      // Initialize hot wallet with main account
-      setHotWallet(prev => ({
-        ...prev,
-        address: savedAccount,
-        usdtBalance: '500.00',
-      }));
-    }
+    // Check authentication - redirect to auth if not logged in
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        router.push('/auth');
+        return;
+      }
+      
+      // Check for profile with wallet
+      try {
+        const profile = await profileApi.getByUserId(session.user.id);
+        if (!profile || !profile.wallet_address) {
+          router.push('/auth');
+          return;
+        }
+        
+        setAccount(profile.wallet_address!.toLowerCase());
+        // Initialize hot wallet with main account
+        setHotWallet(prev => ({
+          ...prev,
+          address: profile.wallet_address!.toLowerCase(),
+          usdtBalance: '500.00',
+        }));
+      } catch (e) {
+        router.push('/auth');
+      }
+    };
+    
+    checkAuth();
 
     // Generate or load cold wallet
     const savedColdWallet = localStorage.getItem('coldWallet');

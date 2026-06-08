@@ -52,11 +52,10 @@ export function validatePrivateKey(privateKey: string): boolean {
 export async function createWallet(
   chains: WalletChain[] = [WalletChain.ETHEREUM, WalletChain.POLYGON, WalletChain.BSC],
   options: {
-    isTestnet?: boolean;
     customRpcUrls?: Partial<Record<WalletChain, string>>;
   } = {}
 ): Promise<BlackPaymentsWallet> {
-  const { isTestnet = false, customRpcUrls } = options;
+  const { customRpcUrls } = options;
   
   // Generate a new mnemonic
   const mnemonic = generateMnemonic(12);
@@ -68,7 +67,7 @@ export async function createWallet(
   const wallet = new BlackPaymentsWallet(
     mnemonic,
     chains,
-    isTestnet,
+    false,
     rpcUrls
   );
   
@@ -85,11 +84,10 @@ export async function createWalletWithExistingSeed(
   mnemonic: string,
   chains: WalletChain[] = [WalletChain.ETHEREUM, WalletChain.POLYGON, WalletChain.BSC],
   options: {
-    isTestnet?: boolean;
     customRpcUrls?: Partial<Record<WalletChain, string>>;
   } = {}
 ): Promise<BlackPaymentsWallet> {
-  const { isTestnet = false, customRpcUrls } = options;
+  const { customRpcUrls } = options;
   
   // Validate the mnemonic
   if (!validateMnemonic(mnemonic)) {
@@ -103,7 +101,7 @@ export async function createWalletWithExistingSeed(
   const wallet = new BlackPaymentsWallet(
     mnemonic,
     chains,
-    isTestnet,
+    false,
     rpcUrls
   );
   
@@ -120,11 +118,10 @@ export async function createWalletWithPrivateKey(
   privateKey: string,
   chains: WalletChain[] = [WalletChain.ETHEREUM, WalletChain.POLYGON, WalletChain.BSC],
   options: {
-    isTestnet?: boolean;
     customRpcUrls?: Partial<Record<WalletChain, string>>;
   } = {}
 ): Promise<BlackPaymentsWallet> {
-  const { isTestnet = false, customRpcUrls } = options;
+  const { customRpcUrls } = options;
   
   // Validate the private key
   if (!validatePrivateKey(privateKey)) {
@@ -138,7 +135,7 @@ export async function createWalletWithPrivateKey(
   const wallet = new BlackPaymentsWallet(
     privateKey,
     chains,
-    isTestnet,
+    false,
     rpcUrls
   );
   
@@ -153,24 +150,11 @@ export async function createWalletWithPrivateKey(
  */
 export async function createFullWallet(
   options: {
-    isTestnet?: boolean;
     customRpcUrls?: Partial<Record<WalletChain, string>>;
   } = {}
 ): Promise<BlackPaymentsWallet> {
   const chains = getSupportedChains();
   return createWallet(chains, options);
-}
-
-/**
- * Create a test wallet (uses testnet)
- */
-export async function createTestWallet(
-  chains: WalletChain[] = [WalletChain.ETHEREUM, WalletChain.POLYGON],
-  options: {
-    customRpcUrls?: Partial<Record<WalletChain, string>>;
-  } = {}
-): Promise<BlackPaymentsWallet> {
-  return createWallet(chains, { ...options, isTestnet: true });
 }
 
 /**

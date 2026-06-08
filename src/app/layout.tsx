@@ -19,6 +19,7 @@ import {
   ChevronRight
 } from 'lucide-react';
 import { ToastProvider } from '@/components/Toast';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 
 export default function RootLayout({
   children,
@@ -67,6 +68,7 @@ export default function RootLayout({
           ? 'bg-gradient-to-br from-gray-900 via-gray-900 to-indigo-950 text-white' 
           : 'bg-gradient-to-br from-gray-50 via-white to-indigo-50 text-gray-900'
       }`}>
+        <ErrorBoundary>
         <ToastProvider>
         {/* Modern Glassmorphic Navigation */}
         <nav className={`fixed top-0 left-0 right-0 z-50 ${
@@ -93,6 +95,7 @@ export default function RootLayout({
               </Link>
 
               {/* Desktop Navigation */}
+              {pathname !== '/auth' && (
               <div className="hidden md:flex items-center space-x-1">
                 {navItems.map((item) => {
                   const Icon = item.icon;
@@ -118,8 +121,10 @@ export default function RootLayout({
                   );
                 })}
               </div>
+              )}
 
               {/* Right Side Actions */}
+              {pathname !== '/auth' && (
               <div className="flex items-center space-x-3">
                 {/* Theme Toggle */}
                 <button
@@ -147,6 +152,7 @@ export default function RootLayout({
                   {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
                 </button>
               </div>
+              )}
             </div>
           </div>
 
@@ -186,6 +192,8 @@ export default function RootLayout({
         </main>
 
         {/* Footer */}
+        {pathname !== '/auth' && (
+        <>
         <footer className={`py-6 border-t ${theme === 'dark' ? 'border-gray-800' : 'border-gray-200'}`}>
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex flex-col md:flex-row items-center justify-between gap-4">
@@ -206,7 +214,10 @@ export default function RootLayout({
             </div>
           </div>
         </footer>
+        </>
+        )}
         </ToastProvider>
+        </ErrorBoundary>
       </body>
     </html>
   );

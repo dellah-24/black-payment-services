@@ -4,6 +4,7 @@
  */
 
 import { ethers, BrowserProvider } from 'ethers';
+import { logger } from '@/lib/logger';
 
 export interface DApp {
   id: string;
@@ -294,7 +295,7 @@ export class DAppBrowser {
 
       return accounts[0];
     } catch (error) {
-      console.error('Failed to connect:', error);
+      logger.error('Failed to connect', error as Error);
       return null;
     }
   }

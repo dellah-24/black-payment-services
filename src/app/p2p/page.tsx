@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { 
   DollarSign, 
   ArrowLeft, 
@@ -17,6 +18,8 @@ import {
   Loader2
 } from 'lucide-react';
 import { showToast } from '@/components/Toast';
+import { supabase } from '@/lib/supabaseClient';
+import { profileApi } from '@/lib/profileApi';
 
 interface P2POrder {
   id: string;
@@ -35,6 +38,7 @@ export default function P2PPage() {
   const [activeTab, setActiveTab] = useState<'orders' | 'create' | 'myOrders'>('orders');
   const [orders, setOrders] = useState<P2POrder[]>([]);
   const [myOrders, setMyOrders] = useState<P2POrder[]>([]);
+  const [isMounted, setIsMounted] = useState(false);
   
   // Create order form
   const [orderType, setOrderType] = useState<'buy' | 'sell'>('sell');
@@ -42,13 +46,39 @@ export default function P2PPage() {
   const [orderPrice, setOrderPrice] = useState('');
   const [orderPayment, setOrderPayment] = useState('bank_transfer');
   const [isCreating, setIsCreating] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
+    if (typeof window === 'undefined') return;
+    
+    setIsMounted(true);
+    
     const savedTheme = localStorage.getItem('theme') as 'dark' | 'light' | null;
     if (savedTheme) setTheme(savedTheme);
     
-    const savedAccount = localStorage.getItem('account');
-    if (savedAccount) setAccount(savedAccount);
+    // Check authentication - redirect to auth if not logged in
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        router.push('/auth');
+        return;
+      }
+      
+      // Check for profile with wallet
+      try {
+        const profile = await profileApi.getByUserId(session.user.id);
+        if (!profile || !profile.wallet_address) {
+          router.push('/auth');
+          return;
+        }
+        
+        setAccount(profile.wallet_address.toLowerCase());
+      } catch (e) {
+        router.push('/auth');
+      }
+    };
+    
+    checkAuth();
 
     // Load mock orders
     setOrders([
@@ -125,7 +155,8 @@ export default function P2PPage() {
     { id: 'crypto', name: 'Crypto', icon: '₿' },
   ];
 
-  if (!account) {
+  // No Account - wait for mounted to avoid hydration mismatch
+  if (!isMounted || !account) {
     return (
       <div className="min-h-screen py-8">
         <div className="max-w-4xl mx-auto px-4">

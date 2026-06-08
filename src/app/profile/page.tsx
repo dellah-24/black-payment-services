@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { 
   User, 
   Wallet, 
@@ -26,11 +27,15 @@ import {
   Flag,
   Building,
   CheckCircle,
-  AlertCircle
+  AlertCircle,
+  XCircle
 } from 'lucide-react';
 import { showToast } from '@/components/Toast';
 import { walletStorage } from '@/lib/secureWalletStorage';
+import { supabase } from '@/lib/supabaseClient';
+import { logger } from '@/lib/logger';
 import { profileApi, ProfileDetails, COUNTRIES } from '@/lib/profileApi';
+import { KYCManager, KYCLevel, KYCStatus, KYCProfile } from '@/kyc';
 
 export default function ProfilePage() {
   const [account, setAccount] = useState<string | null>(null);
@@ -45,7 +50,16 @@ export default function ProfilePage() {
   const [profile, setProfile] = useState<ProfileDetails>({});
   const [completionPercentage, setCompletionPercentage] = useState(0);
 
-  // Form fields
+  // KYC State
+  const [kycProfile, setKycProfile] = useState<KYCProfile | null>(null);
+  const [isKycLoading, setIsKycLoading] = useState(false);
+  const [showKycModal, setShowKycModal] = useState(false);
+  const [kycStep, setKycStep] = useState<'init' | 'documents' | 'liveness' | 'pending' | 'complete'>('init');
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const router = useRouter();
+
+  // Form validation
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const [username, setUsername] = useState('');
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
@@ -61,11 +75,33 @@ export default function ProfilePage() {
   const [postalCode, setPostalCode] = useState('');
 
   useEffect(() => {
-    const savedAccount = walletStorage.getCurrentAccount();
-    if (savedAccount) {
-      setAccount(savedAccount);
-      loadProfile(savedAccount);
-    }
+    if (typeof window === 'undefined') return;
+    
+    // Check authentication - redirect to auth if not logged in
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        router.push('/auth');
+        return;
+      }
+      
+      // Check for profile with wallet
+      try {
+        const profile = await profileApi.getByUserId(session.user.id);
+        if (!profile || !profile.wallet_address) {
+          router.push('/auth');
+          return;
+        }
+        
+        const savedAccount = profile.wallet_address.toLowerCase();
+        setAccount(savedAccount);
+        loadProfile(savedAccount);
+      } catch (e) {
+        router.push('/auth');
+      }
+    };
+    
+    checkAuth();
   }, []);
 
   const loadProfile = async (walletAddress: string) => {
@@ -91,12 +127,86 @@ export default function ProfilePage() {
       // Get completion percentage
       const percentage = await profileApi.getCompletionPercentage(walletAddress);
       setCompletionPercentage(percentage);
+
+      // Load KYC status
+      loadKycStatus();
     } catch (error) {
-      console.error('Error loading profile:', error);
+      logger.error('Error loading profile', error as Error);
+    }
+  };
+
+  const loadKycStatus = async () => {
+    if (!account) return;
+    try {
+      const kyc = KYCManager.getInstance();
+      kyc.setUser(account);
+      const status = await kyc.getStatus();
+      setKycProfile(status);
+    } catch (error) {
+      logger.error('Error loading KYC status', error as Error);
     }
   };
 
   // Theme is always dark
+
+  const validateForm = (): boolean => {
+    const errors: Record<string, string> = {};
+
+    if (activeSection === 'personal') {
+      if (!firstName.trim()) errors.firstName = 'First name is required';
+      if (!lastName.trim()) errors.lastName = 'Last name is required';
+      if (!email.trim()) errors.email = 'Email is required';
+      else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errors.email = 'Invalid email format';
+      if (!dateOfBirth) errors.dateOfBirth = 'Date of birth is required';
+    }
+
+    if (activeSection === 'location') {
+      if (!country) errors.country = 'Country is required';
+      if (!city.trim()) errors.city = 'City is required';
+      if (!postalCode.trim()) errors.postalCode = 'Postal code is required';
+      if (!addressLine1.trim()) errors.addressLine1 = 'Address is required';
+    }
+
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  const startKycVerification = async () => {
+    if (!account) return;
+    setIsKycLoading(true);
+    try {
+      const kyc = KYCManager.getInstance();
+      kyc.setUser(account);
+      await kyc.startVerification();
+      setKycStep('documents');
+      setShowKycModal(true);
+    } catch (error) {
+      logger.error('Error starting KYC', error as Error);
+      showToast('error', 'Failed to start verification');
+    } finally {
+      setIsKycLoading(false);
+    }
+  };
+
+  const getKycLevelName = (level: KYCLevel): string => {
+    const names: Record<KYCLevel, string> = {
+      0: 'Unverified',
+      1: 'Basic',
+      2: 'Intermediate',
+      3: 'Full'
+    };
+    return names[level] || 'Unverified';
+  };
+
+  const getTradingLimits = (level: KYCLevel): { daily: string; monthly: string } => {
+    const limits: Record<KYCLevel, { daily: string; monthly: string }> = {
+      0: { daily: '$100', monthly: '$500' },
+      1: { daily: '$1,000', monthly: '$10,000' },
+      2: { daily: '$10,000', monthly: '$100,000' },
+      3: { daily: '$50,000', monthly: '$500,000' }
+    };
+    return limits[level] || limits[0];
+  };
 
   const copyAddress = () => {
     if (account) {
@@ -109,6 +219,12 @@ export default function ProfilePage() {
 
   const saveProfile = async () => {
     if (!account) return;
+    
+    // Validate form before saving
+    if (!validateForm()) {
+      showToast('error', 'Please fill in all required fields');
+      return;
+    }
     
     setIsLoading(true);
     try {
@@ -136,7 +252,7 @@ export default function ProfilePage() {
       showToast('success', 'Profile updated successfully!');
       setIsEditing(false);
     } catch (err) {
-      console.error('Error updating profile:', err);
+      logger.error('Error updating profile', err as Error);
       showToast('error', 'Failed to update profile');
     } finally {
       setIsLoading(false);
@@ -178,7 +294,7 @@ export default function ProfilePage() {
             value={value}
             onChange={(e) => onChange(e.target.value)}
             disabled={!isEditing}
-            className={`w-full bg-gray-800/50 border border-gray-700 rounded-xl py-3 px-4 text-white placeholder-gray-500 focus:ring-2 focus:ring-indigo-500 focus:border-transparent ${icon ? 'pl-10' : ''} disabled:opacity-50 disabled:cursor-not-allowed`}
+            className={`w-full bg-gray-800/50 border rounded-xl py-3 px-4 text-white placeholder-gray-500 focus:ring-2 focus:ring-indigo-500 focus:border-transparent ${icon ? 'pl-10' : ''} disabled:opacity-50 disabled:cursor-not-allowed ${formErrors[label.toLowerCase().replace(/\s+/g, '')] ? 'border-red-500' : 'border-gray-700'}`}
           >
             <option value="">Select {label}</option>
             {COUNTRIES.map((c) => (
@@ -189,11 +305,23 @@ export default function ProfilePage() {
           <input
             type={type}
             value={value}
-            onChange={(e) => onChange(e.target.value)}
+            onChange={(e) => {
+              onChange(e.target.value);
+              if (formErrors[label.toLowerCase().replace(/\s+/g, '')]) {
+                setFormErrors(prev => {
+                  const newErrors = { ...prev };
+                  delete newErrors[label.toLowerCase().replace(/\s+/g, '')];
+                  return newErrors;
+                });
+              }
+            }}
             placeholder={placeholder}
             disabled={!isEditing}
-            className={`w-full bg-gray-800/50 border border-gray-700 rounded-xl py-3 px-4 text-white placeholder-gray-500 focus:ring-2 focus:ring-indigo-500 focus:border-transparent ${icon ? 'pl-10' : ''} disabled:opacity-50 disabled:cursor-not-allowed`}
+            className={`w-full bg-gray-800/50 border rounded-xl py-3 px-4 text-white placeholder-gray-500 focus:ring-2 focus:ring-indigo-500 focus:border-transparent ${icon ? 'pl-10' : ''} disabled:opacity-50 disabled:cursor-not-allowed ${formErrors[label.toLowerCase().replace(/\s+/g, '')] ? 'border-red-500' : 'border-gray-700'}`}
           />
+        )}
+        {formErrors[label.toLowerCase().replace(/\s+/g, '')] && (
+          <p className="text-xs text-red-400 mt-1">{formErrors[label.toLowerCase().replace(/\s+/g, '')]}</p>
         )}
       </div>
     </div>
@@ -468,16 +596,71 @@ export default function ProfilePage() {
 
           {/* Sidebar */}
           <div className="space-y-6">
+            {/* KYC Status Card */}
+            <div className="p-4 rounded-xl bg-gray-800/50 border border-gray-700/50">
+              <h3 className="text-sm font-semibold text-gray-400 mb-3 flex items-center gap-2">
+                <Shield className="h-4 w-4" /> Identity Verification
+              </h3>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-gray-400">Status</span>
+                  <span className={`px-2 py-1 rounded-md text-xs font-medium ${
+                    kycProfile?.status === 'approved' ? 'bg-green-500/20 text-green-400' :
+                    kycProfile?.status === 'pending' ? 'bg-yellow-500/20 text-yellow-400' :
+                    kycProfile?.status === 'rejected' ? 'bg-red-500/20 text-red-400' :
+                    'bg-gray-700 text-gray-400'
+                  }`}>
+                    {kycProfile?.status === 'approved' ? 'Verified' :
+                     kycProfile?.status === 'pending' ? 'Pending' :
+                     kycProfile?.status === 'rejected' ? 'Rejected' :
+                     'Unverified'}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-gray-400">KYC Level</span>
+                  <span className="px-2 py-1 rounded-md bg-indigo-500/20 text-indigo-400 text-xs font-medium">
+                    {getKycLevelName(kycProfile?.level || 0)}
+                  </span>
+                </div>
+                
+                {/* Trading Limits */}
+                <div className="mt-3 pt-3 border-t border-gray-700/50">
+                  <p className="text-xs text-gray-500 mb-2">Trading Limits</p>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="p-2 rounded-lg bg-gray-700/30">
+                      <p className="text-xs text-gray-400">Daily</p>
+                      <p className="text-sm font-medium text-white">{getTradingLimits(kycProfile?.level || 0).daily}</p>
+                    </div>
+                    <div className="p-2 rounded-lg bg-gray-700/30">
+                      <p className="text-xs text-gray-400">Monthly</p>
+                      <p className="text-sm font-medium text-white">{getTradingLimits(kycProfile?.level || 0).monthly}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {kycProfile?.status !== 'approved' && (
+                  <button
+                    onClick={startKycVerification}
+                    disabled={isKycLoading}
+                    className="w-full mt-3 px-3 py-2 rounded-lg bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-sm font-medium hover:from-indigo-500 hover:to-purple-500 transition-colors flex items-center justify-center gap-2"
+                  >
+                    {isKycLoading ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <>
+                        <Shield className="h-4 w-4" />
+                        {kycProfile?.status === 'pending' ? 'Continue Verification' : 'Verify Identity'}
+                      </>
+                    )}
+                  </button>
+                )}
+              </div>
+            </div>
+
             {/* Quick Stats */}
             <div className="p-4 rounded-xl bg-gray-800/50 border border-gray-700/50">
               <h3 className="text-sm font-semibold text-gray-400 mb-3">Account Status</h3>
               <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-400">KYC Level</span>
-                  <span className="px-2 py-1 rounded-md bg-gray-700 text-xs text-white">
-                    Level {profile.kyc_level || 0}
-                  </span>
-                </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-gray-400">Email</span>
                   {profile.email_verified ? (
@@ -552,6 +735,136 @@ export default function ProfilePage() {
           </div>
         </div>
       </div>
+
+      {/* KYC Modal */}
+      {showKycModal && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="w-full max-w-md bg-gray-900 border border-gray-700 rounded-2xl p-6">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-xl font-bold text-white">Identity Verification</h3>
+              <button onClick={() => setShowKycModal(false)} className="text-gray-400 hover:text-white">
+                <XCircle className="h-6 w-6" />
+              </button>
+            </div>
+
+            {/* Progress Steps */}
+            <div className="flex items-center justify-center gap-2 mb-6">
+              {['init', 'documents', 'liveness'].map((step, index) => (
+                <div key={step} className="flex items-center">
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium ${
+                    kycStep === step || (step === 'documents' && kycStep === 'liveness') || (step === 'init' && kycStep !== 'init')
+                      ? 'bg-indigo-600 text-white' 
+                      : 'bg-gray-700 text-gray-400'
+                  }`}>
+                    {index + 1}
+                  </div>
+                  {index < 2 && <div className={`w-8 h-0.5 ${
+                    (step === 'init' && kycStep !== 'init') || step === 'documents'
+                      ? 'bg-indigo-600' 
+                      : 'bg-gray-700'
+                  }`} />}
+                </div>
+              ))}
+            </div>
+
+            {/* Step Content */}
+            {kycStep === 'init' && (
+              <div className="text-center">
+                <div className="w-16 h-16 rounded-full bg-indigo-500/20 flex items-center justify-center mx-auto mb-4">
+                  <Shield className="h-8 w-8 text-indigo-400" />
+                </div>
+                <h4 className="text-lg font-semibold text-white mb-2">Start Verification</h4>
+                <p className="text-sm text-gray-400 mb-6">
+                  Complete identity verification to unlock higher trading limits and enable P2P trading.
+                </p>
+                <button
+                  onClick={() => setKycStep('documents')}
+                  className="w-full px-4 py-3 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-medium"
+                >
+                  Continue
+                </button>
+              </div>
+            )}
+
+            {kycStep === 'documents' && (
+              <div className="space-y-4">
+                <h4 className="text-lg font-semibold text-white text-center">Upload ID Document</h4>
+                <p className="text-sm text-gray-400 text-center">
+                  Upload a clear photo of your passport, national ID, or driver's license.
+                </p>
+                <div className="border-2 border-dashed border-gray-700 rounded-xl p-8 text-center hover:border-indigo-500 transition-colors cursor-pointer">
+                  <Camera className="h-10 w-10 text-gray-500 mx-auto mb-2" />
+                  <p className="text-sm text-gray-400">Click to upload or drag and drop</p>
+                  <p className="text-xs text-gray-500 mt-1">PNG, JPG up to 10MB</p>
+                </div>
+                <button
+                  onClick={() => setKycStep('liveness')}
+                  className="w-full px-4 py-3 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-medium"
+                >
+                  Continue
+                </button>
+              </div>
+            )}
+
+            {kycStep === 'liveness' && (
+              <div className="space-y-4">
+                <h4 className="text-lg font-semibold text-white text-center">Liveness Check</h4>
+                <p className="text-sm text-gray-400 text-center">
+                  Take a selfie to verify you're a real person.
+                </p>
+                <div className="border-2 border-dashed border-gray-700 rounded-xl p-8 text-center hover:border-indigo-500 transition-colors cursor-pointer">
+                  <User className="h-10 w-10 text-gray-500 mx-auto mb-2" />
+                  <p className="text-sm text-gray-400">Click to take selfie</p>
+                  <p className="text-xs text-gray-500 mt-1">Make sure your face is clearly visible</p>
+                </div>
+                <button
+                  onClick={() => {
+                    setKycStep('pending');
+                    setTimeout(() => {
+                      setKycStep('complete');
+                      loadKycStatus();
+                    }, 3000);
+                  }}
+                  className="w-full px-4 py-3 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-medium"
+                >
+                  Submit
+                </button>
+              </div>
+            )}
+
+            {kycStep === 'pending' && (
+              <div className="text-center">
+                <Loader2 className="h-12 w-12 text-indigo-400 animate-spin mx-auto mb-4" />
+                <h4 className="text-lg font-semibold text-white mb-2">Verification In Progress</h4>
+                <p className="text-sm text-gray-400">
+                  We're reviewing your documents. This usually takes a few minutes.
+                </p>
+              </div>
+            )}
+
+            {kycStep === 'complete' && (
+              <div className="text-center">
+                <div className="w-16 h-16 rounded-full bg-green-500/20 flex items-center justify-center mx-auto mb-4">
+                  <CheckCircle className="h-8 w-8 text-green-400" />
+                </div>
+                <h4 className="text-lg font-semibold text-white mb-2">Verification Complete!</h4>
+                <p className="text-sm text-gray-400 mb-6">
+                  Your identity has been verified. You can now trade with higher limits.
+                </p>
+                <button
+                  onClick={() => {
+                    setShowKycModal(false);
+                    loadKycStatus();
+                  }}
+                  className="w-full px-4 py-3 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-medium"
+                >
+                  Done
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

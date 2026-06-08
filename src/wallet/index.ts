@@ -5,7 +5,43 @@
  */
 
 export { BlackPaymentsWallet } from './BlackPaymentsWallet';
-export { WalletChain, type WalletChainType } from './types';
-export { createWallet, createWalletWithExistingSeed, createWalletWithPrivateKey, createFullWallet, createTestWallet, generateMnemonic, validateMnemonic, validatePrivateKey, getAddressFromMnemonic } from './factory';
-export { getSupportedChains, getChainById, getChainByName } from './chains';
-export type { BalanceResult, TransactionResult, GasEstimate, SendUSDTParams, QuoteParams, MoonPayConfig, FiatRequestParams } from './types';
+export { BlackPaymentsSmartWallet, createSmartWallet, WalletMode } from './BlackPaymentsSmartWallet';
+export { WalletChain } from './types';
+export { createWallet, createWalletWithExistingSeed, createWalletWithPrivateKey, createFullWallet, generateMnemonic, validateMnemonic, validatePrivateKey, getAddressFromMnemonic } from './factory';
+export { getSupportedChains } from './chains';
+export type { BalanceResult, TransactionResult, GasEstimate, MoonPayConfig, FiatRequestParams } from './types';
+
+// Provider exports
+export {
+  providerRegistry,
+  ProviderRegistry,
+  RPCError,
+  BaseProvider,
+  EthereumProvider,
+  SolanaProvider,
+  BitcoinProvider,
+  CosmosProvider,
+  TONProvider,
+  AptosProvider,
+  Web3Provider,
+  MobileAdapter,
+  Adapter,
+  PromiseAdapter,
+  CallbackAdapter,
+} from './providers';
+export type { ChainType, ProviderConfig, IRequestArguments, IBaseProvider, IAdapter, ResponseCallback, ErrorCallback, MobileAdapterConfig, Web3ProviderConfig } from './providers';
+
+// Alchemy Account Abstraction exports
+export {
+  AlchemyAccountAbstractionService,
+  aaService,
+  createAASmartAccount,
+  initAAWithSigner,
+  type AAChain,
+  type SmartAccountConfig,
+  type SessionKeyConfig,
+  type MultiOwnerConfig,
+  type GasSponsorshipConfig,
+  type AAWalletData,
+  type AATransactionRequest
+} from './AlchemyAccountAbstraction';

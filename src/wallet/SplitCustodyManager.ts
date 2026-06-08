@@ -154,9 +154,9 @@ export class SplitCustodyManager {
   /**
    * Get all addresses
    */
-  getAllAddresses(): { hot: Record<WalletChain, string>; cold: Record<WalletChain, string> } {
+  async getAllAddresses(): Promise<{ hot: Record<WalletChain, string>; cold: Record<WalletChain, string> }> {
     return {
-      hot: this.hotWallet.getAllAddresses(),
+      hot: await this.hotWallet.getAllAddresses(),
       cold: this.coldWallet.getAllAddresses(),
     };
   }
@@ -205,7 +205,7 @@ export class SplitCustodyManager {
       // For cold wallet, we may need multi-sig approval
       if (this.coldWallet.getConfig().multiSigRequired) {
         // Create multi-sig request
-        const hotAddress = this.hotWallet.getAddress(chain);
+        const hotAddress = await this.hotWallet.getAddress(chain);
         if (!hotAddress) {
           throw new Error(`Hot wallet not configured for chain ${chain}`);
         }
@@ -222,8 +222,12 @@ export class SplitCustodyManager {
       }
 
       // Execute transfer from cold to hot
+      const hotAddress = await this.hotWallet.getAddress(chain);
+      if (!hotAddress) {
+        throw new Error(`Hot wallet not configured for chain ${chain}`);
+      }
       const result = await this.coldWallet.sendUSDT({
-        to: this.hotWallet.getAddress(chain)!,
+        to: hotAddress,
         amount,
         chain,
       });
@@ -275,8 +279,12 @@ export class SplitCustodyManager {
 
     try {
       // Execute transfer from hot to cold
+      const coldAddress = await this.coldWallet.getAddress(chain);
+      if (!coldAddress) {
+        throw new Error(`Cold wallet not configured for chain ${chain}`);
+      }
       const result = await this.hotWallet.sendUSDT({
-        to: this.coldWallet.getAddress(chain)!,
+        to: coldAddress,
         amount,
         chain,
       });
@@ -400,7 +408,7 @@ export class SplitCustodyManager {
    * Add whitelisted address to hot wallet
    */
   addHotWalletWhitelist(entry: WhitelistEntry): void {
-    this.hotWallet.addToWhitelist(entry);
+    this.hotWallet.addToWhitelist(entry.address, entry.label, entry.chain);
   }
 
   /**

@@ -25,6 +25,18 @@ export interface Database {
           kyc_status: 'none' | 'pending' | 'approved' | 'rejected';
           created_at: string;
           updated_at: string;
+          first_name?: string | null;
+          last_name?: string | null;
+          email?: string | null;
+          phone?: string | null;
+          date_of_birth?: string | null;
+          country?: string | null;
+          nationality?: string | null;
+          state?: string | null;
+          city?: string | null;
+          address_line1?: string | null;
+          address_line2?: string | null;
+          postal_code?: string | null;
         };
         Insert: {
           id?: string;
@@ -33,6 +45,18 @@ export interface Database {
           avatar_url?: string | null;
           kyc_level?: number;
           kyc_status?: 'none' | 'pending' | 'approved' | 'rejected';
+          first_name?: string | null;
+          last_name?: string | null;
+          email?: string | null;
+          phone?: string | null;
+          date_of_birth?: string | null;
+          country?: string | null;
+          nationality?: string | null;
+          state?: string | null;
+          city?: string | null;
+          address_line1?: string | null;
+          address_line2?: string | null;
+          postal_code?: string | null;
         };
         Update: {
           id?: string;
@@ -41,6 +65,18 @@ export interface Database {
           avatar_url?: string | null;
           kyc_level?: number;
           kyc_status?: 'none' | 'pending' | 'approved' | 'rejected';
+          first_name?: string | null;
+          last_name?: string | null;
+          email?: string | null;
+          phone?: string | null;
+          date_of_birth?: string | null;
+          country?: string | null;
+          nationality?: string | null;
+          state?: string | null;
+          city?: string | null;
+          address_line1?: string | null;
+          address_line2?: string | null;
+          postal_code?: string | null;
         };
       };
       p2p_orders: {
@@ -184,6 +220,145 @@ export interface Database {
           status?: 'pending' | 'confirmed' | 'failed';
         };
       };
+      encrypted_wallets: {
+        Row: {
+          id: string;
+          wallet_address: string;
+          encrypted_private_key: string;
+          encrypted_mnemonic: string | null;
+          encryption_iv: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          wallet_address: string;
+          encrypted_private_key: string;
+          encrypted_mnemonic?: string | null;
+          encryption_iv: string;
+        };
+        Update: {
+          wallet_address?: string;
+          encrypted_private_key?: string;
+          encrypted_mnemonic?: string | null;
+          encryption_iv?: string;
+        };
+      };
+      user_reputation: {
+        Row: {
+          id: string;
+          user_id: string;
+          rating: number;
+          total_trades: number;
+          successful_trades: number;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          rating?: number;
+          total_trades?: number;
+          successful_trades?: number;
+        };
+        Update: {
+          rating?: number;
+          total_trades?: number;
+          successful_trades?: number;
+        };
+      };
+      chat_messages: {
+        Row: {
+          id: string;
+          trade_id: string;
+          sender_id: string;
+          message: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          trade_id: string;
+          sender_id: string;
+          message: string;
+        };
+        Update: {
+          message?: string;
+        };
+      };
+      disputes: {
+        Row: {
+          id: string;
+          trade_id: string;
+          opened_by: string;
+          reason: string;
+          status: 'open' | 'resolved' | 'closed';
+          resolution: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          trade_id: string;
+          opened_by: string;
+          reason: string;
+          status?: 'open' | 'resolved' | 'closed';
+          resolution?: string | null;
+        };
+        Update: {
+          status?: 'open' | 'resolved' | 'closed';
+          resolution?: string | null;
+        };
+      };
+      notifications: {
+        Row: {
+          id: string;
+          user_id: string;
+          type: string;
+          title: string;
+          message: string;
+          data: Record<string, any>;
+          read: boolean;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          type: string;
+          title: string;
+          message: string;
+          data?: Record<string, any>;
+          read?: boolean;
+        };
+        Update: {
+          read?: boolean;
+        };
+      };
+      user_settings: {
+        Row: {
+          id: string;
+          user_id: string;
+          language: string;
+          currency: string;
+          notifications_enabled: boolean;
+          two_factor_enabled: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          language?: string;
+          currency?: string;
+          notifications_enabled?: boolean;
+          two_factor_enabled?: boolean;
+        };
+        Update: {
+          language?: string;
+          currency?: string;
+          notifications_enabled?: boolean;
+          two_factor_enabled?: boolean;
+        };
+      };
     };
   };
 }
@@ -232,16 +407,10 @@ export function getSupabaseClient(): SupabaseClient<Database> {
     return supabaseClient;
   }
   
-  // No config - return dummy client
-  return createClient<Database>('https://placeholder.supabase.co', 'placeholder', {
-    auth: { persistSession: false, autoRefreshToken: false },
-    global: {
-      headers: {
-        'Accept': 'application/json',
-        'Prefer': 'return=representation',
-      },
-    },
-  });
+  // No config - throw error in production
+  throw new Error(
+    'Supabase is not configured. Please set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY environment variables.'
+  );
 }
 
 export const supabase: SupabaseClient<Database> = supabaseClient || getSupabaseClient();

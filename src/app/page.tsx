@@ -1,804 +1,137 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ethers } from 'ethers';
-import TronWeb from 'tronweb';
 import Link from 'next/link';
-import { 
-  TrendingUp, 
-  Shield, 
-  ArrowUpRight, 
-  ArrowDownLeft,
-  Copy,
-  Check,
-  DollarSign,
-  Lock,
-  Flame,
-  Zap,
-  Activity,
-  Users,
-  CreditCard,
-  Hexagon,
-  Send,
-  History,
-  Settings,
-  LogOut,
-  QrCode,
-  ExternalLink,
-  Fingerprint,
-  Layers,
-  Target,
-  Star,
-  Award,
-  CheckCircle2,
-  Circle,
-  ChevronRight,
-  Wallet,
-  Loader2,
-  Key,
-  Globe,
-  Cloud,
-  CloudOff,
-  User
+import {
+  TrendingUp, Shield, ArrowUpRight, ArrowDownLeft,
+  Copy, Check, DollarSign, Lock, Flame, Zap, Activity,
+  Users, CreditCard, Hexagon, Send, History, Settings,
+  LogOut, QrCode, ExternalLink, Fingerprint, Layers,
+  Target, Star, Award, CheckCircle2, Circle, ChevronRight,
+  Wallet, Loader2, Key, Globe, Cloud, CloudOff, User,
+  XCircle
 } from 'lucide-react';
 import { showToast } from '@/components/Toast';
-import { walletStorage } from '@/lib/secureWalletStorage';
+import { useWalletStore } from '@/stores/walletStore';
+import { useWalletAuth } from '@/hooks/useWalletAuth';
+import { useWalletBalance } from '@/hooks/useWalletBalance';
 import { WalletConnectModal } from '@/components/WalletConnectModal';
-import { supabase } from '@/lib/supabaseClient';
-import { profileApi } from '@/lib/profileApi';
+import { QRCode } from '@/components/QRCode';
+import { CHAINS, ChainKey } from '@/config/chains';
 
-// Chain types
-type ChainKey = 'tron' | 'ethereum' | 'bsc' | 'arbitrum' | 'solana';
-
-interface ChainConfig {
-  name: string;
-  symbol: string;
-  rpcUrls: string[]; // multiple endpoints for failover
-  explorerUrl: string;
-  chainId: number;
-  usdtAddress: string;
-}
-
-const CHAINS: Record<ChainKey, ChainConfig> = {
-  tron: {
-    name: 'TRON',
-    rpcUrls: ['https://rpc.ankr.com/tron/'],
-    explorerUrl: 'https://tronscan.org',
-    symbol: 'TRX',
-    chainId: 0,
-    usdtAddress: 'TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t',
-  },
-  ethereum: {
-    name: 'Ethereum',
-    rpcUrls: ['https://rpc.ankr.com/eth'],
-    explorerUrl: 'https://etherscan.io',
-    symbol: 'ETH',
-    chainId: 1,
-    usdtAddress: '0xdAC17F958D2ee523a2206206994597C13D831ec7',
-  },
-  bsc: {
-    name: 'BNB Chain',
-    rpcUrls: ['https://bsc-dataseed.binance.org', 'https://rpc.ankr.com/bsc'],
-    explorerUrl: 'https://bscscan.com',
-    symbol: 'BNB',
-    chainId: 56,
-    usdtAddress: '0x55d398326f99059fF775485246999027B3197955',
-  },
-  arbitrum: {
-    name: 'Arbitrum',
-    rpcUrls: ['https://arb1.arbitrum.io/rpc'],
-    explorerUrl: 'https://arbiscan.io',
-    symbol: 'ETH',
-    chainId: 42161,
-    usdtAddress: '0xFd086bC7CD5C481DCC93C85BD42c402bDe6B9614',
-  },
-  solana: {
-    name: 'Solana',
-    rpcUrls: ['https://api.mainnet-beta.solana.com'],
-    explorerUrl: 'https://solscan.io',
-    symbol: 'SOL',
-    chainId: 0,
-    usdtAddress: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
-  },
-};
-
-const USDT_ABI = [
-  'function balanceOf(address owner) view returns (uint256)',
-  'function transfer(address to, uint256 amount) returns (boolean)',
-  'function decimals() view returns (uint8)',
+// UI Constants - Features, actions, networks (unchanged)
+const features = [
+  { icon: Shield, title: 'Secure Escrow', desc: 'Your funds are protected with smart contracts', color: 'green' },
+  { icon: Zap, title: 'Low Fees', desc: 'TRC-20 network for minimal transaction costs', color: 'yellow' },
+  { icon: Users, title: 'P2P Trading', desc: 'Trade directly with verified users worldwide', color: 'blue' },
+  { icon: Layers, title: 'Split Custody', desc: 'Hot & cold wallet security system', color: 'purple' },
 ];
 
-// --- Helpers and utilities ---
+const colorClassMap: any = {
+  green: { bg: 'bg-green-500/20', text: 'text-green-400' },
+  yellow: { bg: 'bg-yellow-500/20', text: 'text-yellow-400' },
+  blue: { bg: 'bg-blue-500/20', text: 'text-blue-400' },
+  purple: { bg: 'bg-purple-500/20', text: 'text-purple-400' },
+  orange: { bg: 'bg-orange-500/20', text: 'text-orange-400' },
+  indigo: { bg: 'bg-indigo-500/20', text: 'text-indigo-400' },
+};
 
-// In-memory cache for decrypted wallet instances (ephemeral only)
-// Using ethers.BigNumber for broader wallet type compatibility
-type EtherWallet = ethers.Wallet | ethers.HDNodeWallet;
-const KeystoreCache = (() => {
-  const map = new Map<string, { wallet: EtherWallet; expiresAt: number }>();
-  const TTL = 1000 * 60 * 10; // 10 minutes
+type QuickAction = {
+  icon: any;
+  label: string;
+  href?: string;
+  action?: () => void;
+  color: string;
+  desc: string;
+};
+const quickActions: QuickAction[] = [
+  { icon: Send, label: 'Send USDT', href: '/send', color: 'blue', desc: 'Transfer to any address' },
+  { icon: ArrowDownLeft, label: 'Receive', action: () => {}, color: 'green', desc: 'Get your deposit address' }, // Set via hook
+  { icon: DollarSign, label: 'P2P Trade', href: '/p2p', color: 'orange', desc: 'Buy or sell USDT' },
+  { icon: History, label: 'History', href: '/history', color: 'purple', desc: 'View all transactions' },
+  { icon: User, label: 'Profile', href: '/profile', color: 'indigo', desc: 'Manage your account' },
+  { icon: Settings, label: 'Settings', href: '/settings', color: 'gray', desc: 'App preferences' },
+];
 
-  const set = (address: string, wallet: EtherWallet, ttlMs = TTL) => {
-    const expiresAt = Date.now() + ttlMs;
-    map.set(address.toLowerCase(), { wallet, expiresAt });
-    // schedule cleanup
-    setTimeout(() => {
-      const entry = map.get(address.toLowerCase());
-      if (entry && entry.expiresAt <= Date.now()) map.delete(address.toLowerCase());
-    }, ttlMs + 1000);
-  };
-
-  const get = (address: string) => {
-    const entry = map.get(address.toLowerCase());
-    if (!entry) return null;
-    if (Date.now() > entry.expiresAt) {
-      map.delete(address.toLowerCase());
-      return null;
-    }
-    return entry.wallet;
-  };
-
-  const clear = (address?: string) => {
-    if (address) map.delete(address.toLowerCase());
-    else map.clear();
-  };
-
-  return { set, get, clear };
-})();
-
-// Raw keystore cache (prefetched encrypted JSON) - speeds up decryption without extra network roundtrip
-const KeystoreRawCache = (() => {
-  const map = new Map<string, { keystore: string; expiresAt: number }>();
-  const TTL = 1000 * 60 * 30; // 30 minutes
-  const set = (address: string, keystore: string, ttlMs = TTL) => {
-    map.set(address.toLowerCase(), { keystore, expiresAt: Date.now() + ttlMs });
-    setTimeout(() => {
-      const entry = map.get(address.toLowerCase());
-      if (entry && entry.expiresAt <= Date.now()) map.delete(address.toLowerCase());
-    }, ttlMs + 1000);
-  };
-  const get = (address: string) => {
-    const entry = map.get(address.toLowerCase());
-    if (!entry) return null;
-    if (Date.now() > entry.expiresAt) { map.delete(address.toLowerCase()); return null; }
-    return entry.keystore;
-  };
-  const clear = (address?: string) => { if (address) map.delete(address.toLowerCase()); else map.clear(); };
-  return { set, get, clear };
-})();
-
-// Provider selection cache
-const providerCache = new Map<string, ethers.JsonRpcProvider>();
-const tronWebCache = new Map<string, TronWeb>();
-
-async function pingProvider(url: string, timeoutMs = 2000) {
-  try {
-    const provider = new ethers.JsonRpcProvider(url);
-    const p = provider.getBlockNumber();
-    const res = await Promise.race([
-      p,
-      new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), timeoutMs)),
-    ]);
-    return { provider, latency: 0 } as any; // latency measurement not implemented precisely to avoid extra calls
-  } catch (e) {
-    return null;
-  }
-}
-
-// Get TronWeb provider for TRON chain
-function getTronWebProvider(rpcUrl?: string): TronWeb {
-  const cacheKey = rpcUrl || 'tron';
-  if (tronWebCache.has(cacheKey)) return tronWebCache.get(cacheKey)!;
-  
-  const tronWeb = new TronWeb({
-    fullHost: rpcUrl || 'https://api.trongrid.io',
-  });
-  tronWebCache.set(cacheKey, tronWeb);
-  return tronWeb;
-}
-
-async function getProviderForChain(chainKey: ChainKey): Promise<ethers.JsonRpcProvider | TronWeb> {
-  // Special handling for Tron
-  if (chainKey === 'tron') {
-    return getTronWebProvider();
-  }
-  
-  const chain = CHAINS[chainKey];
-  const cacheKey = chainKey;
-  if (providerCache.has(cacheKey)) return providerCache.get(cacheKey)!;
-
-  // Try each URL in order, return first responsive
-  for (const url of chain.rpcUrls) {
-    try {
-      const ping = await pingProvider(url, 2000);
-      if (ping && ping.provider) {
-        providerCache.set(cacheKey, ping.provider);
-        return ping.provider;
-      }
-    } catch (e) {
-      // continue
-    }
-  }
-  // fallback to first
-  const fallback = new ethers.JsonRpcProvider(chain.rpcUrls[0]);
-  providerCache.set(cacheKey, fallback);
-  return fallback;
-}
-
-// Generic retry wrapper with exponential backoff + jitter
-async function withRetry<T>(fn: () => Promise<T>, retries = 3, baseDelay = 200): Promise<T> {
-  let attempt = 0;
-  while (true) {
-    try {
-      return await fn();
-    } catch (err) {
-      attempt++;
-      const isLast = attempt > retries;
-      if (isLast) throw err;
-      const jitter = Math.random() * 100;
-      const delay = baseDelay * Math.pow(2, attempt - 1) + jitter;
-      await new Promise((res) => setTimeout(res, delay));
-    }
-  }
-}
-
-// Simple notify wrapper to dedupe repeated messages
-const recentMessages = new Map<string, number>();
-function notify(type: 'success' | 'error' | 'info', message: string, dedupeMs = 3000) {
-  const key = `${type}:${message}`;
-  const now = Date.now();
-  const last = recentMessages.get(key) || 0;
-  if (now - last < dedupeMs) return; // skip duplicate
-  recentMessages.set(key, now);
-  showToast(type, message);
-}
-
-// Validate and normalize imported secret (mnemonic or private key)
-function parseAndValidateSecret(input: string): { type: 'mnemonic' | 'privateKey'; normalized: string } {
-  const trimmed = input.trim();
-  // Try mnemonic first by attempting to create wallet
-  try {
-    const maybe = ethers.Wallet.fromPhrase(trimmed);
-    if (maybe && maybe.address) {
-      return { type: 'mnemonic', normalized: trimmed };
-    }
-  } catch (_e) {
-    // not a valid mnemonic
-  }
-
-  // Normalize private key
-  let pk = trimmed;
-  if (!pk.startsWith('0x')) pk = '0x' + pk;
-  if (!ethers.isHexString(pk)) throw new Error('Invalid private key format');
-  // Basic length check for 32 bytes private key
-  if (pk.length !== 66) throw new Error('Invalid private key length');
-  // Try to construct wallet
-  try {
-    const w = new ethers.Wallet(pk);
-    if (w && w.address) return { type: 'privateKey', normalized: pk };
-  } catch (e) {
-    throw new Error('Invalid private key');
-  }
-
-  throw new Error('Invalid secret');
-}
-
-// Centralized audit logging (non-sensitive) to Supabase
-async function logEvent(eventType: string, metadata: Record<string, any> = {}) {
-  try {
-    // strip any potentially sensitive fields
-    const sanitized = { ...metadata };
-    delete sanitized.privateKey;
-    delete sanitized.mnemonic;
-    delete sanitized.keystore;
-
-    const payload: any = { event_type: eventType, metadata: sanitized, created_at: new Date().toISOString() };
-    // attach user id if available
-    const { data: { session } } = await supabase.auth.getSession();
-    if (session?.user?.id) payload.user_id = session.user.id;
-
-    // Fire and forget; don't block critical flows but log failures
-    const { error } = await supabase.from('audit_logs').insert([payload]);
-    if (error) console.warn('Audit log failed:', error);
-  } catch (e) {
-    console.warn('Audit logging error:', e);
-  }
-}
-
-// Password strength check (basic)
-function isPasswordStrong(pw: string) {
-  if (!pw) return false;
-  if (pw.length < 8) return false;
-  // at least one letter and one number
-  if (!/[a-zA-Z]/.test(pw) || !/[0-9]/.test(pw)) return false;
-  return true;
-}
-
-// Last-known balance cache (non-sensitive) persisted to sessionStorage for fast perceived load
-const LastKnownBalances = (() => {
-  const key = 'lastKnownBalances_v1';
-  const load = () => {
-    try {
-      const raw = typeof window !== 'undefined' ? sessionStorage.getItem(key) : null;
-      return raw ? JSON.parse(raw) : {};
-    } catch (e) { return {}; }
-  };
-  const save = (obj: Record<string, any>) => {
-    try { sessionStorage.setItem(key, JSON.stringify(obj)); } catch (e) {}
-  };
-  let store = load();
-  const get = (k: string) => store[k];
-  const set = (k: string, v: any) => { store[k] = v; save(store); };
-  const clear = () => { store = {}; save(store); };
-  return { get, set, clear };
-})();
-
-// --- End Helpers ---
+const networks = [
+  { id: 'tron', name: 'TRON', symbol: 'TRX', emoji: '🔴', desc: 'Best for low fees', recommended: true },
+  { id: 'bsc', name: 'BNB Chain', symbol: 'BNB', emoji: '🟡', desc: 'Fast & cheap' },
+  { id: 'ethereum', name: 'Ethereum', symbol: 'ETH', emoji: '🔵', desc: 'Most popular' },
+];
 
 export default function Dashboard() {
   const router = useRouter();
-  const [theme, setTheme] = useState<'dark' | 'light'>('dark');
-  const [account, setAccount] = useState<string | null>(null);
-  const [selectedChain, setSelectedChain] = useState<ChainKey>('ethereum');
-  const [balance, setBalance] = useState<string>('0');
-  const [usdtBalance, setUsdtBalance] = useState<string>('0');
-  const [isLoading, setIsLoading] = useState(false);
+
+  // Global state from store
+  const {
+    account,
+    selectedChain,
+    balance,
+    usdtBalance,
+    usdValue,
+    priceChange,
+    isLoading,
+    isAuthenticated,
+    isAuthLoading,
+    showWalletModal,
+    showPasswordModal,
+    showImportModal,
+    showEncryptModal,
+    showReceiveQR,
+    setShowWalletModal,
+    setShowPasswordModal,
+    setShowImportModal,
+    setShowEncryptModal,
+    setShowReceiveQR,
+  } = useWalletStore();
+
+  // Local UI state (truly component-specific)
   const [copied, setCopied] = useState(false);
-  const [showWalletModal, setShowWalletModal] = useState(false);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isAuthLoading, setIsAuthLoading] = useState(true);
-  const [showPasswordModal, setShowPasswordModal] = useState(false);
-  const [walletPassword, setWalletPassword] = useState('');
-  const [pendingWalletAddress, setPendingWalletAddress] = useState<string | null>(null);
 
-  // New states for import/encrypt modals
-  const [showImportModal, setShowImportModal] = useState(false);
-  const [importInput, setImportInput] = useState('');
-  const [importPassword, setImportPassword] = useState('');
+  // Hooks for business logic
+  const {
+    // Auth state and actions
+    pendingWalletAddress,
+    setPendingWalletAddress,
+    pendingWalletInstance,
+    setPendingWalletInstance,
+    walletPassword,
+    setWalletPassword,
+    importInput,
+    setImportInput,
+    importPassword,
+    setImportPassword,
+    encryptPassword,
+    setEncryptPassword,
+    createNewWallet,
+    handleEncryptAndStore,
+    openImportModal,
+    handleImportSubmit,
+    decryptWallet,
+    disconnectWallet: authDisconnectWallet,
+  } = useWalletAuth();
 
-  const [showEncryptModal, setShowEncryptModal] = useState(false);
-  const [pendingWalletInstance, setPendingWalletInstance] = useState<any>(null);
-  const [encryptPassword, setEncryptPassword] = useState('');
+  const { fetchBalances } = useWalletBalance();
 
-  // Polling refs
-  const pollingRef = useRef<number | null>(null);
-  const pollDelayRef = useRef<number>(15000); // start at 15s
-
-  // Helper: store keystore JSON into Supabase encrypted_wallets table
-  const storeKeystoreToSupabase = async (address: string, keystore: string | null, userId?: string | null) => {
-    try {
-      // The encrypted_wallets table stores: wallet_address, encrypted_private_key, encrypted_mnemonic, encryption_iv
-      // For now, we store the keystore as encrypted_private_key (it should already be encrypted)
-      const payload: any = { 
-        wallet_address: address.toLowerCase(), 
-        encrypted_private_key: keystore,
-        encryption_iv: 'default', // IV is already included in the keystore JSON
-      };
-      const { data, error } = await supabase.from('encrypted_wallets').upsert([payload], { onConflict: 'wallet_address' });
-      if (error) throw error;
-      // audit log
-      await logEvent('WALLET_STORE', { address: address.toLowerCase() });
-      return true;
-    } catch (err) {
-      console.error('Failed to store keystore to Supabase:', err);
-      return false;
-    }
-  };
-
-  const retrieveKeystoreFromSupabase = async (address: string) => {
-    try {
-      const { data, error } = await supabase.from('encrypted_wallets').select('encrypted_private_key').eq('wallet_address', address.toLowerCase()).single();
-      if (error) throw error;
-      return data?.encrypted_private_key || null;
-    } catch (err) {
-      console.error('Failed to retrieve keystore from Supabase:', err);
-      return null;
-    }
-  };
-
-  const deleteKeystoreFromSupabase = async (address: string) => {
-    try {
-      const { error } = await supabase.from('encrypted_wallets').delete().eq('wallet_address', address.toLowerCase());
-      if (error) throw error;
-      await logEvent('WALLET_DELETE', { address: address.toLowerCase() });
-      return true;
-    } catch (err) {
-      console.error('Failed to delete keystore from Supabase:', err);
-      return false;
-    }
-  };
-
-  // Decrypt keystore and cache wallet instance; if keystorePrefetched provided, uses it
-  const decryptAndCache = async (address: string, password: string, keystorePrefetched?: string) => {
-    try {
-      const keystore = keystorePrefetched || KeystoreRawCache.get(address) || await retrieveKeystoreFromSupabase(address);
-      if (!keystore) throw new Error('Keystore not found');
-      const wallet = await ethers.Wallet.fromEncryptedJson(keystore, password);
-      KeystoreCache.set(address, wallet);
-      KeystoreRawCache.set(address, keystore);
-      await logEvent('WALLET_DECRYPT', { address });
-      return wallet;
-    } catch (e) {
-      console.error('decryptAndCache failed', e);
-      throw e;
-    }
-  };
-
-  useEffect(() => {
-    const checkAuth = async () => {
-      const savedTheme = typeof window !== 'undefined' ? (localStorage.getItem('theme') as 'dark' | 'light' | null) : null;
-      if (savedTheme) {
-        setTheme(savedTheme);
-      }
-
-      // Check for Supabase Auth session first
-      const { data: { session } } = await supabase.auth.getSession();
-
-      if (session) {
-        try {
-          const profile = await profileApi.getByUserId(session.user.id);
-
-          if (profile && profile.wallet_address) {
-            const savedAccount = profile.wallet_address.toLowerCase();
-
-            try {
-              // Try to retrieve keystore from Supabase and prefetch raw keystore to speed decryption when needed
-              const keystore = await retrieveKeystoreFromSupabase(savedAccount);
-              if (keystore) {
-                KeystoreRawCache.set(savedAccount, keystore);
-                // Optimistic UI: show account immediately without decrypting
-                setAccount(savedAccount);
-                setIsAuthenticated(true);
-                // show last-known balances if available
-                const key = `${savedAccount}:${selectedChain}`;
-                const last = LastKnownBalances.get(key);
-                if (last) {
-                  if (last.usdt) setUsdtBalance(last.usdt);
-                  if (last.native) setBalance(last.native);
-                }
-                // schedule background balance refresh and prefetch provider
-                const schedule = (cb: () => void) => {
-                  if ('requestIdleCallback' in window) (window as any).requestIdleCallback(cb, { timeout: 1000 });
-                  else setTimeout(cb, 500);
-                };
-                schedule(async () => {
-                  try {
-                    await getProviderForChain(selectedChain);
-                    fetchBalances(savedAccount, selectedChain);
-                  } catch (e) { /* ignore */ }
-                });
-              } else {
-                // No keystore in cloud - prompt user to provide password to decrypt existing remote storage
-                setPendingWalletAddress(savedAccount);
-                setShowPasswordModal(true);
-              }
-            } catch (e) {
-              setPendingWalletAddress(savedAccount);
-              setShowPasswordModal(true);
-            }
-          } else {
-            console.log('User has auth but no profile - can create wallet from home');
-            // User has auth but no wallet/profile - show them the create wallet option
-            setIsAuthenticated(true);
-          }
-        } catch (e) {
-          console.warn('Profile fetch error, allowing access:', e);
-          setIsAuthenticated(true);
-        }
-      } else {
-        // Not authenticated - redirect to auth
-        router.push('/auth');
-      }
-
-      setIsAuthLoading(false);
-    };
-
-    checkAuth();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // Polling logic: refresh balances periodically while tab visible
-  useEffect(() => {
-    let visibilityHandler: any;
-    const startPolling = () => {
-      if (pollingRef.current) return;
-      pollingRef.current = window.setInterval(async () => {
-        if (!account) return;
-        try {
-          await fetchBalances(account, selectedChain);
-          // reset delay
-          pollDelayRef.current = 15000;
-        } catch (e) {
-          // increase delay
-          pollDelayRef.current = Math.min(120000, pollDelayRef.current * 2);
-          if (pollingRef.current) {
-            clearInterval(pollingRef.current);
-            pollingRef.current = window.setInterval(async () => {
-              if (account) await fetchBalances(account, selectedChain);
-            }, pollDelayRef.current);
-          }
-        }
-      }, pollDelayRef.current);
-    };
-
-    const stopPolling = () => {
-      if (pollingRef.current) { clearInterval(pollingRef.current); pollingRef.current = null; }
-    };
-
-    if (account) startPolling();
-
-    if (typeof document !== 'undefined') {
-      visibilityHandler = () => {
-        if (document.hidden) stopPolling(); else if (account) startPolling();
-      };
-      document.addEventListener('visibilitychange', visibilityHandler);
-    }
-
-    return () => {
-      stopPolling();
-      if (typeof document !== 'undefined' && visibilityHandler) document.removeEventListener('visibilitychange', visibilityHandler);
-    };
-  }, [account, selectedChain]);
-
-  // Fetch balances when account or selectedChain changes (initial immediate fetch)
-  useEffect(() => {
-    if (account) {
-      // Use last-known cache to show instant value (already applied in checkAuth), then refresh
-      fetchBalances(account, selectedChain);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [account, selectedChain]);
-
-  const connectWallet = async () => {
-    setShowWalletModal(true);
-  };
-
-  const createNewWallet = async () => {
-    setIsLoading(true);
-    try {
-      const wallet = ethers.Wallet.createRandom();
-      // Store pending wallet and show encrypt modal to capture password
-      setPendingWalletInstance(wallet);
-      setShowEncryptModal(true);
-    } catch (err) {
-      console.error('Failed to create wallet', err);
-      notify('error', 'Failed to create wallet. Please try again.');
-      setIsLoading(false);
-    }
-  };
-
-  const handleEncryptAndStore = async () => {
-    if (!pendingWalletInstance || !encryptPassword) return;
-    if (!isPasswordStrong(encryptPassword)) {
-      notify('error', 'Password must be at least 8 chars and include letters and numbers');
-      return;
-    }
-    setIsLoading(true);
-    try {
-      // Use wallet.encrypt with moderate scrypt params to balance security and UI responsiveness in browser
-      // ethers v6 expects: encrypt(password, progressCallback?, options?)
-      const keystore = await pendingWalletInstance.encrypt(encryptPassword, undefined, { scrypt: { N: 32768, r: 8, p: 1 } });
-
-      // Attach to supabase (if logged in)
-      const { data: { session } } = await supabase.auth.getSession();
-      const userId = session?.user?.id || null;
-
-      const stored = await storeKeystoreToSupabase(pendingWalletInstance.address, keystore, userId);
-      if (stored) {
-        const walletAddress = pendingWalletInstance.address.toLowerCase();
-        
-        // Link profile to user ID for cross-device access
-        if (userId) {
-          try {
-            // Create or update profile with user ID
-            await supabase.from('profiles').upsert({
-              id: userId,
-              wallet_address: walletAddress,
-              kyc_level: 0,
-              kyc_status: 'none'
-            }, { onConflict: 'id' });
-          } catch (e) {
-            console.warn('Failed to link profile to user:', e);
-          }
-        }
-        
-        setAccount(walletAddress);
-        walletStorage.setCurrentAccount(walletAddress);
-        setIsAuthenticated(true);
-        notify('success', 'Wallet created and encrypted. Save your password securely.');
-        setShowEncryptModal(false);
-        setPendingWalletInstance(null);
-        setEncryptPassword('');
-        setBalance('0');
-        setUsdtBalance('0');
-        // persist last-known balances
-        const key = `${pendingWalletInstance.address.toLowerCase()}:${selectedChain}`;
-        LastKnownBalances.set(key, { usdt: '0', native: '0', ts: Date.now() });
-        await logEvent('WALLET_CREATE', { address: pendingWalletInstance.address.toLowerCase() });
-      } else {
-        notify('error', 'Failed to save wallet to cloud. Please try again.');
-      }
-    } catch (err) {
-      console.error('Failed to encrypt and store wallet:', err);
-      notify('error', 'Failed to encrypt or store wallet.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const importWallet = async () => {
-    // Open secure import modal rather than browser prompt
-    setImportInput('');
-    setImportPassword('');
-    setShowImportModal(true);
-  };
-
-  const handleImportSubmit = async () => {
-    if (!importInput || !importPassword) {
-      notify('error', 'Input and a password to encrypt are required');
-      return;
-    }
-    if (!isPasswordStrong(importPassword)) {
-      notify('error', 'Password must be at least 8 chars and include letters and numbers');
-      return;
-    }
-    setIsLoading(true);
-    try {
-      const parsed = parseAndValidateSecret(importInput);
-      let wallet: any;
-
-      if (parsed.type === 'mnemonic') {
-        wallet = ethers.Wallet.fromPhrase(parsed.normalized);
-      } else {
-        wallet = new ethers.Wallet(parsed.normalized);
-      }
-
-      // Encrypt keystore with provided password (moderate scrypt to avoid blocking too long)
-      const keystore = await wallet.encrypt(importPassword, { scrypt: { N: 32768, r: 8, p: 1 } });
-      const { data: { session } } = await supabase.auth.getSession();
-      const userId = session?.user?.id || null;
-
-      const stored = await storeKeystoreToSupabase(wallet.address, keystore, userId);
-      if (stored) {
-        setAccount(wallet.address.toLowerCase());
-        setIsAuthenticated(true);
-        notify('success', 'Wallet imported, encrypted, and saved to cloud!');
-        setBalance('0');
-        setUsdtBalance('0');
-        setShowImportModal(false);
-        fetchBalances(wallet.address.toLowerCase(), selectedChain);
-        const key = `${wallet.address.toLowerCase()}:${selectedChain}`;
-        LastKnownBalances.set(key, { usdt: '0', native: '0', ts: Date.now() });
-        KeystoreRawCache.set(wallet.address.toLowerCase(), keystore);
-        await logEvent('WALLET_IMPORT', { address: wallet.address.toLowerCase(), type: parsed.type });
-      } else {
-        notify('error', 'Failed to save wallet to cloud.');
-      }
-    } catch (err: any) {
-      console.error('Failed to import wallet:', err);
-      notify('error', err?.message || 'Invalid private key or seed phrase. Please check and try again.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const decimalsCache = new Map<string, number>();
-
-  const fetchBalances = async (address: string, chainKey: ChainKey) => {
-    if (chainKey === 'tron' || chainKey === 'solana') {
-      setBalance('0');
-      setUsdtBalance('0');
-      const key = `${address.toLowerCase()}:${chainKey}`;
-      LastKnownBalances.set(key, { usdt: '0', native: '0', ts: Date.now() });
-      return;
-    }
-
-    try {
-      const chain = CHAINS[chainKey];
-      const provider = await getProviderForChain(chainKey);
-
-      const usdtContract = new ethers.Contract(chain.usdtAddress, USDT_ABI, provider);
-
-      // Parallelize balance and decimals and use caches
-      const decimalsKey = `${chainKey}:${chain.usdtAddress}`;
-      const decimalsPromise = decimalsCache.has(decimalsKey)
-        ? Promise.resolve(decimalsCache.get(decimalsKey)!)
-        : withRetry(() => usdtContract.decimals(), 2, 200).then((d: any) => { const num = Number(d); decimalsCache.set(decimalsKey, num); return num; });
-
-      const [usdtBal, decimals] = await Promise.all([
-        withRetry(() => usdtContract.balanceOf(address), 2, 200),
-        decimalsPromise,
-      ]);
-
-      const formattedUsdt = ethers.formatUnits(usdtBal, decimals);
-      setUsdtBalance(formattedUsdt);
-
-      // Optionally get native balance as well (fast)
-      try {
-        const native = await provider.getBalance(address);
-        const formattedNative = ethers.formatUnits(native, 18);
-        setBalance(formattedNative);
-      } catch (e) {
-        console.warn('Failed to fetch native balance', e);
-      }
-
-      // persist last-known balances for perceived speed on reload
-      const key = `${address.toLowerCase()}:${chainKey}`;
-      LastKnownBalances.set(key, { usdt: formattedUsdt, native: balance, ts: Date.now() });
-
-    } catch (err) {
-      console.error('Error fetching balances:', err);
-      // Reset balances on error to avoid stale display
-      setUsdtBalance('0');
-      setBalance('0');
-      notify('error', 'Unable to fetch balances');
-    }
-  };
+  // Simple UI handlers
+  const connectWallet = () => setShowWalletModal(true);
 
   const copyAddress = () => {
     if (account) {
       navigator.clipboard.writeText(account);
       setCopied(true);
-      notify('success', 'Address copied to clipboard!');
+      showToast('success', 'Address copied to clipboard!');
       setTimeout(() => setCopied(false), 2000);
     }
   };
 
-  const disconnectWallet = async () => {
-    if (confirm('Are you sure you want to sign out?')) {
-      if (account) {
-        await deleteKeystoreFromSupabase(account);
-        KeystoreCache.clear(account);
-        KeystoreRawCache.clear(account);
-      }
-      // Sign out Supabase session as well
-      try {
-        await supabase.auth.signOut();
-      } catch (e) {
-        console.warn('Failed to sign out from Supabase:', e);
-      }
-      await logEvent('USER_SIGNOUT', { address: account });
-      window.location.href = '/auth';
-    }
-  };
+  // Set receive QR action
+  quickActions[1].action = () => setShowReceiveQR(true);
 
   const chain = CHAINS[selectedChain];
 
-  // Features for the welcome screen
-  const features = [
-    { icon: Shield, title: 'Secure Escrow', desc: 'Your funds are protected with smart contracts', color: 'green' },
-    { icon: Zap, title: 'Low Fees', desc: 'TRC-20 network for minimal transaction costs', color: 'yellow' },
-    { icon: Users, title: 'P2P Trading', desc: 'Trade directly with verified users worldwide', color: 'blue' },
-    { icon: Layers, title: 'Split Custody', desc: 'Hot & cold wallet security system', color: 'purple' },
-  ];
-
-  // Color class map to avoid dynamic tailwind strings
-  const colorClassMap: any = {
-    green: { bg: 'bg-green-500/20', text: 'text-green-400' },
-    yellow: { bg: 'bg-yellow-500/20', text: 'text-yellow-400' },
-    blue: { bg: 'bg-blue-500/20', text: 'text-blue-400' },
-    purple: { bg: 'bg-purple-500/20', text: 'text-purple-400' },
-    orange: { bg: 'bg-orange-500/20', text: 'text-orange-40' },
-    indigo: { bg: 'bg-indigo-500/20', text: 'text-indigo-400' },
-  };
-
-  // Quick actions with icons
-  const quickActions = [
-    { icon: Send, label: 'Send USDT', href: '/send', color: 'blue', desc: 'Transfer to any address' },
-    { icon: ArrowDownLeft, label: 'Receive', href: '/wallets', color: 'green', desc: 'Get your deposit address' },
-    { icon: DollarSign, label: 'P2P Trade', href: '/p2p', color: 'orange', desc: 'Buy or sell USDT' },
-    { icon: History, label: 'History', href: '/history', color: 'purple', desc: 'View all transactions' },
-    { icon: User, label: 'Profile', href: '/profile', color: 'indigo', desc: 'Manage your account' },
-  ];
-
-  // Network options
-  const networks = [
-    { id: 'tron', name: 'TRON', symbol: 'TRX', emoji: '🔴', desc: 'Best for low fees', recommended: true },
-    { id: 'bsc', name: 'BNB Chain', symbol: 'BNB', emoji: '🟡', desc: 'Fast & cheap' },
-    { id: 'ethereum', name: 'Ethereum', symbol: 'ETH', emoji: '🔵', desc: 'Most popular' },
-  ];
-
-  // Show loading while checking authentication
+  // Loading state
   if (isAuthLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-900 to-indigo-950 flex items-center justify-center">
@@ -813,7 +146,7 @@ export default function Dashboard() {
   }
 
   // Redirect if not authenticated
-  if (!isAuthenticated) {
+  if (!isAuthenticated && !isAuthLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-900 to-indigo-950 flex items-center justify-center">
         <div className="text-center">
@@ -828,7 +161,7 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-900 to-indigo-950">
-      {/* Password Modal (decrypt existing keystore) */}
+      {/* Password Modal */}
       {showPasswordModal && (
         <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50">
           <div className="bg-gray-800 rounded-xl p-6 w-full max-w-md mx-4">
@@ -840,7 +173,11 @@ export default function Dashboard() {
               onChange={(e) => setWalletPassword(e.target.value)}
               placeholder="Wallet password"
               className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 mb-4"
-              onKeyDown={(e) => e.key === 'Enter' && (async () => { try { await decryptAndCache(pendingWalletAddress!, walletPassword); setAccount(pendingWalletAddress); setIsAuthenticated(true); setShowPasswordModal(false); fetchBalances(pendingWalletAddress!, selectedChain); notify('success', 'Wallet decrypted successfully'); } catch (err) { notify('error', 'Failed to decrypt wallet'); } })()}
+              onKeyDown={(e) => e.key === 'Enter' && (async () => {
+                try {
+                  await decryptWallet(pendingWalletAddress!, walletPassword);
+                } catch (err) { /* error handled in hook */ }
+              })()}
             />
             <div className="flex gap-3">
               <button
@@ -854,7 +191,11 @@ export default function Dashboard() {
                 Cancel
               </button>
               <button
-                onClick={handleImportSubmit}
+                onClick={async () => {
+                  try {
+                    await decryptWallet(pendingWalletAddress!, walletPassword);
+                  } catch (err) { /* error handled */ }
+                }}
                 disabled={!walletPassword}
                 className="flex-1 px-4 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
@@ -865,7 +206,7 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* Import Modal (secure) */}
+      {/* Import Modal */}
       {showImportModal && (
         <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50">
           <div className="bg-gray-800 rounded-xl p-6 w-full max-w-md mx-4">
@@ -904,12 +245,12 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* Encrypt Modal for newly generated wallet */}
+      {/* Encrypt Modal */}
       {showEncryptModal && pendingWalletInstance && (
         <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50">
           <div className="bg-gray-800 rounded-xl p-6 w-full max-w-md mx-4">
             <h2 className="text-xl font-bold text-white mb-4">Secure your new wallet</h2>
-            <p className="text-gray-400 mb-2">Set a password to encrypt your keystore before saving it to the cloud. You will need this password to decrypt your wallet later.</p>
+            <p className="text-gray-400 mb-2">Set a password to encrypt your keystore before saving it to the cloud.</p>
             <div className="mb-3">
               <p className="text-sm text-gray-300 mb-1">Address</p>
               <code className="text-sm text-white font-mono">{pendingWalletInstance.address}</code>
@@ -943,16 +284,14 @@ export default function Dashboard() {
       {/* Main content */}
       <main className="max-w-6xl mx-auto px-4 py-8">
         {!account ? (
-          /* Welcome Screen with Visual Elements */
+          // Welcome Screen
           <div className="space-y-12">
-            {/* Top Bar with Profile Link */}
             <div className="flex justify-end">
               <Link href="/profile" className="p-2 rounded-lg bg-white/10 hover:bg-white/20 text-white" title="Profile">
                 <User className="h-5 w-5" />
               </Link>
             </div>
 
-            {/* Hero Section */}
             <div className="text-center space-y-6">
               <div className="relative inline-block">
                 <div className="absolute inset-0 bg-indigo-500 blur-3xl opacity-30 animate-pulse" />
@@ -960,7 +299,7 @@ export default function Dashboard() {
                   <Wallet className="h-14 w-14 text-white" />
                 </div>
               </div>
-              
+
               <div>
                 <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
                   Welcome to <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">BlackPayments</span>
@@ -975,7 +314,6 @@ export default function Dashboard() {
                   onClick={createNewWallet}
                   disabled={isLoading}
                   className="px-8 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-2xl font-bold text-lg hover:scale-105 transition-all shadow-lg shadow-indigo-500/30 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                  aria-label="Create a new wallet"
                 >
                   {isLoading ? (
                     <>
@@ -989,7 +327,7 @@ export default function Dashboard() {
                   )}
                 </button>
                 <button
-                  onClick={importWallet}
+                  onClick={openImportModal}
                   className="px-8 py-4 bg-gray-800 text-white rounded-2xl font-bold text-lg hover:bg-gray-700 transition-colors border border-gray-700 flex items-center justify-center gap-2"
                 >
                   <Key className="h-5 w-5" /> Import Wallet
@@ -997,7 +335,7 @@ export default function Dashboard() {
               </div>
             </div>
 
-            {/* Features Grid with Icons */}
+            {/* Features Grid */}
             <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
               {features.map((feature) => (
                 <div key={feature.title} className="p-6 rounded-2xl bg-gray-900/50 border border-gray-800 hover:border-gray-700 transition-all hover:-translate-y-1">
@@ -1016,7 +354,7 @@ export default function Dashboard() {
                 <h2 className="text-3xl font-bold text-white mb-2">Why Choose BlackPayments?</h2>
                 <p className="text-gray-400">The most secure way to trade USDT P2P</p>
               </div>
-              
+
               <div className="grid md:grid-cols-3 gap-6">
                 {[
                   { icon: Award, title: 'Best Rates', desc: 'Direct P2P trades with competitive prices', stat: '98%' },
@@ -1036,17 +374,14 @@ export default function Dashboard() {
             </div>
           </div>
         ) : (
-          /* Dashboard with Wallet */
+          // Dashboard
           <div className="space-y-6">
-            {/* Main Wallet Card - Visual & Easy to Read */}
             <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-600 via-purple-600 to-indigo-800 p-6 md:p-8">
-              {/* Background Decorations */}
               <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2" />
               <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/10 rounded-full translate-y-1/2 -translate-x-1/2" />
               <div className="absolute top-1/2 left-1/2 w-32 h-32 bg-white/5 rounded-full -translate-x-1/2 -translate-y-1/2" />
-              
+
               <div className="relative">
-                {/* Wallet Header */}
                 <div className="flex items-center justify-between mb-8">
                   <div className="flex items-center gap-4">
                     <div className="w-16 h-16 rounded-2xl bg-white/20 backdrop-blur flex items-center justify-center">
@@ -1065,20 +400,24 @@ export default function Dashboard() {
                     <Link href="/profile" className="p-2 rounded-lg bg-white/10 hover:bg-white/20 text-white" title="Profile">
                       <User className="h-5 w-5" />
                     </Link>
-                    <button onClick={disconnectWallet} className="p-2 rounded-lg bg-white/10 hover:bg-white/20 text-white" title="Sign Out">
+                    <button onClick={authDisconnectWallet} className="p-2 rounded-lg bg-white/10 hover:bg-white/20 text-white" title="Sign Out">
                       <LogOut className="h-5 w-5" />
                     </button>
                   </div>
                 </div>
 
-                {/* Balance Display - Large & Clear */}
                 <div className="mb-8">
-                  <p className="text-indigo-200 text-sm mb-1">Total Balance (USDT)</p>
-                  <p className="text-4xl md:text-5xl lg:text-6xl font-bold text-white">${parseFloat(usdtBalance).toFixed(2)}</p>
-                  <p className="text-indigo-200 mt-1">{parseFloat(balance).toFixed(6)} {chain.symbol}</p>
+                  <p className="text-indigo-200 text-sm mb-1">Total Balance</p>
+                  <p className="text-4xl md:text-5xl lg:text-6xl font-bold text-white">{usdValue}</p>
+                  <p className="text-indigo-200 mt-1">{parseFloat(usdtBalance).toFixed(2)} USDT</p>
+                  {priceChange !== 0 && (
+                    <p className={`text-sm mt-1 flex items-center gap-1 ${priceChange >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                      {priceChange >= 0 ? <TrendingUp className="h-4 w-4" /> : <TrendingUp className="h-4 w-4 rotate-180" />}
+                      {priceChange >= 0 ? '+' : ''}{priceChange.toFixed(2)}% (24h)
+                    </p>
+                  )}
                 </div>
 
-                {/* Address - Easy to Copy */}
                 <div className="p-4 rounded-xl bg-black/20 backdrop-blur mb-6">
                   <p className="text-xs text-indigo-300 mb-1">Wallet Address</p>
                   <div className="flex items-center justify-between">
@@ -1089,15 +428,23 @@ export default function Dashboard() {
                   </div>
                 </div>
 
-                {/* Quick Action Buttons - Big & Clear */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                   {quickActions.map((action) => (
-                    <Link key={action.label} href={action.href}>
-                      <div className="p-4 rounded-xl bg-white/10 hover:bg-white/20 backdrop-blur transition-colors text-center">
-                        <action.icon className="h-6 w-6 mx-auto mb-2 text-white" />
-                        <p className="text-sm font-medium text-white">{action.label}</p>
-                      </div>
-                    </Link>
+                    action.href ? (
+                      <Link key={action.label} href={action.href}>
+                        <div className="p-4 rounded-xl bg-white/10 hover:bg-white/20 backdrop-blur transition-colors text-center cursor-pointer">
+                          <action.icon className="h-6 w-6 mx-auto mb-2 text-white" />
+                          <p className="text-sm font-medium text-white">{action.label}</p>
+                        </div>
+                      </Link>
+                    ) : (
+                      <button key={action.label} onClick={action.action} className="w-full">
+                        <div className="p-4 rounded-xl bg-white/10 hover:bg-white/20 backdrop-blur transition-colors text-center">
+                          <action.icon className="h-6 w-6 mx-auto mb-2 text-white" />
+                          <p className="text-sm font-medium text-white">{action.label}</p>
+                        </div>
+                      </button>
+                    )
                   ))}
                 </div>
               </div>
@@ -1147,30 +494,43 @@ export default function Dashboard() {
         )}
       </main>
 
-      {/* Wallet Connection Modal */}
+      {/* Modals */}
       <WalletConnectModal
         isOpen={showWalletModal}
         onClose={() => setShowWalletModal(false)}
         onConnect={(account) => {
-          setAccount(account);
+          useWalletStore.getState().setAccount(account);
           fetchBalances(account, selectedChain);
         }}
       />
+
+      {showReceiveQR && account && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="relative overflow-hidden rounded-2xl bg-gray-800 p-6 max-w-md w-full border border-gray-700">
+            <button
+              onClick={() => setShowReceiveQR(false)}
+              className="absolute top-4 right-4 p-1 hover:bg-gray-700 rounded-lg"
+            >
+              <XCircle className="h-6 w-6 text-gray-400" />
+            </button>
+
+            <h3 className="text-xl font-bold text-white mb-2 text-center">
+              Receive USDT
+            </h3>
+            <p className="text-sm text-gray-400 text-center mb-4">
+              Send only USDT to this address
+            </p>
+
+            <QRCode address={account} size={220} />
+
+            <div className="mt-4 p-3 rounded-xl bg-yellow-500/10 border border-yellow-500/30">
+              <p className="text-xs text-yellow-400 text-center">
+                Warning: Send only USDT. Other tokens sent may be lost.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
-}
-
-// Test helpers for unit tests (in-memory mocks)
-// Note: Cannot export arbitrary items from page.tsx in Next.js strict mode
-// Import from src/test-local.ts for testing purposes instead
-if (typeof window !== 'undefined') {
-  // @ts-expect-error - attaching test helpers to window for testing
-  window.__testHelpers = {
-    KeystoreCache,
-    KeystoreRawCache,
-    parseAndValidateSecret,
-    withRetry,
-    logEvent,
-    notify,
-  };
 }

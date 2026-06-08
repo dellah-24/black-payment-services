@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { ethers } from 'ethers';
 import { walletStorage } from '@/lib/secureWalletStorage';
+import { logger } from '@/lib/logger';
 
 /**
  * Wallet data structure
@@ -64,7 +65,7 @@ export function useWallet() {
       );
       
       if (!stored) {
-        console.error('Failed to store wallet in Supabase');
+        logger.error('Failed to store wallet in Supabase');
         return null;
       }
 
@@ -79,7 +80,7 @@ export function useWallet() {
       
       return data;
     } catch (err) {
-      console.error('Failed to create wallet:', err);
+      logger.error('Failed to create wallet', err as Error);
       return null;
     } finally {
       setIsConnecting(false);
@@ -102,7 +103,7 @@ export function useWallet() {
       );
       
       if (!stored) {
-        console.error('Failed to store wallet in Supabase');
+        logger.error('Failed to store wallet in Supabase');
         return null;
       }
 
@@ -116,7 +117,7 @@ export function useWallet() {
       
       return data;
     } catch (err) {
-      console.error('Failed to import wallet:', err);
+      logger.error('Failed to import wallet', err as Error);
       return null;
     } finally {
       setIsConnecting(false);
@@ -139,7 +140,7 @@ export function useWallet() {
       );
       
       if (!stored) {
-        console.error('Failed to store wallet in Supabase');
+        logger.error('Failed to store wallet in Supabase');
         return null;
       }
 
@@ -154,7 +155,7 @@ export function useWallet() {
       
       return data;
     } catch (err) {
-      console.error('Failed to import wallet from mnemonic:', err);
+      logger.error('Failed to import wallet from mnemonic', err as Error);
       return null;
     } finally {
       setIsConnecting(false);

@@ -5,6 +5,8 @@
  */
 
 import { ethers, Wallet, JsonRpcProvider, Mnemonic, HDNodeWallet } from 'ethers';
+import { logger } from '@/lib/logger';
+import { rateLimiter } from '@/lib/rateLimiter';
 import {
   WalletChain,
   ChainConfig,
@@ -18,8 +20,8 @@ import {
 } from './types';
 import {
   CHAIN_CONFIGS,
-  TESTNET_CONFIGS,
   USDT_TOKENS,
+  TESTNET_CONFIGS,
   getChainConfig,
   getUSDTConfig,
   getSupportedChains,
@@ -46,6 +48,10 @@ const USDT_ABI = [
  * - Fiat on/off-ramp via MoonPay
  */
 export class BlackPaymentsWallet {
+  // Gas safety buffer multiplier to prevent out-of-gas errors
+  private readonly GAS_BUFFER_MULTIPLIER = 130n; // 30% buffer
+  private readonly DEFAULT_GAS_LIMIT = 100000n;
+  
   private wallets: Map<WalletChain, Wallet>;
   private providers: Map<WalletChain, JsonRpcProvider>;
   private addresses: Map<WalletChain, string>;
@@ -73,9 +79,13 @@ export class BlackPaymentsWallet {
 
     // Create wallets for each chain
     for (const chain of chains) {
-      const config = isTestnet 
-        ? TESTNET_CONFIGS[chain] 
+      const config = isTestnet
+        ? TESTNET_CONFIGS[chain]
         : CHAIN_CONFIGS[chain];
+      
+      if (!config) {
+        throw new Error(`Chain ${chain} not configured`);
+      }
       
       const rpcUrl = customRpcUrls?.[chain] || config.rpcUrl;
 
@@ -127,27 +137,12 @@ export class BlackPaymentsWallet {
   }
 
   /**
-   * Get the mnemonic phrase (for backup purposes)
-   * WARNING: Store securely, never expose in production
+   * NOTE: Mnemonic/seed phrase is never stored in this implementation.
+   * Users must back up their seed phrase externally before wallet creation.
+   * Methods intentionally removed to prevent accidental exposure.
    */
-  getMnemonic(): string {
-    throw new Error('Mnemonic not stored. Use createWalletWithExistingSeed to preserve mnemonic.');
-  }
 
-  /**
-   * Get seed phrase (alias for getMnemonic)
-   */
-  getSeedPhrase(): string {
-    return this.getMnemonic();
-  }
 
-  /**
-   * Get private key for a specific chain
-   * WARNING: Keep private keys secure
-   */
-  getPrivateKey(chain: WalletChain): string | undefined {
-    return this.wallets.get(chain)?.privateKey;
-  }
 
   /**
    * Check native and USDT balance for a specific chain
@@ -208,7 +203,7 @@ export class BlackPaymentsWallet {
         const balance = await this.getBalance(chain);
         balances.push(balance);
       } catch (error) {
-        console.error(`Error getting balance for ${chain}:`, error);
+        logger.error(`Error getting balance for ${chain}`, error as Error, { chain });
       }
     }
 
@@ -217,8 +212,15 @@ export class BlackPaymentsWallet {
 
   /**
    * Send USDT to another address
+   * Includes rate limiting
    */
   async sendUSDT(params: TransferParams): Promise<TransactionResult> {
+    // Check rate limit first
+    const rateLimit = rateLimiter.check('sendUSDT');
+    if (!rateLimit.allowed) {
+      throw new Error(`Rate limit exceeded. Please wait ${Math.ceil((rateLimit.retryAfterMs || 0) / 1000)} seconds before sending another transaction.`);
+    }
+    
     const { to, amount, chain, gasSettings } = params;
     
     const wallet = this.wallets.get(chain);
@@ -241,8 +243,18 @@ export class BlackPaymentsWallet {
     if (gasSettings?.maxPriorityFeePerGas) {
       tx.maxPriorityFeePerGas = gasSettings.maxPriorityFeePerGas;
     }
+    
+    // Use provided gas limit or estimate with buffer
     if (gasSettings?.gasLimit) {
       tx.gasLimit = gasSettings.gasLimit;
+    } else {
+      // Estimate gas with safety buffer
+      try {
+        const estimatedGas = await usdtContract.transfer.estimateGas(to, amount);
+        tx.gasLimit = (estimatedGas * this.GAS_BUFFER_MULTIPLIER) / 100n;
+      } catch {
+        tx.gasLimit = this.DEFAULT_GAS_LIMIT;
+      }
     }
 
     // Send transaction
@@ -267,6 +279,7 @@ export class BlackPaymentsWallet {
   /**
    * Quote USDT transfer (estimate fees)
    */
+
   async quoteUSDTTransfer(
     to: string,
     amount: bigint,
@@ -282,8 +295,16 @@ export class BlackPaymentsWallet {
     const usdtConfig = USDT_TOKENS[chain];
     const usdtContract = new ethers.Contract(usdtConfig.tokenAddress, USDT_ABI, wallet);
 
-    // Estimate gas
-    const gasLimit = await usdtContract.transfer.estimateGas(to, amount);
+    // Estimate gas with safety buffer
+    let gasLimit: bigint;
+    try {
+      const estimated = await usdtContract.transfer.estimateGas(to, amount);
+      // Add 30% buffer for safety
+      gasLimit = (estimated * this.GAS_BUFFER_MULTIPLIER) / 100n;
+    } catch {
+      // Use default gas limit if estimation fails
+      gasLimit = this.DEFAULT_GAS_LIMIT;
+    }
     
     // Get fee data
     const feeData = await provider.getFeeData();
@@ -498,7 +519,7 @@ export class BlackPaymentsWallet {
    * Get chain configuration
    */
   getChainInfo(chain: WalletChain): ChainConfig {
-    return getChainConfig(chain, this.isTestnet);
+    return this.isTestnet ? TESTNET_CONFIGS[chain] || CHAIN_CONFIGS[chain] : CHAIN_CONFIGS[chain];
   }
 
   /**
@@ -537,25 +558,31 @@ export class BlackPaymentsWallet {
     }
   }
 
-  /**
-   * Format native balance for display
-   */
-  private formatNativeBalance(balance: bigint, chain: WalletChain): string {
-    const chainConfig = this.isTestnet 
-      ? TESTNET_CONFIGS[chain] 
-      : CHAIN_CONFIGS[chain];
-    
-    const formatted = Number(balance) / Math.pow(10, 18);
-    return `${formatted.toFixed(6)} ${chainConfig.symbol}`;
-  }
-
-  /**
-   * Format USDT balance for display
-   */
-  private formatUSDTBalance(balance: bigint, decimals: number): string {
-    const formatted = Number(balance) / Math.pow(10, decimals);
-    return `${formatted.toFixed(2)} USDT`;
-  }
+   /**
+    * Format native balance for display
+    */
+   private formatNativeBalance(balance: bigint, chain: WalletChain): string {
+      const chainConfig = this.isTestnet
+        ? TESTNET_CONFIGS[chain]
+        : CHAIN_CONFIGS[chain];
+      
+      if (!chainConfig) {
+        return `${ethers.formatUnits(balance, 18)} unknown`;
+      }
+      
+      // Use ethers.formatUnits for precision-safe formatting (18 decimals for native)
+      const formatted = ethers.formatUnits(balance, 18);
+      return `${parseFloat(formatted).toFixed(6)} ${chainConfig.symbol}`;
+    }
+   
+   /**
+    * Format USDT balance for display
+    */
+   private formatUSDTBalance(balance: bigint, decimals: number): string {
+     // Use ethers.formatUnits for precision-safe formatting
+     const formatted = ethers.formatUnits(balance, decimals);
+     return `${parseFloat(formatted).toFixed(2)} USDT`;
+   }
 
   /**
    * Dispose of wallet resources (clear from memory)
