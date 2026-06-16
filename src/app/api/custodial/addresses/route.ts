@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { ensureCustodialAddress, getAuthenticatedUserId, getCustodialAddresses } from '@/lib/custodialService';
 import { CUSTODIAL_MVP_CHAINS, normalizeCustodialChain } from '@/lib/custodyPolicy';
 
+export const runtime = 'edge';
+
 export async function GET(request: NextRequest) {
   try {
     const userId = await getAuthenticatedUserId(request);

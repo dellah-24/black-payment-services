@@ -1,14 +1,1 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getAuthenticatedUserId } from '@/lib/custodialService';
-import { revokeMerchantApiKey } from '@/lib/paymentService';
-
-export async function DELETE(_request: NextRequest, { params }: { params: { id: string } }) {
-  try {
-    const userId = await getAuthenticatedUserId(_request);
-    if (!userId) return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
-    const apiKey = await revokeMerchantApiKey(params.id, userId);
-    return NextResponse.json({ apiKey });
-  } catch (error) {
-    return NextResponse.json({ error: error instanceof Error ? error.message : 'Unable to revoke API key' }, { status: 400 });
-  }
-}
+import { NextRequest, NextResponse } from 'next/server'; export const runtime = 'edge';import { getAuthenticatedUserId } from '@/lib/custodialService'; import { revokeMerchantApiKey } from '@/lib/paymentService';  export async function DELETE(_request: NextRequest, { params }: { params: { id: string } }) {   try {     const userId = await getAuthenticatedUserId(_request);     if (!userId) return NextResponse.json({ error: 'Authentication required' }, { status: 401 });     const apiKey = await revokeMerchantApiKey(params.id, userId);     return NextResponse.json({ apiKey });   } catch (error) {     return NextResponse.json({ error: error instanceof Error ? error.message : 'Unable to revoke API key' }, { status: 400 });   } } 

@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
+
+export const runtime = 'edge';
 import { getAuthenticatedUserId, submitCustodialWithdrawal } from '@/lib/custodialService';
 import { custodialWithdrawalSchema } from '@/lib/custodyPolicy';
 
@@ -28,3 +30,4 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: message }, { status });
   }
 }
+

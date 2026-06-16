@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
+
+export const runtime = 'edge';
 import { getAuthenticatedUserId, getCustodialDeposits, getCustodialWithdrawals } from '@/lib/custodialService';
 
 export async function GET(request: NextRequest) {
@@ -22,3 +24,4 @@ export async function GET(request: NextRequest) {
     );
   }
 }
+

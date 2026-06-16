@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
+
+export const runtime = 'edge';
 import { getAuthenticatedUserId } from '@/lib/custodialService';
 import { createMerchantApiKey, listMerchantApiKeys } from '@/lib/paymentService';
 
@@ -31,3 +33,4 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: error instanceof Error ? error.message : 'Unable to create API key' }, { status: 400 });
   }
 }
+

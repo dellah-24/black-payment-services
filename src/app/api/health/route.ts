@@ -1,4 +1,6 @@
 import { NextResponse } from 'next/server';
+
+export const runtime = 'edge';
 import { getCustodialReadiness } from '@/lib/custodialService';
 import { getCustodyReadiness } from '@/lib/custodyPolicy';
 import { checkNodeHealth } from '@/lib/blockchainNodes';
@@ -27,3 +29,4 @@ export async function GET() {
     { status: ok ? 200 : 503 }
   );
 }
+

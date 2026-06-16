@@ -1,4 +1,3 @@
-import { createHash, randomBytes } from 'crypto';
 import { getCustodialSupabaseClient } from './adminSupabaseClient';
 import { getAppBaseUrl } from './env';
 import { logger } from './logger';
@@ -114,6 +113,23 @@ const statuses = new Set<PaymentStatus>(['NEW', 'WAIT', 'PAID', 'FAIL', 'EXPIRED
 const webhookEvents = new Set<WebhookEvent>(['payment.created', 'payment.wait', 'payment.paid', 'payment.expired', 'payment.fail', 'payment.cancel', 'payment.refund']);
 const rates = { USDT: 1, TRX: 0.12, ETH: 2500, BTC: 65000, TON: 5, SOL: 140, USD: 1, EUR: 1.08 };
 
+function getWebCrypto(): Crypto {
+  if (!globalThis.crypto) {
+    throw new Error('Web Crypto API is not available in this runtime');
+  }
+  return globalThis.crypto;
+}
+
+function randomBytes(length: number): Uint8Array {
+  const bytes = new Uint8Array(length);
+  getWebCrypto().getRandomValues(bytes);
+  return bytes;
+}
+
+function bytesToHex(bytes: Uint8Array): string {
+  return Array.from(bytes, (byte) => byte.toString(16).padStart(2, '0')).join('');
+}
+
 export function normalizePaymentCurrency(currency: string): PaymentCurrency {
   const value = String(currency).toUpperCase() as PaymentCurrency;
   if (!currencies.has(value)) throw new Error('Unsupported payment currency');
@@ -139,15 +155,18 @@ export function normalizeWebhookEvent(event: string): WebhookEvent {
 }
 
 export function generateSecureToken(prefix: string): string {
-  return `${prefix}_${randomBytes(24).toString('hex')}`;
+  return `${prefix}_${bytesToHex(randomBytes(24))}`;
 }
 
-export function hashSecret(secret: string): string {
-  return createHash('sha256').update(secret).digest('hex');
+export async function hashSecret(secret: string): Promise<string> {
+  const digest = await getWebCrypto().subtle.digest('SHA-256', new TextEncoder().encode(secret));
+  return bytesToHex(new Uint8Array(digest));
 }
 
 export async function signWebhookPayload(payload: unknown, secret: string): Promise<string> {
-  return createHash('sha256').update(JSON.stringify(payload)).update(secret).digest('hex');
+  const data = new TextEncoder().encode(`${JSON.stringify(payload)}${secret}`);
+  const digest = await getWebCrypto().subtle.digest('SHA-256', data);
+  return bytesToHex(new Uint8Array(digest));
 }
 
 export async function ensureProfileForUser(userId: string): Promise<void> {
@@ -317,7 +336,7 @@ export async function createMerchantApiKey(params: { userId: string; name: strin
   const supabase = getCustodialSupabaseClient();
   const { data, error } = await supabase
     .from('merchant_api_keys')
-    .insert({ user_id: params.userId, name: params.name || 'Default API key', public_key: publicKey, secret_hash: hashSecret(secret), permissions: params.permissions?.length ? params.permissions : ['read', 'write'], status: 'active' })
+    .insert({ user_id: params.userId, name: params.name || 'Default API key', public_key: publicKey, secret_hash: await hashSecret(secret), permissions: params.permissions?.length ? params.permissions : ['read', 'write'], status: 'active' })
     .select()
     .single();
   if (error) throw error;
