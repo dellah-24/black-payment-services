@@ -3,7 +3,24 @@
  * Shared between middleware and API routes
  */
 
-import { randomBytes } from 'crypto';
+
+
+function getWebCrypto(): Crypto {
+  if (!globalThis.crypto) {
+    throw new Error('Web Crypto API is not available in this runtime');
+  }
+  return globalThis.crypto;
+}
+
+function randomBytes(length: number): Uint8Array {
+  const bytes = new Uint8Array(length);
+  getWebCrypto().getRandomValues(bytes);
+  return bytes;
+}
+
+function bytesToHex(bytes: Uint8Array): string {
+  return Array.from(bytes, (byte) => byte.toString(16).padStart(2, '0')).join('');
+}
 
 // In-memory storage for CSRF tokens (server-side)
 // Note: For production with multiple serverless instances, use Redis or database
@@ -16,7 +33,7 @@ export const CSRF_TOKEN_EXPIRY = 60 * 60 * 1000; // 1 hour
  * Stores the token in memory with expiry
  */
 export function generateCSRFToken(sessionId: string): string {
-  const token = randomBytes(32).toString('hex');
+  const token = bytesToHex(randomBytes(32));
   csrfTokens.set(sessionId, { token, expires: Date.now() + CSRF_TOKEN_EXPIRY });
   return token;
 }
