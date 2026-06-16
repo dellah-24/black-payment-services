@@ -8,12 +8,34 @@
  * - No insecure fallback methods
  */
 
-import { SupabaseClient } from '@supabase/supabase-js';
+import { isProduction } from '@/lib/env';
 import { supabase } from './supabaseClient';
 import { logger } from './logger';
 
 // Re-export from supabaseClient to avoid multiple GoTrueClient instances
 export { supabase };
+
+const PRODUCTION_MIN_PASSWORD_LENGTH = 12;
+
+function assertSecureStorageContext(): void {
+  if (!isProduction()) return;
+  if (typeof window !== 'undefined' && !window.isSecureContext) {
+    throw new Error('Encrypted wallet storage requires HTTPS in production.');
+  }
+}
+
+function assertEncryptionPassword(password: string | undefined): void {
+  assertSecureStorageContext();
+  if (!password) {
+    if (isProduction()) {
+      throw new Error('Wallet encryption password is required in production.');
+    }
+    return;
+  }
+  if (isProduction() && password.trim().length < PRODUCTION_MIN_PASSWORD_LENGTH) {
+    throw new Error(`Wallet encryption password must be at least ${PRODUCTION_MIN_PASSWORD_LENGTH} characters in production.`);
+  }
+}
 
 /**
  * Derive AES key from password using PBKDF2 with stored salt
@@ -157,6 +179,11 @@ export class SecureWalletStorage {
    * Set encryption key using PBKDF2 (not btoa)
    */
   async setEncryptionPassword(password: string): Promise<void> {
+    if (!password || password.trim().length === 0) {
+      throw new Error('Wallet encryption password is required.');
+    }
+    assertEncryptionPassword(password);
+
     // Generate a new salt for session
     this.currentSalt = generateSalt();
     
@@ -194,54 +221,49 @@ export class SecureWalletStorage {
     userPassword?: string
   ): Promise<boolean> {
     try {
-      if (!userPassword && !this.encryptionKey) {
-        logger.error('No encryption password provided');
+      const password = userPassword || this.encryptionKey;
+      if (!password) {
+        if (isProduction()) throw new Error('Wallet encryption password is required in production.');
         return false;
       }
-      
-      // Use provided password or stored encryption key
-      const password = userPassword || this.encryptionKey!;
-      
-      // Encrypt private key with PBKDF2
+      assertEncryptionPassword(password);
+
       const encryptedPK = await encryptWithKey(privateKey, password);
-      
-      // Encrypt mnemonic if provided
+
       let encryptedMnemonic: string | null = null;
       let mnemonicIV = '';
       let mnemonicSalt = '';
-      
+
       if (mnemonic) {
         const encMnemonic = await encryptWithKey(mnemonic, password);
         encryptedMnemonic = encMnemonic.ciphertext;
         mnemonicIV = encMnemonic.iv;
         mnemonicSalt = encMnemonic.salt;
       }
-      
-      // Store in Supabase with salt
-      try {
-        const { error } = await supabase
-          .from('encrypted_wallets')
-          .upsert({
-            wallet_address: walletAddress.toLowerCase(),
-            encrypted_private_key: encryptedPK.ciphertext,
-            encrypted_mnemonic: encryptedMnemonic,
-            encryption_iv: encryptedPK.iv,
-            encryption_salt: encryptedPK.salt,  // Store salt in DB
-            mnemonic_salt: mnemonicSalt,        // Store mnemonic salt in DB
-            mnemonic_iv: mnemonicIV,
-            updated_at: new Date().toISOString(),
-          }, { onConflict: 'wallet_address' });
-        
-        if (error) {
-          logger.warn('Wallet storage warning', { error: error.message });
-        }
-      } catch (e) {
-        logger.warn('Wallet storage error', e);
+
+      const { error } = await supabase
+        .from('encrypted_wallets')
+        .upsert({
+          wallet_address: walletAddress.toLowerCase(),
+          encrypted_private_key: encryptedPK.ciphertext,
+          encrypted_mnemonic: encryptedMnemonic,
+          encryption_iv: encryptedPK.iv,
+          encryption_salt: encryptedPK.salt,
+          mnemonic_salt: mnemonicSalt,
+          mnemonic_iv: mnemonicIV,
+          updated_at: new Date().toISOString(),
+        }, { onConflict: 'wallet_address' });
+
+      if (error) {
+        if (isProduction()) throw error;
+        logger.warn('Wallet storage warning', { error: error.message });
+        return false;
       }
-      
+
       return true;
     } catch (error) {
-      logger.error('Encryption error', error as Error);
+      if (isProduction()) throw error;
+      logger.error('Encryption or storage error', error as Error);
       return false;
     }
   }
@@ -254,11 +276,12 @@ export class SecureWalletStorage {
     userPassword?: string
   ): Promise<{ privateKey: string; mnemonic?: string } | null> {
     try {
-      // Use provided password
       if (!userPassword) {
-        logger.info('No password provided - user needs to provide password to decrypt wallet');
+        if (isProduction()) throw new Error('Wallet encryption password is required in production.');
         return null;
       }
+      const password = userPassword;
+      assertEncryptionPassword(password);
       
       // Fetch from Supabase
       const { data, error } = await supabase
@@ -266,7 +289,8 @@ export class SecureWalletStorage {
         .select('encrypted_private_key, encrypted_mnemonic, encryption_iv, encryption_salt, mnemonic_salt, mnemonic_iv')
         .eq('wallet_address', walletAddress.toLowerCase())
         .single();
-      
+
+      if (error && isProduction()) throw error;
       if (error || !data) {
         logger.info('Wallet not found in cloud storage');
         return null;
@@ -283,7 +307,7 @@ export class SecureWalletStorage {
         data.encrypted_private_key,
         data.encryption_iv,
         data.encryption_salt,
-        userPassword
+        password
       );
       
       // Decrypt mnemonic if exists
@@ -293,16 +317,17 @@ export class SecureWalletStorage {
           data.encrypted_mnemonic,
           data.mnemonic_iv,
           data.mnemonic_salt,
-          userPassword
+          password
         );
       }
       
       // Store the key for session
-      this.encryptionKey = userPassword;
+      this.encryptionKey = password;
       this.currentSalt = data.encryption_salt;
       
       return { privateKey, mnemonic };
     } catch (error) {
+      if (isProduction()) throw error;
       logger.error('Decryption error', error as Error);
       return null;
     }
@@ -317,7 +342,8 @@ export class SecureWalletStorage {
       .select('wallet_address')
       .eq('wallet_address', walletAddress.toLowerCase())
       .single();
-   
+
+    if (error && isProduction()) throw error;
     return !error && !!data;
   }
    
@@ -329,12 +355,13 @@ export class SecureWalletStorage {
       .from('encrypted_wallets')
       .delete()
       .eq('wallet_address', walletAddress.toLowerCase());
-   
+
     if (error) {
+      if (isProduction()) throw error;
       logger.error('Failed to delete wallet', error as Error);
       return false;
     }
-   
+
     return true;
   }
 

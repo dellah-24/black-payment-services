@@ -5,8 +5,16 @@
  */
 
 import { ethers, Wallet, JsonRpcProvider, Mnemonic, HDNodeWallet } from 'ethers';
+import { TronWeb } from 'tronweb';
 import { logger } from '@/lib/logger';
 import { rateLimiter } from '@/lib/rateLimiter';
+import { deriveHDPrivateKey, getBIP44Path, isMnemonic as isMnemonicPhrase } from '@/lib/hdWallet';
+import {
+  getTronTRXBalance,
+  getTronTransactionStatus,
+  getTronUSDTBalance,
+  sendTronUSDT,
+} from '@/lib/tronWallet';
 import {
   WalletChain,
   ChainConfig,
@@ -55,6 +63,8 @@ export class BlackPaymentsWallet {
   private wallets: Map<WalletChain, Wallet>;
   private providers: Map<WalletChain, JsonRpcProvider>;
   private addresses: Map<WalletChain, string>;
+  private tronWeb: TronWeb | null = null;
+  private tronPrivateKey: string | null = null;
   private isTestnet: boolean;
   private moonpayConfig: MoonPayConfig | null;
 
@@ -65,7 +75,8 @@ export class BlackPaymentsWallet {
     privateKeyOrMnemonic: string,
     chains: WalletChain[],
     isTestnet = false,
-    customRpcUrls?: Record<WalletChain, string>
+    customRpcUrls?: Record<WalletChain, string>,
+    options: { accountIndex?: number } = {}
   ) {
     this.wallets = new Map();
     this.providers = new Map();
@@ -73,21 +84,44 @@ export class BlackPaymentsWallet {
     this.isTestnet = isTestnet;
     this.moonpayConfig = null;
 
-      // Determine if input is mnemonic or private key
-    const words = privateKeyOrMnemonic.trim().split(/\s+/);
-    const isMnemonic = words.length === 12 || words.length === 24;
+    // Determine if input is mnemonic or private key
+    const isMnemonic = isMnemonicPhrase(privateKeyOrMnemonic);
+    const accountIndex = options.accountIndex ?? 0;
 
     // Create wallets for each chain
     for (const chain of chains) {
       const config = isTestnet
         ? TESTNET_CONFIGS[chain]
         : CHAIN_CONFIGS[chain];
-      
+
       if (!config) {
         throw new Error(`Chain ${chain} not configured`);
       }
-      
+
       const rpcUrl = customRpcUrls?.[chain] || config.rpcUrl;
+
+      if (chain === WalletChain.TRON) {
+        const tronPrivateKey = isMnemonic
+          ? deriveHDPrivateKey(privateKeyOrMnemonic, WalletChain.TRON, accountIndex)
+          : privateKeyOrMnemonic;
+
+        const tronweb = new TronWeb({
+          fullNode: rpcUrl,
+          solidityNode: rpcUrl,
+          eventServer: rpcUrl,
+        });
+        tronweb.setPrivateKey(tronPrivateKey);
+
+        const tronAddress = tronweb.address.fromPrivateKey(tronPrivateKey);
+        if (!tronAddress) {
+          throw new Error(`Unable to derive TRON address for ${chain}`);
+        }
+
+        this.tronWeb = tronweb;
+        this.tronPrivateKey = tronPrivateKey;
+        this.addresses.set(chain, tronAddress);
+        continue;
+      }
 
       // Create provider
       const provider = new JsonRpcProvider(rpcUrl);
@@ -95,10 +129,11 @@ export class BlackPaymentsWallet {
 
       // Create wallet based on input type
       let wallet: Wallet;
-      
+
       if (isMnemonic) {
-        // It's a mnemonic - use HDNodeWallet
-        const hdWallet = HDNodeWallet.fromPhrase(privateKeyOrMnemonic);
+        // It's a mnemonic - use BIP-44 derivation per chain/account
+        const path = getBIP44Path({ chain, accountIndex });
+        const hdWallet = HDNodeWallet.fromPhrase(privateKeyOrMnemonic, undefined, path);
         wallet = new Wallet(hdWallet.privateKey, provider);
       } else {
         // It's a private key
@@ -148,6 +183,26 @@ export class BlackPaymentsWallet {
    * Check native and USDT balance for a specific chain
    */
   async getBalance(chain: WalletChain): Promise<BalanceResult> {
+    const address = this.addresses.get(chain);
+    if (!address) {
+      throw new Error(`Chain ${chain} not supported`);
+    }
+
+    if (chain === WalletChain.TRON) {
+      const [nativeBalance, usdtBalance] = await Promise.all([
+        getTronTRXBalance(address),
+        getTronUSDTBalance(address),
+      ]);
+
+      return {
+        nativeBalance: BigInt(nativeBalance.raw),
+        usdtBalance: BigInt(usdtBalance.raw),
+        formattedNativeBalance: `${nativeBalance.formatted} TRX`,
+        formattedUSDTBalance: `${usdtBalance.formatted} USDT`,
+        chain,
+      };
+    }
+
     const wallet = this.wallets.get(chain);
     const provider = this.providers.get(chain);
     
@@ -180,6 +235,13 @@ export class BlackPaymentsWallet {
    * Check USDT balance for a specific chain
    */
   async getUSDTBalance(chain: WalletChain): Promise<bigint> {
+    if (chain === WalletChain.TRON) {
+      const address = this.addresses.get(chain);
+      if (!address) throw new Error(`Chain ${chain} not supported`);
+      const balance = await getTronUSDTBalance(address);
+      return BigInt(balance.raw);
+    }
+
     const wallet = this.wallets.get(chain);
     if (!wallet) {
       throw new Error(`Chain ${chain} not supported`);
@@ -195,7 +257,7 @@ export class BlackPaymentsWallet {
    * Check balance for all chains
    */
   async getAllBalances(): Promise<BalanceResult[]> {
-    const chains = Array.from(this.wallets.keys());
+    const chains = Array.from(this.addresses.keys());
     const balances: BalanceResult[] = [];
 
     for (const chain of chains) {
@@ -223,6 +285,31 @@ export class BlackPaymentsWallet {
     
     const { to, amount, chain, gasSettings } = params;
     
+    if (chain === WalletChain.TRON) {
+      if (!this.tronPrivateKey || !this.tronWeb) {
+        throw new Error(`TRON wallet is not initialized`);
+      }
+
+      const result = await sendTronUSDT({
+        fromAddress: this.addresses.get(chain)!,
+        privateKey: this.tronPrivateKey,
+        to,
+        amount: amount.toString(),
+        feeLimit: Number(gasSettings?.gasLimit ?? 14_900_000n),
+      });
+
+      return {
+        hash: result.hash,
+        from: result.from,
+        to,
+        value: result.value,
+        fee: 0n,
+        status: result.status,
+        chain,
+        timestamp: new Date(result.timestamp),
+      };
+    }
+
     const wallet = this.wallets.get(chain);
     if (!wallet) {
       throw new Error(`Chain ${chain} not supported`);
@@ -285,6 +372,19 @@ export class BlackPaymentsWallet {
     amount: bigint,
     chain: WalletChain
   ): Promise<GasEstimate> {
+    if (chain === WalletChain.TRON) {
+      const gasLimit = 14_900_000n;
+      const gasPrice = 0n;
+      return {
+        gasLimit,
+        gasPrice,
+        maxFeePerGas: 0n,
+        maxPriorityFeePerGas: 0n,
+        estimatedFee: gasLimit,
+        estimatedFeeFormatted: '14.9 TRX fee limit',
+      };
+    }
+
     const wallet = this.wallets.get(chain);
     const provider = this.providers.get(chain);
     
@@ -387,6 +487,10 @@ export class BlackPaymentsWallet {
     txHash: string,
     chain: WalletChain
   ): Promise<'pending' | 'confirmed' | 'failed'> {
+    if (chain === WalletChain.TRON) {
+      return getTronTransactionStatus(txHash);
+    }
+
     const provider = this.providers.get(chain);
     if (!provider) {
       throw new Error(`Chain ${chain} not supported`);
@@ -533,6 +637,13 @@ export class BlackPaymentsWallet {
    * Get current gas rates
    */
   async getGasRates(chain: WalletChain): Promise<{ normal: bigint; fast: bigint }> {
+    if (chain === WalletChain.TRON) {
+      return {
+        normal: 14_900_000n,
+        fast: 30_000_000n,
+      };
+    }
+
     const provider = this.providers.get(chain);
     if (!provider) {
       throw new Error(`Chain ${chain} not supported`);
@@ -591,6 +702,8 @@ export class BlackPaymentsWallet {
     this.wallets.clear();
     this.providers.clear();
     this.addresses.clear();
+    this.tronWeb = null;
+    this.tronPrivateKey = null;
   }
 }
 

@@ -9,39 +9,12 @@ test.describe('Settings Page', () => {
     await expect(page.locator('h1, h2').first()).toBeVisible();
   });
 
-  test('should show testnet mode toggle', async ({ page }) => {
-    // Look for testnet toggle/switch
-    const testnetToggle = page.locator('[role="switch"], button:has-text("Testnet")');
-    await expect(testnetToggle.first()).toBeVisible();
-  });
-});
-
-test.describe('Testnet Faucet', () => {
-  test.beforeEach(async ({ page }) => {
-    await page.goto('/settings');
-    // Enable testnet mode if not already
-    const testnetToggle = page.locator('[role="switch"], button:has-text("Testnet")').first();
-    if (await testnetToggle.isVisible()) {
-      await testnetToggle.click();
-    }
+  test('should show production network status', async ({ page }) => {
+    await expect(page.locator('text=/Production Network|Production mode enabled|Development mode detected/i')).toBeVisible({ timeout: 5000 });
   });
 
-  test('should display testnet faucet section', async ({ page }) => {
-    // Look for faucet-related content
-    const faucetSection = page.locator('text=/faucet|test.*funds|get.*test/i');
-    await expect(faucetSection.first()).toBeVisible({ timeout: 5000 });
-  });
-
-  test('should show testnet chains', async ({ page }) => {
-    // Look for chain selectors
-    const chainSelector = page.locator('select, [role="combobox"]').first();
-    await expect(chainSelector).toBeVisible({ timeout: 5000 });
-  });
-
-  test('should show faucet button', async ({ page }) => {
-    // Look for request funds or faucet button
-    const faucetButton = page.locator('button:has-text("Request"), button:has-text("Faucet")');
-    await expect(faucetButton.first()).toBeVisible({ timeout: 5000 });
+  test('should display default production chain', async ({ page }) => {
+    await expect(page.locator('text=/Default Chain|NEXT_PUBLIC_DEFAULT_CHAIN/i')).toBeVisible({ timeout: 5000 });
   });
 });
 

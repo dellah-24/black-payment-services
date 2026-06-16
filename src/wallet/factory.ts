@@ -8,6 +8,7 @@ import { ethers, Wallet, Mnemonic, HDNodeWallet } from 'ethers';
 import { BlackPaymentsWallet } from './BlackPaymentsWallet';
 import { WalletChain } from './types';
 import { getSupportedChains } from './chains';
+import { getBIP44Path } from '@/lib/hdWallet';
 
 /**
  * Generate a random mnemonic phrase
@@ -53,9 +54,10 @@ export async function createWallet(
   chains: WalletChain[] = [WalletChain.ETHEREUM, WalletChain.POLYGON, WalletChain.BSC],
   options: {
     customRpcUrls?: Partial<Record<WalletChain, string>>;
+    accountIndex?: number;
   } = {}
 ): Promise<BlackPaymentsWallet> {
-  const { customRpcUrls } = options;
+  const { customRpcUrls, accountIndex } = options;
   
   // Generate a new mnemonic
   const mnemonic = generateMnemonic(12);
@@ -68,12 +70,13 @@ export async function createWallet(
     mnemonic,
     chains,
     false,
-    rpcUrls
+    rpcUrls,
+    { accountIndex }
   );
-  
+
   // Initialize and get addresses
   await wallet.initialize();
-  
+
   return wallet;
 }
 
@@ -85,9 +88,10 @@ export async function createWalletWithExistingSeed(
   chains: WalletChain[] = [WalletChain.ETHEREUM, WalletChain.POLYGON, WalletChain.BSC],
   options: {
     customRpcUrls?: Partial<Record<WalletChain, string>>;
+    accountIndex?: number;
   } = {}
 ): Promise<BlackPaymentsWallet> {
-  const { customRpcUrls } = options;
+  const { customRpcUrls, accountIndex } = options;
   
   // Validate the mnemonic
   if (!validateMnemonic(mnemonic)) {
@@ -102,12 +106,13 @@ export async function createWalletWithExistingSeed(
     mnemonic,
     chains,
     false,
-    rpcUrls
+    rpcUrls,
+    { accountIndex }
   );
-  
+
   // Initialize and get addresses
   await wallet.initialize();
-  
+
   return wallet;
 }
 
@@ -162,9 +167,10 @@ export async function createFullWallet(
  */
 export function getAddressFromMnemonic(
   mnemonic: string,
-  chain: WalletChain = WalletChain.ETHEREUM
+  chain: WalletChain = WalletChain.ETHEREUM,
+  accountIndex = 0
 ): string {
-  // Chain parameter is kept for future use when we support different derivation paths
-  const hdWallet = HDNodeWallet.fromPhrase(mnemonic);
+  const path = getBIP44Path({ chain, accountIndex });
+  const hdWallet = HDNodeWallet.fromPhrase(mnemonic, undefined, path);
   return hdWallet.address;
 }

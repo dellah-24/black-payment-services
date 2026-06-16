@@ -57,13 +57,13 @@ export default function HistoryPage() {
       try {
         const profile = await profileApi.getByUserId(session.user.id);
         if (!profile || !profile.wallet_address) {
-          router.push('/auth');
+          router.push('/onboarding');
           return;
         }
         
         setAccount(profile.wallet_address.toLowerCase());
       } catch (e) {
-        router.push('/auth');
+        // Keep the user on the History page so the navigation URL remains stable.
       }
     };
     

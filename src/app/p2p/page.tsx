@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { 
+import {
   DollarSign, 
   ArrowLeft, 
   Clock, 
@@ -68,13 +68,13 @@ export default function P2PPage() {
       try {
         const profile = await profileApi.getByUserId(session.user.id);
         if (!profile || !profile.wallet_address) {
-          router.push('/auth');
+          router.push('/onboarding');
           return;
         }
         
         setAccount(profile.wallet_address.toLowerCase());
       } catch (e) {
-        router.push('/auth');
+        // Keep the user on the P2P page so the navigation URL remains stable.
       }
     };
     

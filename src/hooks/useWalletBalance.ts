@@ -5,6 +5,7 @@ import { ethers } from 'ethers';
 import { useWalletStore } from '@/stores/walletStore';
 import { logger } from '@/lib/logger';
 import { getUSDTPrice, formatCurrency, usdtToUSD } from '@/lib/priceService';
+import { getTronTRXBalance, getTronUSDTBalance } from '@/lib/tronWallet';
 import { getActiveChainConfig } from '@/config/chains';
 import { ChainKey } from '@/config/chains';
 import { showToast } from '@/components/Toast';
@@ -70,8 +71,20 @@ export function useWalletBalance() {
   const pollDelayRef = useRef<number>(15000); // start at 15s
 
   const fetchBalances = useCallback(async (address: string, chainKey: ChainKey) => {
-    // Handle unsupported chains
-    if (chainKey === 'tron' || chainKey === 'solana') {
+    if (chainKey === 'tron') {
+      const [usdtBalance, nativeBalance] = await Promise.all([
+        getTronUSDTBalance(address),
+        getTronTRXBalance(address),
+      ]);
+
+      setUsdtBalance(usdtBalance.formatted);
+      setBalance(nativeBalance.formatted);
+      const key = `${address.toLowerCase()}:${chainKey}`;
+      LastKnownBalances.set(key, { usdt: usdtBalance.formatted, native: nativeBalance.formatted, ts: Date.now() });
+      return;
+    }
+
+    if (chainKey === 'solana') {
       setBalance('0');
       setUsdtBalance('0');
       const key = `${address.toLowerCase()}:${chainKey}`;

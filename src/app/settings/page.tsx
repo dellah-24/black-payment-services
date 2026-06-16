@@ -25,9 +25,7 @@ import { getAutoLockTimeout, setAutoLockTimeout } from '@/lib/walletUtils';
 import { walletStorage } from '@/lib/secureWalletStorage';
 import { supabase } from '@/lib/supabaseClient';
 import { profileApi } from '@/lib/profileApi';
-import { useTestnetStore } from '@/stores/testnetStore';
-import { getSupportedTestnetChains, getFaucetInfo, formatAddress, requestTestnetUSDT } from '@/lib/faucet';
-import { ChainKey } from '@/config/chains';
+import { getEnv, isProduction } from '@/lib/env';
 
 export default function SettingsPage() {
   const router = useRouter();
@@ -40,36 +38,9 @@ export default function SettingsPage() {
   const [biometricEnabled, setBiometricEnabled] = useState(false);
   const [showSeedPhrase, setShowSeedPhrase] = useState(false);
   const [seedPhrase, setSeedPhrase] = useState<string>('');
-  
-  // Testnet state
-  const { isTestnetMode, selectedTestnetChain, setTestnetMode, setSelectedTestnetChain } = useTestnetStore();
-  const [showFaucetModal, setShowFaucetModal] = useState(false);
-  const [selectedFaucetChain, setSelectedFaucetChain] = useState<ChainKey>('ethereum');
-  const [isLoadingFaucet, setIsLoadingFaucet] = useState(false);
-  const [faucetResult, setFaucetResult] = useState<{success: boolean; message: string; explorerUrl?: string; amount?: string} | null>(null);
-  const supportedTestnets = getSupportedTestnetChains();
 
-  // Faucet request handler
-  const handleFaucetRequest = async () => {
-    setIsLoadingFaucet(true);
-    setFaucetResult(null);
-    
-    try {
-      const address = walletAddress || account;
-      if (!address) {
-        setFaucetResult({ success: false, message: 'Please connect your wallet first' });
-        setIsLoadingFaucet(false);
-        return;
-      }
-      
-      const result = await requestTestnetUSDT(selectedFaucetChain, address, '100');
-      setFaucetResult(result);
-    } catch (error) {
-      setFaucetResult({ success: false, message: 'Failed to request testnet USDT' });
-    }
-    
-    setIsLoadingFaucet(false);
-  };
+  const productionMode = isProduction();
+  const defaultChain = getEnv('NEXT_PUBLIC_DEFAULT_CHAIN', 'tron');
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -86,7 +57,7 @@ export default function SettingsPage() {
       try {
         const profile = await profileApi.getByUserId(session.user.id);
         if (!profile || !profile.wallet_address) {
-          router.push('/auth');
+          router.push('/onboarding');
           return;
         }
         
@@ -94,7 +65,7 @@ export default function SettingsPage() {
         setAccount(savedAccount);
         loadWalletData(savedAccount);
       } catch (e) {
-        router.push('/auth');
+        router.push('/');
       }
     };
     
@@ -415,72 +386,49 @@ export default function SettingsPage() {
           </div>
         </div>
 
-        {/* Testnet Mode */}
+        {/* Production Network */}
         <div className="rounded-2xl bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 p-6 mb-6">
           <h2 className="text-lg font-semibold mb-4 flex items-center gap-2 text-white">
             <Globe className="h-5 w-5" />
-            Testnet Mode
+            Production Network
           </h2>
-          
+
           <div className="space-y-4">
-            {/* Testnet Toggle */}
-            <div className="flex items-center justify-between py-3 border-b border-gray-700">
-              <div>
-                <p className="font-medium text-white">
-                  Enable Testnet
-                </p>
-                <p className="text-sm text-gray-400">
-                  Use test networks for development
-                </p>
+            <div className={`p-4 rounded-xl border ${
+              productionMode ? 'border-green-500/30 bg-green-500/10' : 'border-yellow-500/30 bg-yellow-500/10'
+            }`}>
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <p className="font-medium text-white">
+                    {productionMode ? 'Production mode enabled' : 'Development mode detected'}
+                  </p>
+                  <p className="text-sm text-gray-400">
+                    {productionMode
+                      ? 'Mainnet RPC URLs, HTTPS callbacks, HSM custody, and production locks are enforced.'
+                      : 'Localhost and testnet helpers are available only while developing locally.'}
+                  </p>
+                </div>
+                {productionMode ? (
+                  <CheckCircle className="h-5 w-5 text-green-500 shrink-0 mt-1" />
+                ) : (
+                  <ExternalLink className="h-5 w-5 text-yellow-500 shrink-0 mt-1" />
+                )}
               </div>
-              <button
-                onClick={() => setTestnetMode(!isTestnetMode)}
-                className={`relative w-14 h-8 rounded-full transition-colors ${
-                  isTestnetMode ? 'bg-green-600' : 'bg-gray-600'
-                }`}
-              >
-                <span className={`absolute top-1 left-1 w-6 h-6 bg-white rounded-full transition-transform ${
-                  isTestnetMode ? 'translate-x-6' : 'translate-x-0'
-                }`} />
-              </button>
             </div>
 
-            {/* Testnet Chain Selector */}
-            {isTestnetMode && (
-              <div className="py-3 border-b border-gray-700">
-                <p className="font-medium text-white mb-3">
-                  Select Testnet Chain
-                </p>
-                <div className="grid grid-cols-2 gap-2">
-                  {supportedTestnets.map((testnet) => (
-                    <button
-                      key={testnet.chain}
-                      onClick={() => setSelectedTestnetChain(testnet.chain)}
-                      className={`p-3 rounded-lg text-sm transition-colors ${
-                        selectedTestnetChain === testnet.chain
-                          ? 'bg-indigo-600 text-white'
-                          : 'bg-gray-700 text-gray-400 hover:bg-gray-600'
-                      }`}
-                    >
-                      {testnet.name}
-                    </button>
-                  ))}
+            <div className="p-3 rounded-lg bg-gray-700">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="font-medium text-white">
+                    Default Chain
+                  </p>
+                  <p className="text-sm text-gray-400">
+                    NEXT_PUBLIC_DEFAULT_CHAIN = {defaultChain}
+                  </p>
                 </div>
+                <CheckCircle className="h-5 w-5 text-green-500" />
               </div>
-            )}
-
-            {/* Faucet Button */}
-            {isTestnetMode && (
-              <div className="py-3">
-                <button
-                  onClick={() => setShowFaucetModal(true)}
-                  className="w-full flex items-center justify-center gap-2 p-3 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white rounded-xl font-medium transition-colors"
-                >
-                  <ExternalLink className="h-5 w-5" />
-                  Get Testnet USDT (Faucet)
-                </button>
-              </div>
-            )}
+            </div>
           </div>
         </div>
 
@@ -554,162 +502,6 @@ export default function SettingsPage() {
           </div>
         )}
 
-        {/* Faucet Modal */}
-        {showFaucetModal && (
-          <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-            <div className="relative overflow-hidden rounded-2xl bg-gray-800 p-6 max-w-md w-full border border-gray-700">
-              <h3 className="text-xl font-bold text-white mb-4">
-                Get Testnet USDT
-              </h3>
-              
-              <p className="text-sm text-gray-400 mb-4">
-                To increase your testnet USDT balance, you can use the following methods:
-              </p>
-
-              {/* Chain Selection */}
-              <div className="mb-4">
-                <p className="font-medium text-white mb-2">Select Chain:</p>
-                <div className="grid grid-cols-2 gap-2">
-                  {supportedTestnets.map((testnet) => (
-                    <button
-                      key={testnet.chain}
-                      onClick={() => setSelectedFaucetChain(testnet.chain)}
-                      className={`p-2 rounded-lg text-sm transition-colors ${
-                        selectedFaucetChain === testnet.chain
-                          ? 'bg-indigo-600 text-white'
-                          : 'bg-gray-700 text-gray-400 hover:bg-gray-600'
-                      }`}
-                    >
-                      {testnet.name}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Faucet Instructions */}
-              {(() => {
-                const faucet = getFaucetInfo(selectedFaucetChain);
-                if (!faucet) return null;
-                return (
-                  <div className="p-4 rounded-xl bg-gray-900/50 border border-gray-700 mb-4">
-                    <p className="text-white font-medium mb-2">{faucet.name}</p>
-                    <p className="text-sm text-gray-400 mb-3">
-                      Your wallet address for this network:
-                    </p>
-                    <p className="font-mono text-xs text-indigo-400 break-all mb-3">
-                      {walletAddress || account || 'Connect wallet to see address'}
-                    </p>
-                    {faucet.tokenAddress && (
-                      <p className="text-sm text-gray-400 mb-2">
-                        USDT Token: <span className="font-mono text-xs">{faucet.tokenAddress}</span>
-                      </p>
-                    )}
-                    <p className="text-sm text-gray-400 mt-3">
-                      Visit the block explorer to find faucets or bridges to get testnet tokens.
-                    </p>
-                  </div>
-                );
-              })()}
-
-              {/* External Links */}
-              <div className="flex gap-3 mb-4">
-                {(() => {
-                  const faucet = getFaucetInfo(selectedFaucetChain);
-                  if (!faucet) return null;
-                  return (
-                    <a
-                      href={faucet.explorerUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex-1 flex items-center justify-center gap-2 p-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-medium transition-colors"
-                    >
-                      <ExternalLink className="h-4 w-4" />
-                      Open Block Explorer
-                    </a>
-                  );
-                })()}
-              </div>
-
-              {/* Request USDT Button */}
-              <button
-                onClick={handleFaucetRequest}
-                disabled={isLoadingFaucet}
-                className="w-full py-3 bg-green-600 hover:bg-green-500 disabled:bg-gray-600 text-white rounded-xl font-medium transition-colors mb-3 flex items-center justify-center gap-2"
-              >
-                {isLoadingFaucet ? (
-                  <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
-                    Processing...
-                  </>
-                ) : (
-                  <>
-                    <Wallet className="h-4 w-4" />
-                    Request Testnet USDT
-                  </>
-                )}
-              </button>
-
-              {/* Faucet Result */}
-              {faucetResult && (
-                <div className={`p-4 rounded-xl mb-4 ${faucetResult.success ? 'bg-green-900/50 border border-green-700' : 'bg-red-900/50 border border-red-700'}`}>
-                  <p className={`text-sm ${faucetResult.success ? 'text-green-400' : 'text-red-400'} mb-3`}>
-                    {faucetResult.message}
-                  </p>
-                  {faucetResult.success && (
-                    <div className="space-y-2">
-                      {faucetResult.amount && (
-                        <p className="text-sm text-green-400">
-                          Amount: {faucetResult.amount} USDT
-                        </p>
-                      )}
-                      {/* Direct faucet links for Ethereum */}
-                      {selectedFaucetChain === 'ethereum' && (
-                        <div className="mt-3 pt-3 border-t border-green-700">
-                          <p className="text-xs text-gray-400 mb-2">Get test USDT directly from:</p>
-                          <a
-                            href="https://dashboard.pimlico.io/test-erc20-faucet"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="block text-sm text-indigo-400 hover:text-indigo-300 mb-1"
-                          >
-                            → Pimlico Faucet
-                          </a>
-                          <a
-                            href="https://dashboard.candide.dev/faucet"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="block text-sm text-indigo-400 hover:text-indigo-300"
-                          >
-                            → Candide Faucet
-                          </a>
-                        </div>
-                      )}
-                      {faucetResult.explorerUrl && selectedFaucetChain !== 'ethereum' && (
-                        <a
-                          href={faucetResult.explorerUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="block text-sm text-indigo-400 hover:text-indigo-300 mt-2"
-                        >
-                          → Visit Faucet
-                        </a>
-                      )}
-                    </div>
-                  )}
-                </div>
-              )}
-
-              <div className="flex gap-3">
-                <button
-                  onClick={() => setShowFaucetModal(false)}
-                  className="flex-1 py-3 bg-gray-700 text-white rounded-xl font-medium hover:bg-gray-600"
-                >
-                  Close
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );

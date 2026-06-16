@@ -3,9 +3,19 @@
  */
 
 import { logger } from '@/lib/logger';
+import { getEnv, isProduction } from '@/lib/env';
 
-const ALCHEMY_API_KEY = process.env.NEXT_PUBLIC_ALCHEMY_API_KEY || 'y9aROfzctWbVf7nNW5-iE';
-const ALCHEMY_PRICES_API = `https://api.g.alchemy.com/prices/v1/${ALCHEMY_API_KEY}`;
+function getAlchemyApiKey(): string {
+  const apiKey = getEnv('NEXT_PUBLIC_ALCHEMY_API_KEY') || getEnv('ALCHEMY_API_KEY');
+  if (!apiKey) {
+    if (isProduction()) throw new Error('ALCHEMY_API_KEY or NEXT_PUBLIC_ALCHEMY_API_KEY is required in production for price lookups.');
+    return '';
+  }
+  return apiKey;
+}
+
+const ALCHEMY_API_KEY = getAlchemyApiKey();
+const ALCHEMY_PRICES_API = ALCHEMY_API_KEY ? `https://api.g.alchemy.com/prices/v1/${ALCHEMY_API_KEY}` : '';
 
 // Cache for prices (5 minute expiry)
 const priceCache: { [key: string]: { price: number; timestamp: number } } = {};
@@ -50,6 +60,7 @@ export async function getUSDTPrice(): Promise<PriceData> {
   }
 
   try {
+    if (!ALCHEMY_API_KEY) return { usd: cached?.price || 1, usd_24h_change: 0, usd_market_cap: 0 };
     const response = await fetch(
       `${ALCHEMY_PRICES_API}/tokens/by-symbol?symbols=USDT`,
       {
@@ -94,6 +105,7 @@ export async function getTokenPrices(symbols: string[]): Promise<Record<string, 
   const symbolsParam = symbols.map(s => SYMBOL_MAP[s] || s).join(',');
   
   try {
+    if (!ALCHEMY_API_KEY) return {};
     const response = await fetch(
       `${ALCHEMY_PRICES_API}/tokens/by-symbol?symbols=${symbolsParam}`,
       {

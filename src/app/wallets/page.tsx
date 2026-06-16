@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { 
+import {
   Lock, 
   ArrowLeft, 
   ArrowRight,
@@ -68,7 +68,7 @@ export default function WalletsPage() {
       try {
         const profile = await profileApi.getByUserId(session.user.id);
         if (!profile || !profile.wallet_address) {
-          router.push('/auth');
+          router.push('/onboarding');
           return;
         }
         
@@ -80,7 +80,7 @@ export default function WalletsPage() {
           usdtBalance: '500.00',
         }));
       } catch (e) {
-        router.push('/auth');
+        // Keep the user on the Wallets page so the navigation URL remains stable.
       }
     };
     

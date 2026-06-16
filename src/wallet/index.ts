@@ -7,6 +7,8 @@
 export { BlackPaymentsWallet } from './BlackPaymentsWallet';
 export { BlackPaymentsSmartWallet, createSmartWallet, WalletMode } from './BlackPaymentsSmartWallet';
 export { WalletChain } from './types';
+export { PaymentGateway } from './PaymentGateway';
+export type { PaymentStatus, PaymentMethod, PaymentCurrency, PaymentLinkConfig, PaymentRequest, ApiKeyConfig, WebhookEventType, WebhookPayload, PaymentGatewayConfig } from './PaymentGateway';
 export { createWallet, createWalletWithExistingSeed, createWalletWithPrivateKey, createFullWallet, generateMnemonic, validateMnemonic, validatePrivateKey, getAddressFromMnemonic } from './factory';
 export { getSupportedChains } from './chains';
 export type { BalanceResult, TransactionResult, GasEstimate, MoonPayConfig, FiatRequestParams } from './types';

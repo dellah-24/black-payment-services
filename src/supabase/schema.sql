@@ -166,6 +166,211 @@ CREATE INDEX idx_transactions_status ON transactions(status);
 CREATE INDEX idx_transactions_created ON transactions(created_at DESC);
 
 -- =============================================
+-- MERCHANT PAYMENT GATEWAY
+-- =============================================
+CREATE TABLE IF NOT EXISTS payment_requests (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID REFERENCES profiles(id) ON DELETE SET NULL,
+  order_id TEXT,
+  amount TEXT NOT NULL,
+  currency TEXT NOT NULL,
+  network TEXT NOT NULL,
+  to_currency TEXT,
+  description TEXT,
+  status TEXT NOT NULL DEFAULT 'NEW' CHECK (status IN ('NEW', 'WAIT', 'PAID', 'FAIL', 'EXPIRED', 'CANCEL')),
+  url TEXT NOT NULL,
+  success_url TEXT,
+  cancel_url TEXT,
+  callback_url TEXT,
+  payer_hash TEXT,
+  is_fee_paid_by_user BOOLEAN DEFAULT FALSE,
+  is_payment_multiple BOOLEAN DEFAULT FALSE,
+  is_html_notification BOOLEAN DEFAULT FALSE,
+  tx_hash TEXT,
+  expires_at TIMESTAMP WITH TIME ZONE NOT NULL,
+  paid_at TIMESTAMP WITH TIME ZONE,
+  metadata JSONB DEFAULT '{}'::jsonb,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE INDEX idx_payment_requests_user ON payment_requests(user_id);
+CREATE INDEX idx_payment_requests_status ON payment_requests(status);
+CREATE INDEX idx_payment_requests_order ON payment_requests(order_id);
+CREATE INDEX idx_payment_requests_created ON payment_requests(created_at DESC);
+
+CREATE TABLE IF NOT EXISTS payment_events (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  payment_id UUID REFERENCES payment_requests(id) ON DELETE CASCADE,
+  user_id UUID REFERENCES profiles(id) ON DELETE SET NULL,
+  event TEXT NOT NULL,
+  payload JSONB NOT NULL DEFAULT '{}'::jsonb,
+  delivered BOOLEAN DEFAULT FALSE,
+  delivered_at TIMESTAMP WITH TIME ZONE,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE INDEX idx_payment_events_payment ON payment_events(payment_id);
+CREATE INDEX idx_payment_events_user ON payment_events(user_id);
+CREATE INDEX idx_payment_events_event ON payment_events(event);
+
+CREATE TABLE IF NOT EXISTS payment_webhooks (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  url TEXT NOT NULL,
+  events TEXT[] NOT NULL DEFAULT ARRAY['payment.created', 'payment.wait', 'payment.paid', 'payment.expired', 'payment.fail', 'payment.cancel'],
+  secret TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'inactive')),
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE INDEX idx_payment_webhooks_user ON payment_webhooks(user_id);
+CREATE INDEX idx_payment_webhooks_status ON payment_webhooks(status);
+
+CREATE TABLE IF NOT EXISTS payment_refunds (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  payment_id UUID REFERENCES payment_requests(id) ON DELETE CASCADE,
+  user_id UUID REFERENCES profiles(id) ON DELETE SET NULL,
+  amount TEXT NOT NULL,
+  currency TEXT NOT NULL,
+  reason TEXT,
+  status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'completed', 'failed')),
+  tx_hash TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE INDEX idx_payment_refunds_payment ON payment_refunds(payment_id);
+CREATE INDEX idx_payment_refunds_user ON payment_refunds(user_id);
+CREATE INDEX idx_payment_refunds_status ON payment_refunds(status);
+
+CREATE TABLE IF NOT EXISTS merchant_api_keys (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  name TEXT NOT NULL,
+  public_key TEXT UNIQUE NOT NULL,
+  secret_hash TEXT NOT NULL,
+  permissions TEXT[] NOT NULL DEFAULT ARRAY['read', 'write'],
+  status TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'revoked')),
+  last_used_at TIMESTAMP WITH TIME ZONE,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE INDEX idx_merchant_api_keys_user ON merchant_api_keys(user_id);
+CREATE INDEX idx_merchant_api_keys_status ON merchant_api_keys(status);
+
+-- =============================================
+-- CUSTODIAL WALLET LEDGER
+-- =============================================
+CREATE TABLE IF NOT EXISTS custody_addresses (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  chain TEXT NOT NULL CHECK (chain IN ('tron', 'ethereum', 'bsc')),
+  address TEXT NOT NULL,
+  derivation_path TEXT NOT NULL,
+  account_index INTEGER NOT NULL DEFAULT 0,
+  purpose TEXT NOT NULL CHECK (purpose IN ('deposit', 'withdrawal', 'hot', 'cold')),
+  status TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'inactive', 'revoked')),
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  UNIQUE(user_id, chain, address),
+  UNIQUE(user_id, chain, purpose, account_index)
+);
+
+CREATE INDEX idx_custody_addresses_user ON custody_addresses(user_id);
+CREATE INDEX idx_custody_addresses_chain ON custody_addresses(chain);
+CREATE INDEX idx_custody_addresses_status ON custody_addresses(status);
+CREATE INDEX idx_custody_addresses_purpose ON custody_addresses(purpose);
+
+CREATE TABLE IF NOT EXISTS custodial_withdrawals (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  chain TEXT NOT NULL CHECK (chain IN ('tron', 'ethereum', 'bsc')),
+  token TEXT NOT NULL DEFAULT 'USDT',
+  amount TEXT NOT NULL,
+  amount_base TEXT NOT NULL,
+  to_address TEXT NOT NULL,
+  from_address TEXT,
+  tx_hash TEXT UNIQUE,
+  status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'processing', 'confirmed', 'failed', 'cancelled')),
+  fee TEXT DEFAULT '0',
+  fee_limit TEXT,
+  idempotency_key TEXT NOT NULL,
+  metadata JSONB DEFAULT '{}'::jsonb,
+  explorer_url TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  confirmed_at TIMESTAMP WITH TIME ZONE,
+  failed_at TIMESTAMP WITH TIME ZONE,
+  UNIQUE(user_id, idempotency_key)
+);
+
+CREATE INDEX idx_withdrawals_user_created ON custodial_withdrawals(user_id, created_at DESC);
+CREATE INDEX idx_withdrawals_status ON custodial_withdrawals(status);
+CREATE INDEX idx_withdrawals_chain ON custodial_withdrawals(chain);
+CREATE INDEX idx_withdrawals_idempotency ON custodial_withdrawals(idempotency_key);
+
+CREATE TABLE IF NOT EXISTS custodial_deposits (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  custody_address_id UUID REFERENCES custody_addresses(id) ON DELETE SET NULL,
+  chain TEXT NOT NULL CHECK (chain IN ('tron', 'ethereum', 'bsc')),
+  token TEXT NOT NULL DEFAULT 'USDT',
+  amount TEXT NOT NULL,
+  amount_base TEXT NOT NULL,
+  tx_hash TEXT NOT NULL UNIQUE,
+  from_address TEXT,
+  to_address TEXT NOT NULL,
+  block_number BIGINT,
+  status TEXT NOT NULL DEFAULT 'detected' CHECK (status IN ('detected', 'confirmed', 'failed')),
+  metadata JSONB DEFAULT '{}'::jsonb,
+  detected_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  confirmed_at TIMESTAMP WITH TIME ZONE
+);
+
+CREATE INDEX idx_deposits_user_created ON custodial_deposits(user_id, detected_at DESC);
+CREATE INDEX idx_deposits_status ON custodial_deposits(status);
+CREATE INDEX idx_deposits_chain ON custodial_deposits(chain);
+CREATE INDEX idx_deposits_tx_hash ON custodial_deposits(tx_hash);
+
+CREATE TABLE IF NOT EXISTS custody_balances (
+  user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  chain TEXT NOT NULL CHECK (chain IN ('tron', 'ethereum', 'bsc')),
+  token TEXT NOT NULL,
+  available_balance TEXT NOT NULL DEFAULT '0',
+  locked_balance TEXT NOT NULL DEFAULT '0',
+  raw_balance TEXT NOT NULL DEFAULT '0',
+  decimals INTEGER NOT NULL DEFAULT 6,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  PRIMARY KEY(user_id, chain, token)
+);
+
+CREATE INDEX idx_custody_balances_chain ON custody_balances(chain);
+
+-- Enable real-time for custodial ledger updates
+ALTER PUBLICATION supabase_realtime ADD TABLE custodial_withdrawals;
+ALTER PUBLICATION supabase_realtime ADD TABLE custodial_deposits;
+ALTER PUBLICATION supabase_realtime ADD TABLE custody_addresses;
+
+-- Enable RLS for custodial ledger
+ALTER TABLE custody_addresses ENABLE ROW LEVEL SECURITY;
+ALTER TABLE custodial_withdrawals ENABLE ROW LEVEL SECURITY;
+ALTER TABLE custodial_deposits ENABLE ROW LEVEL SECURITY;
+ALTER TABLE custody_balances ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can view own custody addresses"
+  ON custody_addresses FOR SELECT USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can view own withdrawals"
+  ON custodial_withdrawals FOR SELECT USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can view own deposits"
+  ON custodial_deposits FOR SELECT USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can view own custody balances"
+  ON custody_balances FOR SELECT USING (auth.uid() = user_id);
+
+-- =============================================
 -- CHAT MESSAGES
 -- =============================================
 CREATE TABLE IF NOT EXISTS chat_messages (

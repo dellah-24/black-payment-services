@@ -6,6 +6,13 @@
 import { logger } from '@/lib/logger';
 import { ethers } from 'ethers';
 import QRCodeLib from 'qrcode';
+import {
+  getTronExplorerTxUrl,
+  getTronTransactionStatus,
+  getTronTRXBalance,
+  getTronUSDTBalance,
+  parseUSDTAmountToBase,
+} from '@/lib/tronWallet';
 
 // ============================================
 // QR Code Generation
@@ -105,11 +112,11 @@ export async function estimateGasFees(chain: string): Promise<GasEstimate> {
       // TRON and Solana have different fee models
       return {
         slow: '0.001',
-        standard: '0.002',
-        fast: '0.005',
-        slowGwei: '1',
-        standardGwei: '2',
-        fastGwei: '5',
+        standard: chain === 'tron' ? '14.9' : '0.002',
+        fast: chain === 'tron' ? '30' : '0.005',
+        slowGwei: chain === 'tron' ? '0.001' : '1',
+        standardGwei: chain === 'tron' ? '14.9' : '2',
+        fastGwei: chain === 'tron' ? '30' : '5',
       };
     }
 
@@ -190,7 +197,9 @@ export async function simulateTransaction(
     if (chain === 'tron' || chain === 'solana') {
       return {
         success: true,
-        message: 'Transaction simulation not available for this chain',
+        message: chain === 'tron'
+          ? 'TRC-20 simulation is handled by balance/address validation before broadcast'
+          : 'Transaction simulation not available for this chain',
       };
     }
 
@@ -325,9 +334,7 @@ export async function calculateMaxAmount(
 ): Promise<string> {
   try {
     if (chain === 'tron' || chain === 'solana') {
-      // For TRON, minimum balance is ~1 TRX
-      const minTronBalance = 1;
-      return (parseFloat(tokenBalance) - minTronBalance).toString();
+      return chain === 'tron' ? tokenBalance : '0';
     }
 
     const rpcUrl = CHAIN_RPC[chain];
@@ -377,8 +384,7 @@ export async function getTransactionStatus(
 ): Promise<TransactionStatus> {
   try {
     if (chain === 'tron') {
-      // TRON uses different API
-      return 'confirmed'; // Simplified for now
+      return getTronTransactionStatus(hash);
     }
 
     const rpcUrl = CHAIN_RPC[chain];
@@ -392,6 +398,80 @@ export async function getTransactionStatus(
   } catch {
     return 'pending';
   }
+}
+
+export async function fetchUSDTBalance(chain: string, address: string): Promise<string> {
+  if (chain === 'tron') {
+    const balance = await getTronUSDTBalance(address);
+    return balance.formatted;
+  }
+
+  if (chain === 'solana') {
+    return '0';
+  }
+
+  const rpcUrl = CHAIN_RPC[chain];
+  if (!rpcUrl) {
+    return '0';
+  }
+
+  const provider = new ethers.JsonRpcProvider(rpcUrl);
+  const USDT_ABI = [
+    'function balanceOf(address owner) view returns (uint256)',
+    'function decimals() view returns (uint8)',
+  ];
+  const chainConfig = getChainConfig(chain);
+  const usdtContract = new ethers.Contract(chainConfig.usdtAddress, USDT_ABI, provider);
+  const [balance, decimals] = await Promise.all([
+    usdtContract.balanceOf(address),
+    usdtContract.decimals(),
+  ]);
+
+  return ethers.formatUnits(balance, Number(decimals));
+}
+
+export async function fetchNativeBalance(chain: string, address: string): Promise<string> {
+  if (chain === 'tron') {
+    const balance = await getTronTRXBalance(address);
+    return balance.formatted;
+  }
+
+  if (chain === 'solana') {
+    return '0';
+  }
+
+  const rpcUrl = CHAIN_RPC[chain];
+  if (!rpcUrl) {
+    return '0';
+  }
+
+  const provider = new ethers.JsonRpcProvider(rpcUrl);
+  const nativeBalance = await provider.getBalance(address);
+  return ethers.formatUnits(nativeBalance, 18);
+}
+
+export function getExplorerTxUrl(chain: string, hash: string): string {
+  if (chain === 'tron') {
+    return getTronExplorerTxUrl(hash);
+  }
+
+  const explorerUrls: Record<string, string> = {
+    ethereum: 'https://etherscan.io',
+    bsc: 'https://bscscan.com',
+    polygon: 'https://polygonscan.com',
+    arbitrum: 'https://arbiscan.io',
+    optimism: 'https://optimistic.etherscan.io',
+    avalanche: 'https://snowtrace.io',
+    celo: 'https://explorer.celo.org',
+    linea: 'https://lineascan.build',
+    base: 'https://basescan.org',
+  };
+  const explorerUrl = explorerUrls[chain] || explorerUrls.ethereum;
+  return `${explorerUrl}/tx/${hash}`;
+}
+
+export function tronUSDTAmountToBase(amount: string): bigint {
+  return parseUSDTAmountToBase(amount);
 }
 
 /**

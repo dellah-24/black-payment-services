@@ -33,19 +33,21 @@ import { walletStorage } from '@/lib/secureWalletStorage';
 import { logger } from '@/lib/logger';
 import { QRCode } from '@/components/QRCode';
 import { AddressBook } from '@/components/AddressBook';
-import { 
-  estimateGasFees, 
-  GasSpeed, 
+import {
+  estimateGasFees,
+  GasSpeed,
   simulateTransaction,
   calculateMaxAmount,
   AddressBookEntry,
-  getTransactionHistory,
+  getExplorerTxUrl,
+  isValidTronAddress,
   saveTransaction,
   TransactionRecord
 } from '@/lib/walletUtils';
 import { getTxManager } from '@/lib/rpcProvider';
 import { supabase } from '@/lib/supabaseClient';
 import { profileApi } from '@/lib/profileApi';
+import { getTronUSDTBalance, sendTronUSDT } from '@/lib/tronWallet';
 
 // Using shared chain config from @/config/chains
 const USDT_ABI = [
@@ -113,7 +115,7 @@ export default function SendPage() {
       try {
         const profile = await profileApi.getByUserId(session.user.id);
         if (!profile || !profile.wallet_address) {
-          router.push('/auth');
+          router.push('/onboarding');
           return;
         }
         
@@ -121,7 +123,7 @@ export default function SendPage() {
         setAccount(savedAccount);
         loadWalletData(savedAccount);
       } catch (e) {
-        router.push('/auth');
+        // Keep the user on the Send page so the navigation URL remains stable.
       }
     };
     
@@ -160,8 +162,13 @@ export default function SendPage() {
 
   const fetchTokenBalance = async (address: string) => {
     try {
-      if (selectedChain === 'tron' || selectedChain === 'solana') {
-        // Simplified for non-EVM
+      if (selectedChain === 'tron') {
+        const usdtBalance = await getTronUSDTBalance(address);
+        setTokenBalance(usdtBalance.formatted);
+        return;
+      }
+
+      if (selectedChain === 'solana') {
         setTokenBalance('0');
         return;
       }
@@ -237,7 +244,13 @@ export default function SendPage() {
     if (!account || !recipient || !amount) return;
     
     // Validate recipient address
-    if (selectedChain !== 'tron' && selectedChain !== 'solana') {
+    if (selectedChain === 'tron') {
+      if (!isValidTronAddress(recipient)) {
+        setError('Invalid TRON recipient address');
+        showToast('error', 'Invalid TRON recipient address');
+        return;
+      }
+    } else if (selectedChain !== 'solana') {
       if (!ethers.isAddress(recipient)) {
         setError('Invalid recipient address');
         showToast('error', 'Invalid recipient address');
@@ -272,7 +285,13 @@ export default function SendPage() {
 
   const handleConfirm = async () => {
     // Validate recipient address
-    if (selectedChain !== 'tron' && selectedChain !== 'solana') {
+    if (selectedChain === 'tron') {
+      if (!isValidTronAddress(recipient)) {
+        setError('Invalid TRON recipient address');
+        showToast('error', 'Invalid TRON recipient address');
+        return;
+      }
+    } else if (selectedChain !== 'solana') {
       if (!ethers.isAddress(recipient)) {
         setError('Invalid recipient address');
         showToast('error', 'Invalid recipient address');
@@ -300,14 +319,6 @@ export default function SendPage() {
     setTxStatus('pending');
 
     try {
-      if (selectedChain === 'tron' || selectedChain === 'solana') {
-        setError('TRC-20 and SPL transfers require special handling. Please use a different network.');
-        showToast('warning', 'Please use a different network for this transaction');
-        setIsLoading(false);
-        return;
-      }
-
-      const chain = getActiveChainConfig(selectedChain);
       const walletData = await walletStorage.retrieveWallet(account!);
       
       if (!walletData) {
@@ -318,6 +329,44 @@ export default function SendPage() {
       }
       
       const privateKey = walletData.privateKey;
+
+      if (selectedChain === 'tron') {
+        const feeLimit = Math.max(1_000_000, Math.round(Number(estimatedFee || '14.9') * 1_000_000));
+        const result = await sendTronUSDT({
+          fromAddress: walletAddress,
+          privateKey,
+          to: recipient,
+          amount,
+          feeLimit,
+        });
+
+        const txRecord: Omit<TransactionRecord, 'id' | 'timestamp'> = {
+          hash: result.hash,
+          from: walletAddress,
+          to: recipient,
+          amount,
+          token: 'USDT',
+          chain: selectedChain,
+          status: result.status,
+          explorerUrl: getExplorerTxUrl(selectedChain, result.hash),
+          type: 'send'
+        };
+        saveTransaction(txRecord);
+        
+        setTxHash(result.hash);
+        setTxStatus(result.status);
+        showToast(result.status === 'confirmed' ? 'success' : 'warning', `TRC-20 USDT ${result.status === 'confirmed' ? 'sent' : 'broadcast'}`);
+        return;
+      }
+
+      if (selectedChain === 'solana') {
+        setError('SPL transfers require special handling. Please use a different network.');
+        showToast('warning', 'Please use a different network for this transaction');
+        setIsLoading(false);
+        return;
+      }
+
+      const chain = getActiveChainConfig(selectedChain);
       const provider = new ethers.JsonRpcProvider(chain.rpcUrls[0]);
       const signer = new ethers.Wallet(privateKey, provider);
       
@@ -358,7 +407,7 @@ export default function SendPage() {
         token: 'USDT',
         chain: selectedChain,
         status: receipt?.status === 1 ? 'confirmed' : 'pending',
-        explorerUrl: chain.explorerUrl,
+        explorerUrl: getExplorerTxUrl(selectedChain, response.hash),
         type: 'send'
       };
       saveTransaction(txRecord);
@@ -430,8 +479,8 @@ export default function SendPage() {
               
               <div className="p-4 rounded-xl bg-gray-900/50 backdrop-blur-sm mb-6">
                 <p className="text-xs text-gray-500 mb-1">Transaction Hash</p>
-                <a 
-                  href={`${chain.explorerUrl}/tx/${txHash}`}
+                <a
+                  href={getExplorerTxUrl(selectedChain, txHash)}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="font-mono text-sm text-indigo-400 hover:underline flex items-center justify-center gap-2"
@@ -544,7 +593,7 @@ export default function SendPage() {
             </select>
             {selectedChain === 'tron' && (
               <p className="mt-2 text-sm flex items-center gap-1 text-green-400">
-                <Zap className="h-4 w-4" /> Lowest fees: ~$0.001 per transaction
+                <Zap className="h-4 w-4" /> Lowest fees: ~$0.3-$1 per transaction
               </p>
             )}
           </div>
@@ -678,7 +727,7 @@ export default function SendPage() {
 
           {/* Send Button */}
           <button
-            onClick={() => setShowConfirm(true)}
+            onClick={handleSend}
             disabled={!recipient || !amount || isLoading}
             className={`w-full py-4 rounded-xl font-bold text-lg transition-all ${
               !recipient || !amount || isLoading

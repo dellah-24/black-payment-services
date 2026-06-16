@@ -1,621 +1,246 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { FormEvent, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { 
-  User, 
-  Wallet, 
-  Mail,
-  Phone,
-  MapPin,
-  Calendar,
-  Flag,
-  Building,
-  ArrowLeft,
-  Loader2,
-  Save,
-  CheckCircle,
-  Eye,
-  EyeOff,
-  LogIn,
-  UserPlus,
-  Shield,
-  Globe
-} from 'lucide-react';
-import { showToast } from '@/components/Toast';
-import { walletStorage } from '@/lib/secureWalletStorage';
-import { supabase, supabaseAuth } from '@/lib/supabaseClient';
-import { profileApi, ProfileDetails, COUNTRIES } from '@/lib/profileApi';
-import { logger } from '@/lib/logger';
-import { SigninSchema, SignupCredentialsSchema, SignupProfileSchema, PasswordSchema } from '@/lib/validation';
-import { setCsrfToken } from '@/lib/csrfClient';
+import { Wallet, Lock, Mail, User, ArrowRight, Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
+import { supabase } from '@/lib/supabaseClient';
 
 type AuthMode = 'signin' | 'signup';
 
 export default function AuthPage() {
   const router = useRouter();
-  const [mode, setMode] = useState<AuthMode>('signup');
-  const [isLoading, setIsLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-  
-  // Auth form
+  const [mode, setMode] = useState<AuthMode>('signin');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  
-  // Profile form
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [phone, setPhone] = useState('');
-  const [dateOfBirth, setDateOfBirth] = useState('');
-  const [nationality, setNationality] = useState('');
-  const [country, setCountry] = useState('');
-  const [state, setState] = useState('');
-  const [city, setCity] = useState('');
-  const [addressLine1, setAddressLine1] = useState('');
-  const [postalCode, setPostalCode] = useState('');
-
-  // Step tracking for signup
-  const [signupStep, setSignupStep] = useState<'credentials' | 'email_sent' | 'profile'>('credentials');
-  // Store user from signUp response
-   const [authUser, setAuthUser] = useState<{ id: string; email?: string; email_confirmed_at?: string; phone?: string; phone_confirmed_at?: string; app_metadata: { [key: string]: any }; user_metadata: { [key: string]: any }; role?: string; aud?: string; confirmed_at?: string; last_sign_in_at?: string; created_at?: string; updated_at?: string; } | null>(null);
- // Store email for resend functionality
- const [pendingEmail, setPendingEmail] = useState('');
-
-  // CSRF token initialization
-  const initializeCsrf = async () => {
-    try {
-      const response = await fetch('/api/csrf', { method: 'GET', credentials: 'same-origin' });
-      if (response.ok) {
-        const { csrfToken } = await response.json();
-        setCsrfToken(csrfToken);
-        // Also store in localStorage for persistence across page reloads
-        if (typeof window !== 'undefined') {
-          localStorage.setItem('csrfToken', csrfToken);
-        }
-      } else {
-        logger.warn('Failed to initialize CSRF token', { status: response.status });
-      }
-    } catch (error) {
-      logger.error('CSRF initialization error', error as Error);
-    }
-  };
+  const [name, setName] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [message, setMessage] = useState<string | null>(null);
 
   useEffect(() => {
-    // Check if user is already logged in with Supabase
     const checkSession = async () => {
-       try {
-         const { data: { session }, error } = await supabase.auth.getSession();
-         if (error) throw error;
-         if (session) {
-          // Check if email is confirmed
-          const hasConfirmedEmail = !!session.user?.email_confirmed_at;
-          
-          if (hasConfirmedEmail) {
-            // Check if user has a profile with wallet
-            try {
-              const profile = await profileApi.getByUserId(session.user.id);
-              if (profile && profile.wallet_address) {
-                // User has wallet, redirect to home
-                window.location.href = '/';
-              } else {
-                // Email confirmed but no wallet - go to profile step
-                setAuthUser(session.user);
-                setEmail(session.user.email || '');
-                setSignupStep('profile');
-              }
-            } catch (profileError) {
-              // Profile doesn't exist - go to profile step
-              setAuthUser(session.user);
-              setEmail(session.user.email || '');
-              setSignupStep('profile');
-            }
-          } else {
-            // Email not confirmed - show email sent step
-            setAuthUser(session.user);
-            setEmail(session.user.email || '');
-            setPendingEmail(session.user.email || '');
-            setSignupStep('email_sent');
-          }
-        }
-      } catch (error) {
-        logger.debug('Session check error', error as Error);
-        // Continue to auth page
+      const { data } = await supabase.auth.getSession();
+      if (data.session) {
+        router.replace('/onboarding');
       }
     };
+
     checkSession();
-  }, []);
+  }, [router]);
 
-  const handleAuth = async () => {
-    // Validate inputs using Zod
-    if (mode === 'signup') {
-      const credsResult = SignupCredentialsSchema.safeParse({ email, password, confirmPassword });
-      if (!credsResult.success) {
-        const errorMsg = credsResult.error.errors[0].message;
-        showToast('error', errorMsg);
-        return;
-      }
-    } else {
-      const signinResult = SigninSchema.safeParse({ email, password });
-      if (!signinResult.success) {
-        const errorMsg = signinResult.error.errors[0].message;
-        showToast('error', errorMsg);
-        return;
-      }
-    }
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setLoading(true);
+    setError(null);
+    setMessage(null);
 
-    if (mode === 'signup') {
-      // Signup flow
-      // Create user with Supabase Auth
-      setIsLoading(true);
-      try {
-        const { data, error } = await supabaseAuth.auth.signUp({
-          email,
-          password,
-        });
-
-        if (error) {
-          showToast('error', error.message);
-          return;
-        }
-
-        if (data?.user) {
-          setAuthUser(data.user);
-          setPendingEmail(email);
-        }
-
-        setSignupStep('email_sent');
-        showToast('success', 'Confirmation email sent! Please check your inbox.');
-      } catch (error: any) {
-        showToast('error', error.message || 'Failed to create account');
-      } finally {
-        setIsLoading(false);
-      }
-    } else {
-      // Signin flow
-      // Sign in with Supabase Auth
-      setIsLoading(true);
-      try {
-        const { data, error } = await supabaseAuth.auth.signInWithPassword({
-          email,
-          password,
-        });
-
-        if (error) {
-          showToast('error', error.message);
-          setIsLoading(false);
-          return;
-        }
-
-        const { data: { user } } = await supabaseAuth.auth.getUser();
-
-        if (user) {
-           try {
-             // Query by wallet_address since profile id is auto-generated
-             // We need to get the current account from storage
-             const storedAccount = walletStorage.getCurrentAccount();
-             if (storedAccount) {
-               const { data: profile, error: profileError } = await supabase
-                 .from('profiles')
-                 .select('wallet_address')
-                 .eq('wallet_address', storedAccount.toLowerCase())
-                 .maybeSingle();
-
-               if (profileError && !profileError.message?.includes('406')) {
-                 logger.warn('Profile query error', { message: profileError.message });
-               }
-
-               if (profile?.wallet_address) {
-                 logger.info('Found wallet address', { address: profile.wallet_address });
-               }
-             }
-           } catch (e) {
-             logger.warn('Profile query failed', e as Error);
-           }
-         }
-
-        showToast('success', 'Signed in successfully!');
-        await initializeCsrf();
-        setIsLoading(false);
-        window.location.href = '/';
-      } catch (error: any) {
-        showToast('error', error.message || 'Failed to sign in');
-      } finally {
-        setIsLoading(false);
-      }
-    }
-  };
-
-  const handleCompleteSignup = async () => {
-    // Validate required profile fields
-    if (!firstName || !lastName || !email || !dateOfBirth || !country || !city || !addressLine1 || !postalCode) {
-      showToast('error', 'Please fill in all required fields');
-      return;
-    }
-
-    setIsLoading(true);
     try {
-      // Use the user stored from signUp response
-      const user = authUser;
-      
-      if (!user) {
-        showToast('error', 'Please sign up first');
+      const trimmedEmail = email.trim().toLowerCase();
+
+      if (!trimmedEmail) {
+        throw new Error('Enter your email address.');
+      }
+
+      if (password.length < 8) {
+        throw new Error('Password must be at least 8 characters.');
+      }
+
+      if (mode === 'signup') {
+        const { data, error: authError } = await supabase.auth.signUp({
+          email: trimmedEmail,
+          password,
+          options: {
+            data: {
+              full_name: name.trim(),
+            },
+          },
+        });
+
+        if (authError) throw authError;
+
+        if (data.user && data.session) {
+          router.replace('/onboarding');
+          return;
+        }
+
+        setMessage('Account created. Check your email to confirm your address.');
         return;
       }
 
-      // Create wallet for the user (required for the app)
-      const { ethers } = await import('ethers');
-      const wallet = ethers.Wallet.createRandom();
-      
-      // Store wallet with password encryption
-      await walletStorage.storeWallet(wallet.address, wallet.privateKey, wallet.mnemonic?.phrase || "", password);
-      walletStorage.setCurrentAccount(wallet.address);
+      const { error: authError } = await supabase.auth.signInWithPassword({
+        email: trimmedEmail,
+        password,
+      });
 
-      // Save profile to database with user ID
-       const updates: ProfileDetails = {
-         username: email.split('@')[0],
-         first_name: firstName,
-         last_name: lastName,
-         email,
-         phone,
-         date_of_birth: dateOfBirth,
-         country,
-         nationality,
-         state,
-         city,
-         address_line1: addressLine1,
-         postal_code: postalCode,
-       };
+      if (authError) throw authError;
 
-       await profileApi.createForAuthUser(user.id, wallet.address, updates);
-      
-      // Store session
-      walletStorage.setCurrentAccount(wallet.address);
-      
-       showToast('success', 'Account created successfully!');
-       await initializeCsrf();
-       window.location.href = '/';
-    } catch (error) {
-      logger.error('Error saving profile', error as Error);
-      showToast('error', 'Failed to create account');
+      router.replace('/onboarding');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Authentication failed. Please try again.');
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
-  const renderFormField = (
-    label: string,
-    value: string,
-    onChange: (value: string) => void,
-    type: 'text' | 'email' | 'password' | 'tel' | 'date' | 'select' = 'text',
-    placeholder?: string,
-    required?: boolean,
-    icon?: React.ReactNode
-  ) => (
-    <div className="space-y-2">
-      <label className="text-sm font-medium text-gray-300">
-        {label} {required && <span className="text-red-400">*</span>}
-      </label>
-      <div className="relative">
-        {icon && (
-          <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">
-            {icon}
-          </div>
-        )}
-        {type === 'select' ? (
-          <select
-            value={value}
-            onChange={(e) => onChange(e.target.value)}
-            className={`w-full bg-gray-800/50 border border-gray-700 rounded-xl py-3 px-4 text-white placeholder-gray-500 focus:ring-2 focus:ring-indigo-500 focus:border-transparent ${icon ? 'pl-10' : ''}`}
-          >
-            <option value="">Select {label}</option>
-            {COUNTRIES.map((c) => (
-              <option key={c.code} value={c.code}>{c.name}</option>
-            ))}
-          </select>
-        ) : type === 'password' ? (
-          <div className="relative">
-            <input
-              type={showPassword ? 'text' : 'password'}
-              value={value}
-              onChange={(e) => onChange(e.target.value)}
-              placeholder={placeholder}
-              className={`w-full bg-gray-800/50 border border-gray-700 rounded-xl py-3 px-4 text-white placeholder-gray-500 focus:ring-2 focus:ring-indigo-500 focus:border-transparent ${icon ? 'pl-10' : 'pr-10'}`}
-            />
-            <button
-              type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-300"
-            >
-              {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-            </button>
-          </div>
-        ) : (
-          <input
-            type={type}
-            value={value}
-            onChange={(e) => onChange(e.target.value)}
-            placeholder={placeholder}
-            className={`w-full bg-gray-800/50 border border-gray-700 rounded-xl py-3 px-4 text-white placeholder-gray-500 focus:ring-2 focus:ring-indigo-500 focus:border-transparent ${icon ? 'pl-10' : ''}`}
-          />
-        )}
-      </div>
-    </div>
-  );
+  const isSignup = mode === 'signup';
 
   return (
-    <div className="min-h-screen py-8 px-4">
-      <div className="max-w-2xl mx-auto">
-        {/* Header */}
-        <div className="flex items-center mb-8">
-          <Link href="/" className="p-2.5 rounded-xl bg-gray-800/50 hover:bg-gray-700/50 transition-colors mr-4">
-            <ArrowLeft className="h-5 w-5" />
-          </Link>
-          <h1 className="text-2xl font-bold bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">
-            {mode === 'signin' ? 'Sign In' : 'Create Account'}
-          </h1>
-        </div>
+    <main className="min-h-screen bg-[#070a12] text-white">
+      <div className="pointer-events-none fixed inset-0 -z-10">
+        <div className="absolute left-1/2 top-0 h-[420px] w-[420px] -translate-x-1/2 rounded-full bg-indigo-500/20 blur-3xl" />
+        <div className="absolute right-0 top-32 h-[360px] w-[360px] rounded-full bg-emerald-500/10 blur-3xl" />
+        <div className="absolute bottom-0 left-10 h-[360px] w-[360px] rounded-full bg-blue-500/10 blur-3xl" />
+      </div>
 
-        <div className="relative overflow-hidden rounded-2xl bg-gray-900/50 border border-gray-700/50 p-8">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
-          
-          <div className="relative">
-            {/* Mode Toggle */}
-            <div className="flex gap-2 mb-8">
+      <section className="mx-auto flex min-h-screen max-w-7xl items-center justify-center px-4 py-16">
+        <div className="grid w-full max-w-5xl gap-8 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
+          <div className="space-y-8">
+            <div className="inline-flex items-center gap-3 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-indigo-100 shadow-2xl shadow-indigo-950/30 backdrop-blur">
+              <Wallet className="h-4 w-4 text-emerald-300" />
+              BlackPayments Auth
+            </div>
+
+            <div>
+              <h1 className="text-4xl font-black tracking-tight text-white sm:text-6xl">
+                Sign in to your crypto payment workspace
+              </h1>
+              <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-300">
+                Use your email and password to access wallet management, sending, P2P, and transaction history.
+              </p>
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-3">
+              {[
+                { title: 'Secure session', text: 'Supabase Auth handles sign-in state.' },
+                { title: 'Wallet linked profile', text: 'Connect or create a wallet after authentication.' },
+                { title: 'Protected routes', text: 'Send, P2P, Wallets, and History stay private.' },
+              ].map((item) => (
+                <div key={item.title} className="rounded-2xl border border-white/10 bg-white/5 p-5 backdrop-blur">
+                  <CheckCircle2 className="mb-3 h-6 w-6 text-emerald-300" />
+                  <p className="font-bold text-white">{item.title}</p>
+                  <p className="mt-2 text-sm leading-6 text-slate-400">{item.text}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="relative overflow-hidden rounded-[2rem] border border-white/10 bg-slate-950/80 p-6 shadow-2xl shadow-indigo-950/50 backdrop-blur-xl sm:p-8">
+            <div className="mb-8 flex gap-2 rounded-2xl bg-white/5 p-1">
               <button
-                onClick={() => { setMode('signup'); setSignupStep('credentials'); }}
-                className={`flex-1 py-3 px-4 rounded-xl font-medium transition-colors flex items-center justify-center gap-2 ${
-                  mode === 'signup' 
-                    ? 'bg-indigo-600 text-white' 
-                    : 'bg-gray-800 text-gray-400 hover:text-white'
+                type="button"
+                onClick={() => setMode('signin')}
+                className={`flex-1 rounded-xl px-4 py-3 text-sm font-black transition ${
+                  !isSignup ? 'bg-white text-slate-950' : 'text-slate-300 hover:text-white'
                 }`}
               >
-                <UserPlus className="h-4 w-4" />
-                Sign Up
+                Sign in
               </button>
               <button
-                onClick={() => setMode('signin')}
-                className={`flex-1 py-3 px-4 rounded-xl font-medium transition-colors flex items-center justify-center gap-2 ${
-                  mode === 'signin' 
-                    ? 'bg-indigo-600 text-white' 
-                    : 'bg-gray-800 text-gray-400 hover:text-white'
+                type="button"
+                onClick={() => setMode('signup')}
+                className={`flex-1 rounded-xl px-4 py-3 text-sm font-black transition ${
+                  isSignup ? 'bg-white text-slate-950' : 'text-slate-300 hover:text-white'
                 }`}
               >
-                <LogIn className="h-4 w-4" />
-                Sign In
+                Register
               </button>
             </div>
 
-            {/* Wallet Connection - Auto-created after profile */}
-            {mode === 'signup' && signupStep === 'profile' && (
-              <div className="mb-8 p-4 rounded-xl bg-indigo-900/20 border border-indigo-700/30">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <Wallet className="h-6 w-6 text-indigo-400" />
-                    <div>
-                      <p className="text-sm font-medium text-white">Wallet</p>
-                      <p className="text-xs text-gray-400">
-                        A wallet will be created for you automatically
-                      </p>
-                    </div>
+            <form onSubmit={handleSubmit} className="space-y-5">
+              {isSignup && (
+                <label className="block">
+                  <span className="mb-2 block text-sm font-semibold text-slate-300">Full name</span>
+                  <div className="relative">
+                    <User className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-500" />
+                    <input
+                      value={name}
+                      onChange={(event) => setName(event.target.value)}
+                      className="w-full rounded-2xl border border-white/10 bg-white/5 py-4 pl-12 pr-4 font-semibold text-white outline-none transition focus:border-emerald-400/70 focus:bg-white/[0.07]"
+                      placeholder="Your name"
+                      autoComplete="name"
+                    />
                   </div>
-                  <CheckCircle className="h-6 w-6 text-green-400" />
+                </label>
+              )}
+
+              <label className="block">
+                <span className="mb-2 block text-sm font-semibold text-slate-300">Email</span>
+                <div className="relative">
+                  <Mail className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-500" />
+                  <input
+                    value={email}
+                    onChange={(event) => setEmail(event.target.value)}
+                    className="w-full rounded-2xl border border-white/10 bg-white/5 py-4 pl-12 pr-4 font-semibold text-white outline-none transition focus:border-emerald-400/70 focus:bg-white/[0.07]"
+                    placeholder="you@example.com"
+                    autoComplete="email"
+                    type="email"
+                    required
+                  />
                 </div>
-              </div>
-            )}
+              </label>
 
-            {/* Step 1: Credentials */}
-            {(signupStep === 'credentials' || mode === 'signin') && (
-              <div className="space-y-6">
-                {renderFormField('Email', email, setEmail, 'email', 'your@email.com', true, <Mail className="h-4 w-4" />)}
-                {renderFormField('Password', password, setPassword, 'password', '••••••••', true)}
-                
-                {mode === 'signup' && (
-                  renderFormField('Confirm Password', confirmPassword, setConfirmPassword, 'password', '••••••••', true)
-                )}
+              <label className="block">
+                <span className="mb-2 block text-sm font-semibold text-slate-300">Password</span>
+                <div className="relative">
+                  <Lock className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-500" />
+                  <input
+                    value={password}
+                    onChange={(event) => setPassword(event.target.value)}
+                    className="w-full rounded-2xl border border-white/10 bg-white/5 py-4 pl-12 pr-4 font-semibold text-white outline-none transition focus:border-emerald-400/70 focus:bg-white/[0.07]"
+                    placeholder="••••••••"
+                    autoComplete={isSignup ? 'new-password' : 'current-password'}
+                    type="password"
+                    required
+                  />
+                </div>
+              </label>
 
-                <button
-                  onClick={(e) => {
-                    logger.debug('[Auth] Sign In button clicked');
-                    handleAuth();
-                  }}
-                  disabled={isLoading}
-                  className="w-full py-4 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white rounded-xl font-medium transition-all transform hover:scale-[1.02] flex items-center justify-center gap-2"
-                >
-                  {isLoading ? (
+              {error && (
+                <div className="flex items-start gap-3 rounded-2xl border border-red-400/20 bg-red-500/10 p-4 text-sm text-red-200">
+                  <AlertCircle className="mt-0.5 h-5 w-5 shrink-0" />
+                  <p>{error}</p>
+                </div>
+              )}
+
+              {message && (
+                <div className="flex items-start gap-3 rounded-2xl border border-emerald-400/20 bg-emerald-500/10 p-4 text-sm text-emerald-200">
+                  <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0" />
+                  <p>{message}</p>
+                </div>
+              )}
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-indigo-600 to-emerald-500 px-6 py-4 font-black text-white shadow-lg shadow-emerald-500/20 transition hover:scale-[1.01] disabled:cursor-not-allowed disabled:opacity-70"
+              >
+                {loading ? (
+                  <>
                     <Loader2 className="h-5 w-5 animate-spin" />
-                  ) : mode === 'signup' ? (
-                    <>
-                      Sign Up <UserPlus className="h-4 w-4" />
-                    </>
-                  ) : (
-                    <>
-                      Sign In <LogIn className="h-4 w-4" />
-                    </>
-                  )}
-                </button>
-              </div>
-            )}
+                    Processing...
+                  </>
+                ) : (
+                  <>
+                    {isSignup ? 'Create account' : 'Sign in'}
+                    <ArrowRight className="h-5 w-5" />
+                  </>
+                )}
+              </button>
+            </form>
 
-            {/* Email Confirmation Step */}
-            {signupStep === 'email_sent' && mode === 'signup' && (
-              <div className="space-y-6 text-center">
-                <div className="w-20 h-20 rounded-full bg-blue-500/20 flex items-center justify-center mx-auto mb-4">
-                  <Mail className="h-10 w-10 text-blue-400" />
-                </div>
-                <h2 className="text-xl font-bold text-white">Check your email!</h2>
-                <p className="text-gray-400">
-                  We've sent a confirmation link to<br />
-                  <span className="text-indigo-400 font-medium">{pendingEmail}</span>
-                </p>
-                <p className="text-sm text-gray-500">
-                  Click the link in the email to verify your account, then come back here to complete your profile.
-                </p>
-                <div className="pt-4">
-                  <button
-                    onClick={async () => {
-                      setIsLoading(true);
-                      try {
-                        // Check if user has confirmed their email
-                        const { data: { session } } = await supabase.auth.getSession();
-                        if (session?.user?.email_confirmed_at) {
-                          // Email is confirmed, proceed to profile
-                          setSignupStep('profile');
-                          showToast('success', 'Email verified! Please complete your profile.');
-                        } else {
-                          showToast('error', 'Please verify your email first. Check your inbox for the confirmation link.');
-                        }
-                      } catch (error) {
-                        showToast('error', 'Error checking verification status');
-                      } finally {
-                        setIsLoading(false);
-                      }
-                    }}
-                    disabled={isLoading}
-                    className="w-full py-4 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white rounded-xl font-medium transition-all transform hover:scale-[1.02] flex items-center justify-center gap-2"
-                  >
-                    {isLoading ? (
-                      <Loader2 className="h-5 w-5 animate-spin" />
-                    ) : (
-                      <>
-                        I've confirmed my email <CheckCircle className="h-4 w-4" />
-                      </>
-                    )}
-                  </button>
-                </div>
-                <div className="text-sm text-gray-500">
-                  Didn't receive the email?
-                  <button
-                    onClick={async () => {
-                      try {
-                        await supabase.auth.resend({ type: 'signup', email: pendingEmail });
-                        showToast('success', 'Email resent! Check your inbox.');
-                      } catch (error) {
-                        showToast('error', 'Failed to resend email');
-                      }
-                    }}
-                    className="ml-2 text-indigo-400 hover:text-indigo-300"
-                  >
-                    Resend
-                  </button>
-                </div>
-                <button
-                  onClick={() => {
-                    setSignupStep('credentials');
-                    setMode('signin');
-                  }}
-                  className="text-sm text-gray-500 hover:text-gray-400"
-                >
-                  Already verified? Sign in
-                </button>
-              </div>
-            )}
-
-            {/* Step 2: Profile Details (Signup only) */}
-            {mode === 'signup' && signupStep === 'profile' && (
-              <div className="space-y-6">
-                <div className="text-center mb-6">
-                  <div className="w-16 h-16 rounded-full bg-green-500/20 flex items-center justify-center mx-auto mb-3">
-                    <CheckCircle className="h-8 w-8 text-green-400" />
-                  </div>
-                  <h2 className="text-xl font-bold text-white">Almost done!</h2>
-                  <p className="text-sm text-gray-400">Complete your profile to start trading</p>
-                </div>
-
-                <div className="p-4 rounded-xl bg-blue-900/20 border border-blue-700/30 mb-6">
-                  <div className="flex items-center gap-2 text-blue-200 text-sm">
-                    <Shield className="h-4 w-4" />
-                    <span>Your data is encrypted and securely stored</span>
-                  </div>
-                </div>
-
-                {/* Personal Info */}
-                <div className="space-y-4">
-                  <h3 className="text-lg font-semibold text-white flex items-center gap-2">
-                    <User className="h-5 w-5 text-indigo-400" />
-                    Personal Information
-                  </h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {renderFormField('First Name', firstName, setFirstName, 'text', 'Enter your first name', true, <User className="h-4 w-4" />)}
-                    {renderFormField('Last Name', lastName, setLastName, 'text', 'Enter your last name', true, <User className="h-4 w-4" />)}
-                    {renderFormField('Phone', phone, setPhone, 'tel', '+1 234 567 8900', false, <Phone className="h-4 w-4" />)}
-                    {renderFormField('Date of Birth', dateOfBirth, setDateOfBirth, 'date', '', true, <Calendar className="h-4 w-4" />)}
-                    {renderFormField('Nationality', nationality, setNationality, 'text', 'e.g., American', false, <Flag className="h-4 w-4" />)}
-                  </div>
-                </div>
-
-                {/* Location Info */}
-                <div className="space-y-4 pt-4 border-t border-gray-700/50">
-                  <h3 className="text-lg font-semibold text-white flex items-center gap-2">
-                    <MapPin className="h-5 w-5 text-indigo-400" />
-                    Location
-                  </h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {renderFormField('Country', country, setCountry, 'select', '', true, <Globe className="h-4 w-4" />)}
-                    {renderFormField('State/Province', state, setState, 'text', 'e.g., California', false, <Building className="h-4 w-4" />)}
-                    {renderFormField('City', city, setCity, 'text', 'Enter city', true, <MapPin className="h-4 w-4" />)}
-                    {renderFormField('Postal Code', postalCode, setPostalCode, 'text', 'e.g., 10001', true, <MapPin className="h-4 w-4" />)}
-                  </div>
-                  <div className="space-y-2">
-                    {renderFormField('Address Line 1', addressLine1, setAddressLine1, 'text', 'Street address, P.O. box', true, <MapPin className="h-4 w-4" />)}
-                  </div>
-                </div>
-
-                {/* Navigation */}
-                <div className="flex gap-3 pt-4">
-                  <button
-                    onClick={() => setSignupStep('credentials')}
-                    className="px-4 py-3 bg-gray-700 hover:bg-gray-600 text-white rounded-xl transition-colors"
-                  >
-                    Back
-                  </button>
-                  <button
-                    onClick={handleCompleteSignup}
-                    disabled={isLoading}
-                    className="flex-1 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white rounded-xl font-medium transition-all flex items-center justify-center gap-2"
-                  >
-                    {isLoading ? (
-                      <Loader2 className="h-5 w-5 animate-spin" />
-                    ) : (
-                      <>
-                        Create Account <CheckCircle className="h-4 w-4" />
-                      </>
-                    )}
-                  </button>
-                </div>
-                
-                {/* Skip Option */}
-                <div className="text-center pt-3">
-                  <button
-                    onClick={() => {
-                      // Skip profile and go directly to dashboard
-                      showToast('info', 'You can complete your profile anytime from the Profile page');
-                      router.push('/');
-                    }}
-                    className="text-sm text-gray-500 hover:text-gray-400"
-                  >
-                    Skip for now • Complete profile later
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* Sign in link */}
-            {mode === 'signin' && (
-              <p className="text-center text-sm text-gray-400 mt-6">
-                Don't have an account?{' '}
-                <button
-                  onClick={() => setMode('signup')}
-                  className="text-indigo-400 hover:text-indigo-300 font-medium"
-                >
-                  Sign up
-                </button>
-              </p>
-            )}
+            <p className="mt-6 text-center text-sm text-slate-400">
+              {isSignup ? 'Already have an account?' : "Don't have an account?"}{' '}
+              <button
+                type="button"
+                onClick={() => setMode(isSignup ? 'signin' : 'signup')}
+                className="font-black text-emerald-300 hover:text-emerald-200"
+              >
+                {isSignup ? 'Sign in' : 'Register'}
+              </button>
+            </p>
           </div>
         </div>
-      </div>
-    </div>
+      </section>
+    </main>
   );
 }

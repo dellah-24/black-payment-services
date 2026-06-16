@@ -5,3 +5,14 @@ compatibility_flags = ["nodejs_compat"]
 
 # Pages configuration
 pages_build_output_dir = ".vercel/output/static"
+
+# Public/non-secret environment variables
+[vars]
+NEXT_PUBLIC_SUPABASE_URL = "https://vbdauuhxvbwukquejjjo.supabase.co"
+NEXT_PUBLIC_SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZiZGF1dWh4dmJ3dWtxdWVqampvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM3NzA3NjAsImV4cCI6MjA4OTM0Njc2MH0.Ft2Mqis5t6dOf2NZ31yAclaXAqqt2hD04ez8g8vmmY4"
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY = "sb_publishable_Qg4CM4TGTJjw_g1zAT42tQ_yjFr2W9P"
+
+# Secret-only variables to configure separately:
+# SUPABASE_SERVICE_ROLE_KEY
+# SUPABASE_SECRET_KEY
+# SUPABASE_DB_URL

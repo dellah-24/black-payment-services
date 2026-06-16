@@ -45,9 +45,9 @@ export function AuthGuard({ children, allowNoSession = false }: AuthGuardProps) 
           setIsAuthenticated(true);
           setHasProfile(true);
         } else {
-          // User logged in but no profile/wallet - redirect to auth to create
+          // User logged in but no profile/wallet - redirect to onboarding to create/link wallet
           if (!allowNoSession) {
-            router.push('/auth');
+            router.push('/onboarding');
             return;
           }
         }

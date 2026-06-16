@@ -3,6 +3,8 @@
  * Consolidated from multiple sources for single source of truth
  */
 
+import { getEnv } from '@/lib/env';
+
 export type ChainKey = 'tron' | 'ethereum' | 'bsc' | 'polygon' | 'arbitrum' | 'optimism' | 'avalanche' | 'celo' | 'linea' | 'base' | 'solana';
 
 export interface ChainConfig {
@@ -16,12 +18,27 @@ export interface ChainConfig {
   color?: string;
 }
 
+function requirePublicRpc(envName: string, fallback: string): string {
+  const value = getEnv(envName);
+  return value || fallback;
+}
+
+function getAlchemyRpc(chain: string): string | undefined {
+  const apiKey = getEnv('NEXT_PUBLIC_ALCHEMY_API_KEY');
+  if (!apiKey) return undefined;
+  return `https://${chain}-mainnet.g.alchemy.com/v2/${apiKey}`;
+}
+
+function mainnetRpcUrls(primary: string, fallbacks: string[]): string[] {
+  return [primary, ...fallbacks.filter((fallback) => fallback !== primary)];
+}
+
 export const CHAINS: Record<ChainKey, ChainConfig> = {
   tron: {
     name: 'TRON',
     symbol: 'TRX',
     rpcUrls: [
-      process.env.NEXT_PUBLIC_TRON_RPC || 'https://api.trongrid.io/',
+      requirePublicRpc('NEXT_PUBLIC_TRON_RPC', 'https://api.trongrid.io/'),
       'https://rpc.ankr.com/tron/'
     ],
     explorerUrl: 'https://tronscan.org',
@@ -33,10 +50,7 @@ export const CHAINS: Record<ChainKey, ChainConfig> = {
     name: 'Ethereum',
     symbol: 'ETH',
     rpcUrls: [
-      // Use Alchemy if API key configured, otherwise use public RPCs
-      process.env.NEXT_PUBLIC_ALCHEMY_API_KEY 
-        ? `https://eth-mainnet.g.alchemy.com/v2/${process.env.NEXT_PUBLIC_ALCHEMY_API_KEY}`
-        : (process.env.NEXT_PUBLIC_ETHEREUM_RPC || 'https://cloudflare-eth.com'), 
+      getAlchemyRpc('eth') || requirePublicRpc('NEXT_PUBLIC_ETHEREUM_RPC', 'https://cloudflare-eth.com'),
       'https://eth.drpc.org',
       'https://rpc.ankr.com/eth'
     ],
@@ -49,7 +63,7 @@ export const CHAINS: Record<ChainKey, ChainConfig> = {
     name: 'BNB Chain',
     symbol: 'BNB',
     rpcUrls: [
-      process.env.NEXT_PUBLIC_BSC_RPC || 'https://bsc-dataseed1.binance.org',
+      getAlchemyRpc('bsc') || requirePublicRpc('NEXT_PUBLIC_BSC_RPC', 'https://bsc-dataseed1.binance.org'),
       'https://bsc-dataseed.binance.org',
       'https://rpc.ankr.com/bsc'
     ],
@@ -61,7 +75,7 @@ export const CHAINS: Record<ChainKey, ChainConfig> = {
   polygon: {
     name: 'Polygon',
     symbol: 'MATIC',
-    rpcUrls: ['https://polygon-rpc.com', 'https://rpc.ankr.com/polygon'],
+    rpcUrls: mainnetRpcUrls(requirePublicRpc('NEXT_PUBLIC_POLYGON_RPC', 'https://polygon-rpc.com'), ['https://rpc.ankr.com/polygon']),
     explorerUrl: 'https://polygonscan.com',
     chainId: 137,
     usdtAddress: '0xc2132D05D31c914a87C6611C10748AEb04B58e8F',
@@ -71,7 +85,7 @@ export const CHAINS: Record<ChainKey, ChainConfig> = {
     name: 'Arbitrum One',
     symbol: 'ETH',
     rpcUrls: [
-      process.env.NEXT_PUBLIC_ARBITRUM_RPC || 'https://arb1.arbitrum.io/rpc', 
+      getAlchemyRpc('arb') || requirePublicRpc('NEXT_PUBLIC_ARBITRUM_RPC', 'https://arb1.arbitrum.io/rpc'),
       'https://rpc.ankr.com/arbitrum'
     ],
     explorerUrl: 'https://arbiscan.io',
@@ -83,7 +97,7 @@ export const CHAINS: Record<ChainKey, ChainConfig> = {
     name: 'Optimism',
     symbol: 'ETH',
     rpcUrls: [
-      process.env.NEXT_PUBLIC_OPTIMISM_RPC || 'https://mainnet.optimism.io', 
+      getAlchemyRpc('opt') || requirePublicRpc('NEXT_PUBLIC_OPTIMISM_RPC', 'https://mainnet.optimism.io'),
       'https://rpc.ankr.com/optimism'
     ],
     explorerUrl: 'https://optimistic.etherscan.io',
@@ -94,7 +108,7 @@ export const CHAINS: Record<ChainKey, ChainConfig> = {
   avalanche: {
     name: 'Avalanche C-Chain',
     symbol: 'AVAX',
-    rpcUrls: ['https://api.avax.network/ext/bc/C/rpc', 'https://rpc.ankr.com/avalanche'],
+    rpcUrls: mainnetRpcUrls(requirePublicRpc('NEXT_PUBLIC_AVALANCHE_RPC', 'https://api.avax.network/ext/bc/C/rpc'), ['https://rpc.ankr.com/avalanche']),
     explorerUrl: 'https://snowtrace.io',
     chainId: 43114,
     usdtAddress: '0x9702230A8Ea53601f5cD2dc4fD0C8c5a4d8C9e8A',
@@ -103,7 +117,7 @@ export const CHAINS: Record<ChainKey, ChainConfig> = {
   celo: {
     name: 'Celo',
     symbol: 'CELO',
-    rpcUrls: ['https://forno.celo.org', 'https://rpc.ankr.com/celo'],
+    rpcUrls: mainnetRpcUrls(requirePublicRpc('NEXT_PUBLIC_CELO_RPC', 'https://forno.celo.org'), ['https://rpc.ankr.com/celo']),
     explorerUrl: 'https://explorer.celo.org',
     chainId: 42220,
     usdtAddress: '0xB4FB3D6f08Ac2dC83F9d8d44B9d4aB92C4f2E7e6',
@@ -112,7 +126,7 @@ export const CHAINS: Record<ChainKey, ChainConfig> = {
   linea: {
     name: 'Linea',
     symbol: 'ETH',
-    rpcUrls: ['https://rpc.linea.build', 'https://rpc.ankr.com/linea'],
+    rpcUrls: mainnetRpcUrls(requirePublicRpc('NEXT_PUBLIC_LINEA_RPC', 'https://rpc.linea.build'), ['https://rpc.ankr.com/linea']),
     explorerUrl: 'https://lineascan.build',
     chainId: 59144,
     usdtAddress: '0xA219439258ca9da29E9Cc4cE55996b71d8B417e6',
@@ -121,7 +135,7 @@ export const CHAINS: Record<ChainKey, ChainConfig> = {
   base: {
     name: 'Base',
     symbol: 'ETH',
-    rpcUrls: ['https://mainnet.base.org', 'https://rpc.ankr.com/base'],
+    rpcUrls: mainnetRpcUrls(requirePublicRpc('NEXT_PUBLIC_BASE_RPC', 'https://mainnet.base.org'), ['https://rpc.ankr.com/base']),
     explorerUrl: 'https://basescan.org',
     chainId: 8453,
     usdtAddress: '0x833589fCD6eDb6E08f4c7C32D4f71B54bdA02913',
@@ -130,10 +144,10 @@ export const CHAINS: Record<ChainKey, ChainConfig> = {
   solana: {
     name: 'Solana',
     symbol: 'SOL',
-    rpcUrls: ['https://api.mainnet-beta.solana.com', 'https://rpc.ankr.com/solana'],
+    rpcUrls: mainnetRpcUrls(requirePublicRpc('NEXT_PUBLIC_SOLANA_RPC', 'https://api.mainnet-beta.solana.com'), ['https://rpc.ankr.com/solana']),
     explorerUrl: 'https://solscan.io',
     chainId: 0,
-    usdtAddress: '', // Solana uses different token model
+    usdtAddress: '',
     color: '#14F195',
   },
 };

@@ -217,30 +217,30 @@ export function useWalletAuth() {
                 } else {
                   logger.info('User has profile but no keystore - redirect to auth');
                   setIsAuthLoading(false);
-                  router.push('/auth');
+                  router.push('/');
                   return;
                 }
               } catch (e) {
                 setIsAuthLoading(false);
-                router.push('/auth');
+                router.push('/');
                 return;
               }
             } else {
               logger.info('User has auth but no profile - redirect to auth');
               setIsAuthLoading(false);
-              router.push('/auth');
+              router.push('/');
               return;
             }
           } catch (e) {
             logger.error('Profile fetch error:', e as Error);
             setIsAuthLoading(false);
-            router.push('/auth');
+            router.push('/');
             return;
           }
         } else {
           logger.info('No Supabase session - redirecting to auth');
           setIsAuthLoading(false);
-          router.push('/auth');
+          router.push('/');
           return;
         }
 
@@ -248,7 +248,7 @@ export function useWalletAuth() {
       } catch (e) {
         logger.error('checkAuth failed', e as Error);
         setIsAuthLoading(false);
-        router.push('/auth');
+        router.push('/');
       }
     };
 
@@ -414,7 +414,7 @@ export function useWalletAuth() {
       logger.warn('Failed to sign out from Supabase', e as Error);
     }
     await logEvent('USER_SIGNOUT', { address: account });
-    window.location.href = '/auth';
+    window.location.href = '/';
   }, [account, deleteKeystoreFromSupabase]);
 
   return {

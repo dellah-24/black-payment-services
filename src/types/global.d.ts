@@ -37,3 +37,27 @@ declare module 'react-native' {
   export const useCallback: <T extends (...args: any[]) => any>(cb: T, deps: any[]) => T;
   export const useEffect: (cb: () => void | (() => void), deps: any[]) => void;
 }
+
+// qrcode module declaration
+declare module 'qrcode' {
+  interface QRCodeOptions {
+    errorCorrectionLevel?: string;
+    margin?: number;
+    width?: number;
+    color?: {
+      dark?: string;
+      light?: string;
+    };
+  }
+  
+  interface QRCodeToStringOptions extends QRCodeOptions {
+    format?: string;
+  }
+  
+  const QRCode: {
+    toDataURL: (content: string, options?: QRCodeOptions) => Promise<string>;
+    toString: (content: string, options?: QRCodeToStringOptions) => Promise<string>;
+  };
+  
+  export default QRCode;
+}

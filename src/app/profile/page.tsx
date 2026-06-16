@@ -89,7 +89,7 @@ export default function ProfilePage() {
       try {
         const profile = await profileApi.getByUserId(session.user.id);
         if (!profile || !profile.wallet_address) {
-          router.push('/auth');
+          router.push('/onboarding');
           return;
         }
         
@@ -97,7 +97,7 @@ export default function ProfilePage() {
         setAccount(savedAccount);
         loadProfile(savedAccount);
       } catch (e) {
-        router.push('/auth');
+        router.push('/');
       }
     };
     
@@ -260,13 +260,13 @@ export default function ProfilePage() {
   };
 
   const disconnectWallet = async () => {
-    if (confirm('Are you sure you want to sign out? This will disconnect your wallet.')) {
+    if (confirm('Are you sure you want to disconnect this wallet?')) {
       if (account) {
         await walletStorage.deleteWallet(account);
       }
       walletStorage.clearSession();
       setAccount(null);
-      window.location.href = '/auth';
+      window.location.href = '/';
     }
   };
 
@@ -699,18 +699,15 @@ export default function ProfilePage() {
                     </div>
                     <ChevronRight className="h-5 w-5 text-gray-500" />
                   </Link>
-                  <div className="flex items-center justify-between p-3 rounded-xl hover:bg-gray-700/30 transition-colors cursor-pointer">
+                  <Link href="/security" className="flex items-center justify-between p-3 rounded-xl hover:bg-gray-700/30 transition-colors">
                     <div className="flex items-center gap-3">
                       <Shield className="h-5 w-5 text-indigo-400" />
                       <span className="text-white">Two-Factor Authentication</span>
                     </div>
-                    <button 
-                      onClick={() => setTwoFactor(!twoFactor)}
-                      className={`w-12 h-6 rounded-full transition-colors ${twoFactor ? 'bg-indigo-600' : 'bg-gray-600'}`}
-                    >
+                    <div className={`w-12 h-6 rounded-full transition-colors ${twoFactor ? 'bg-indigo-600' : 'bg-gray-600'}`}>
                       <div className={`w-5 h-5 rounded-full bg-white transform transition-transform ${twoFactor ? 'translate-x-6' : 'translate-x-0.5'}`} />
-                    </button>
-                  </div>
+                    </div>
+                  </Link>
                 </div>
               </div>
 
@@ -726,7 +723,7 @@ export default function ProfilePage() {
                   >
                     <div className="flex items-center gap-3">
                       <LogOut className="h-5 w-5 text-red-400" />
-                      <span className="text-red-400">Sign Out</span>
+                      <span className="text-red-400">Disconnect Wallet</span>
                     </div>
                   </button>
                 </div>
