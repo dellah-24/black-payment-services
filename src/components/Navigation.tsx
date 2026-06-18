@@ -11,6 +11,7 @@ const navItems = [
   { href: '/send', label: 'Send', icon: Wallet },
   { href: '/p2p', label: 'P2P', icon: Coins },
   { href: '/wallets', label: 'Wallets', icon: ShieldCheck },
+  { href: '/wallets#virtual-cards', label: 'Cards', icon: CreditCard },
   { href: '/history', label: 'History', icon: CreditCard },
   { href: '/auth', label: 'Sign in', icon: Lock },
 ];
