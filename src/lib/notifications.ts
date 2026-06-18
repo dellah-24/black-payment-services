@@ -144,15 +144,23 @@ export async function subscribeToPush(): Promise<PushSubscription | null> {
     return null;
   }
 
+  const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
+  if (!vapidPublicKey) {
+    logger.warn('Push notifications skipped because NEXT_PUBLIC_VAPID_PUBLIC_KEY is not configured');
+    return null;
+  }
+
   try {
     const registration = await navigator.serviceWorker.ready;
-    
+
+    const applicationServerKey = urlBase64ToUint8Array(vapidPublicKey);
+
     const subscription = await registration.pushManager.subscribe({
       userVisibleOnly: true,
-      applicationServerKey: Buffer.from(
-        // This would be your VAPID public key in production
-        process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || ''
-      ),
+      applicationServerKey: applicationServerKey.buffer.slice(
+        applicationServerKey.byteOffset,
+        applicationServerKey.byteOffset + applicationServerKey.byteLength
+      ) as ArrayBuffer,
     });
     
     return subscription;

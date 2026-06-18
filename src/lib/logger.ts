@@ -40,56 +40,54 @@ class Logger {
    */
   private output(entry: LogEntry): void {
     if (this.isDevelopment) {
-      const prefix = `[${entry.timestamp}] [${entry.level.toUpperCase()}]`;
-      
-      switch (entry.level) {
-        case LogLevel.DEBUG:
-          console.debug(prefix, entry.message, entry.data || '');
-          break;
-        case LogLevel.INFO:
-          console.info(prefix, entry.message, entry.data || '');
-          break;
-        case LogLevel.WARN:
-          console.warn(prefix, entry.message, entry.data || '');
-          break;
-        case LogLevel.ERROR:
-          console.error(prefix, entry.message, entry.error || entry.data || '');
-          break;
-      }
-    } else {
-      // In production, send to external service (Sentry, LogRocket, etc.)
-      this.logBuffer.push(entry);
-      
-      // Flush buffer if it gets too large
-      if (this.logBuffer.length >= this.maxBufferSize) {
-        this.flush();
-      }
+      this.writeEntry(entry);
+      return;
+    }
+
+    // In production, buffer logs until an external logging sink is wired.
+    this.logBuffer.push(entry);
+
+    if (this.logBuffer.length >= this.maxBufferSize) {
+      this.flush();
+    }
+  }
+
+  private writeEntry(entry: LogEntry): void {
+    const prefix = `[${entry.timestamp}] [${entry.level.toUpperCase()}]`;
+
+    switch (entry.level) {
+      case LogLevel.DEBUG:
+        console.debug(prefix, entry.message, entry.data || '');
+        break;
+      case LogLevel.INFO:
+        console.info(prefix, entry.message, entry.data || '');
+        break;
+      case LogLevel.WARN:
+        console.warn(prefix, entry.message, entry.data || '');
+        break;
+      case LogLevel.ERROR:
+        console.error(prefix, entry.message, entry.error || entry.data || '');
+        break;
     }
   }
 
   /**
-   * Flush log buffer to external service
+   * Flush log buffer to external service.
    */
-  private async flush(): Promise<void> {
+  private flush(): void {
     if (this.logBuffer.length === 0) return;
 
     const logsToSend = [...this.logBuffer];
     this.logBuffer = [];
 
-     try {
-       // In production, send to logging service
-       // Example: await fetch('/api/logs', { method: 'POST', body: JSON.stringify(logsToSend) });
-       
-       // For now, just log to console in production
-       if (!this.isDevelopment) {
-         logsToSend.forEach(entry => {
-           this.output(entry); // Use the output method which respects isDevelopment flag
-         });
-       }
-      } catch (error) {
-        // If logging fails, at least output to console
-        this.error('Failed to send logs', error instanceof Error ? error : undefined);
+    // Hook up Sentry, LogRocket, or a custom /api/logs endpoint here.
+    // Avoid calling output() from flush() because production output() re-buffers
+    // logs and would recursively flush the same entries.
+    logsToSend.forEach((entry) => {
+      if (this.isDevelopment) {
+        this.writeEntry(entry);
       }
+    });
   }
 
   /**

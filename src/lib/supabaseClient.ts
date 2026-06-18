@@ -1,27 +1,24 @@
 /**
  * Shared Supabase Client
- * Single instance to avoid multiple GoTrueClient warnings
+ * Single instance to avoid multiple GoTrueClient warnings.
+ *
+ * The client is intentionally build-safe: Cloudflare Pages does not provide
+ * deployment secrets during static prerender, so the app must compile even when
+ * NEXT_PUBLIC_SUPABASE_* is missing. Runtime operations return a clear
+ * Supabase-style error until the production variables are configured.
  */
 
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { getEnv, isProduction } from './env';
 import { logger } from './logger';
 
-// Get env vars - works in both SSR and client
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+const supabaseUrl = getEnv('NEXT_PUBLIC_SUPABASE_URL');
+const supabaseAnonKey = getEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY');
+const isConfigured = Boolean(supabaseUrl && supabaseAnonKey);
 
-// Check if Supabase is properly configured (not just present but valid)
-const isConfigured = !!(supabaseUrl && 
-  supabaseAnonKey && 
-  supabaseUrl !== 'https://your-project.supabase.co' &&
-  supabaseAnonKey !== 'your-anon-key-here' &&
-  !supabaseUrl.includes('your-project') &&
-  !supabaseAnonKey.includes('your-anon-key'));
-
-// Create client at module load in browser only
 let supabaseClient: SupabaseClient | null = null;
 
-if (isConfigured) {
+if (supabaseUrl && supabaseAnonKey) {
   supabaseClient = createClient(supabaseUrl, supabaseAnonKey, {
     auth: {
       persistSession: true,
@@ -30,56 +27,129 @@ if (isConfigured) {
     },
     global: {
       headers: {
-        'Accept': 'application/json',
+        Accept: 'application/json',
         'Content-Type': 'application/json',
-        'Prefer': 'return=representation',
+        Prefer: 'return=representation',
       },
     },
   });
 }
 
-// Get the client - fail fast if not configured
+const missingSupabaseError = {
+  code: 'MISSING_SUPABASE_CONFIG',
+  message: 'Supabase is not configured. Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY before using authentication or database features.',
+  status: 500,
+};
+
+function missingResult<T = null>(): Promise<{ data: T; error: typeof missingSupabaseError }> {
+  return Promise.resolve({ data: null as T, error: missingSupabaseError });
+}
+
+function createFallbackQuery() {
+  const query = {
+    eq: () => query,
+    neq: () => query,
+    in: () => query,
+    order: () => query,
+    lt: () => query,
+    lte: () => query,
+    gt: () => query,
+    gte: () => query,
+    like: () => query,
+    ilike: () => query,
+    is: () => query,
+    or: () => query,
+    select: () => query,
+    insert: () => query,
+    update: () => query,
+    upsert: () => query,
+    delete: () => query,
+    maybeSingle: () => missingResult(),
+    single: () => missingResult(),
+  };
+
+  return query;
+}
+
+function createFallbackSupabaseClient(): SupabaseClient {
+  const auth = {
+    getSession: () => missingResult<{ session: null }>(),
+    getUser: () => missingResult<null>(),
+    signUp: () => missingResult<null>(),
+    signInWithPassword: () => missingResult<null>(),
+    signInWithOtp: () => missingResult<null>(),
+    signInAnonymously: () => missingResult<null>(),
+    signOut: () => missingResult<void>(),
+    resetPasswordForEmail: () => missingResult<null>(),
+    updateUser: () => missingResult<null>(),
+    onAuthStateChange: () => ({
+      data: {
+        subscription: {
+          unsubscribe: () => undefined,
+        },
+      },
+    }),
+  };
+
+  const from = () => createFallbackQuery();
+
+  return {
+    auth,
+    from,
+  } as unknown as SupabaseClient;
+}
+
+function createConfiguredSupabaseClient(url: string, key: string): SupabaseClient {
+  return createClient(url, key, {
+    auth: {
+      persistSession: true,
+      autoRefreshToken: true,
+      detectSessionInUrl: true,
+    },
+    global: {
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+        Prefer: 'return=representation',
+      },
+    },
+  });
+}
+
 export function getSupabaseClient(): SupabaseClient {
   if (supabaseClient) {
     return supabaseClient;
   }
-  
-  // SSR or client without config - try to get env vars now
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  
-  // Check if properly configured (not placeholders)
-  const isValidConfig = !!(url && key &&
-    !url.includes('your-project') &&
-    !key.includes('your-anon-key'));
-  
-  if (isValidConfig) {
-    supabaseClient = createClient(url, key, {
-      auth: { persistSession: true, autoRefreshToken: true },
-      global: {
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json',
-          'Prefer': 'return=representation',
-        },
-      },
-    });
+
+  const url = getEnv('NEXT_PUBLIC_SUPABASE_URL');
+  const key = getEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY');
+
+  if (url && key) {
+    supabaseClient = createConfiguredSupabaseClient(url, key);
     return supabaseClient;
   }
-  
-  // No config - throw error in production
-  throw new Error(
-    'Supabase is not configured. Please set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY environment variables.'
-  );
+
+  return createFallbackSupabaseClient();
 }
 
-// Export supabase directly
-export const supabase: SupabaseClient = getSupabaseClient();
+export const supabase: SupabaseClient = supabaseClient ?? createFallbackSupabaseClient();
 
 export const supabaseAuth = supabase;
 
-// Check if Supabase is properly configured
 export function isSupabaseConfigured(): boolean {
-  logger.debug('[Supabase] Checking configuration', { supabaseUrl, supabaseAnonKey: supabaseAnonKey?.substring(0, 20) + '...', isConfigured });
-  return isConfigured;
+  logger.debug('[Supabase] Checking configuration', {
+    supabaseUrl,
+    supabaseAnonKey: supabaseAnonKey ? `${supabaseAnonKey.substring(0, 12)}...` : undefined,
+    isConfigured,
+    isProduction: isProduction(),
+  });
+  return Boolean(supabaseClient);
+}
+
+export function getSupabaseConfigStatus(): { configured: boolean; url: string | undefined; hasAnonKey: boolean } {
+  return {
+    configured: Boolean(supabaseClient),
+    url: getEnv('NEXT_PUBLIC_SUPABASE_URL'),
+    hasAnonKey: Boolean(getEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY')),
+  };
 }

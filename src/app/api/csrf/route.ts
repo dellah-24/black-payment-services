@@ -1,6 +1,20 @@
 import { NextResponse } from 'next/server';
-import { randomBytes } from 'crypto';
 import { generateCSRFToken } from '@/lib/csrf';
+
+export const runtime = 'edge';
+
+async function randomHex(byteLength: number): Promise<string> {
+  const crypto = globalThis.crypto;
+
+  if (!crypto?.getRandomValues) {
+    throw new Error('Web Crypto API is not available in this runtime.');
+  }
+
+  const bytes = new Uint8Array(byteLength);
+  crypto.getRandomValues(bytes);
+
+  return Array.from(bytes, (byte) => byte.toString(16).padStart(2, '0')).join('');
+}
 
 /**
  * CSRF Token Endpoint
@@ -11,7 +25,7 @@ import { generateCSRFToken } from '@/lib/csrf';
  */
 export async function GET() {
   // Generate a unique session ID
-  const sessionId = randomBytes(16).toString('hex');
+  const sessionId = await randomHex(16);
   
   // Generate CSRF token and store it server-side
   const token = generateCSRFToken(sessionId);
