@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
@@ -21,7 +21,9 @@ import {
   Eye,
   EyeOff,
   Trash2,
-  Sparkles
+  Sparkles,
+  Download,
+  Ban
 } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
 import { profileApi } from '@/lib/profileApi';
@@ -43,11 +45,18 @@ interface VirtualCard {
   expiry: string;
   status: 'active' | 'frozen' | 'pending';
   limit: string;
+  used: string;
   currency: 'USD' | 'ZWL';
   createdAt: string;
 }
 
+interface SecurityChecklistItem {
+  id: string;
+  label: string;
+}
+
 const cardStorageKey = 'blackpayments_virtual_cards';
+const securityChecklistStorageKey = 'blackpayments_wallet_security_checklist';
 
 const defaultCardForm = {
   name: '',
@@ -55,6 +64,15 @@ const defaultCardForm = {
   limit: '500',
   currency: 'USD' as VirtualCard['currency'],
 };
+
+const securityChecklistItems: SecurityChecklistItem[] = [
+  { id: 'offline_seed', label: 'Cold wallet seed phrase stored offline and never uploaded to the app.' },
+  { id: 'hot_wallet_limit', label: 'Hot wallet is limited to daily operating funds only.' },
+  { id: 'withdrawal_allowlist', label: 'Withdrawal address allowlist or multisig approval is enabled.' },
+  { id: 'exchange_2fa', label: 'Exchange, Supabase, and Cloudflare accounts use 2FA/passkeys.' },
+  { id: 'card_kyc_kyb', label: 'Card issuing provider enforces KYC/KYB, sanctions screening, and PCI-DSS controls.' },
+  { id: 'webhook_signatures', label: 'Payment and card webhooks verify signatures and replay protection.' },
+];
 
 export default function WalletsPage() {
   const [theme, setTheme] = useState<'dark' | 'light'>('dark');
@@ -78,7 +96,25 @@ export default function WalletsPage() {
   const [virtualCards, setVirtualCards] = useState<VirtualCard[]>([]);
   const [cardForm, setCardForm] = useState(defaultCardForm);
   const [visibleCardIds, setVisibleCardIds] = useState<Record<string, boolean>>({});
+  const [securityChecklist, setSecurityChecklist] = useState<string[]>([]);
   const router = useRouter();
+
+  const totalCardLimit = useMemo(
+    () => virtualCards.reduce((sum, card) => sum + Number(card.limit || 0), 0),
+    [virtualCards],
+  );
+  const activeCardCount = useMemo(
+    () => virtualCards.filter((card) => card.status === 'active').length,
+    [virtualCards],
+  );
+  const frozenCardCount = useMemo(
+    () => virtualCards.filter((card) => card.status === 'frozen').length,
+    [virtualCards],
+  );
+  const securityScore = useMemo(
+    () => Math.round((securityChecklist.length / securityChecklistItems.length) * 100),
+    [securityChecklist],
+  );
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -144,7 +180,16 @@ export default function WalletsPage() {
        logger.warn('Unable to load saved virtual cards', error);
      }
    }
- }, []);
+
+   const savedChecklist = localStorage.getItem(securityChecklistStorageKey);
+   if (savedChecklist) {
+     try {
+       setSecurityChecklist(JSON.parse(savedChecklist) as string[]);
+     } catch (error) {
+       logger.warn('Unable to load saved security checklist', error);
+     }
+   }
+  }, []);
 
   const refreshBalances = async () => {
     setIsRefreshing(true);
@@ -160,26 +205,47 @@ export default function WalletsPage() {
   };
 
   const persistVirtualCards = (cards: VirtualCard[]) => {
-    localStorage.setItem(cardStorageKey, JSON.stringify(cards));
+    try {
+      localStorage.setItem(cardStorageKey, JSON.stringify(cards));
+    } catch (error) {
+      logger.warn('Unable to persist virtual cards', error);
+    }
+  };
+
+  const persistSecurityChecklist = (items: string[]) => {
+    try {
+      localStorage.setItem(securityChecklistStorageKey, JSON.stringify(items));
+    } catch (error) {
+      logger.warn('Unable to persist security checklist', error);
+    }
   };
 
   const createVirtualCard = () => {
+    const limit = Number(cardForm.limit || 0);
     if (!cardForm.name.trim()) {
       alert('Enter a card nickname first.');
+      return;
+    }
+    if (!Number.isFinite(limit) || limit <= 0) {
+      alert('Enter a valid monthly limit greater than zero.');
       return;
     }
 
     const last4 = Math.floor(1000 + Math.random() * 9000).toString();
     const expiryMonth = String(new Date().getMonth() + 36).padStart(2, '0').slice(-2);
     const expiryYear = String(new Date().getFullYear() + 3).slice(-2);
+    const generatedId = typeof crypto !== 'undefined' && crypto.randomUUID
+      ? crypto.randomUUID()
+      : `card_${Date.now()}_${last4}`;
     const newCard: VirtualCard = {
-      id: `card_${Date.now()}_${last4}`,
+      id: generatedId,
       name: cardForm.name.trim(),
       network: cardForm.network,
       last4,
       expiry: `${expiryMonth}/${expiryYear}`,
       status: 'pending',
-      limit: cardForm.limit || '0',
+      limit: limit.toFixed(2),
+      used: '0.00',
       currency: cardForm.currency,
       createdAt: new Date().toISOString(),
     };
@@ -190,7 +256,22 @@ export default function WalletsPage() {
     setCardForm(defaultCardForm);
   };
 
+  const toggleCardFreeze = (cardId: string) => {
+    const updated = virtualCards.map((card) => {
+      if (card.id !== cardId) return card;
+      const nextStatus: VirtualCard['status'] = card.status === 'frozen' ? 'active' : 'frozen';
+      return {
+        ...card,
+        status: nextStatus,
+      };
+    });
+    setVirtualCards(updated);
+    persistVirtualCards(updated);
+  };
+
   const deleteVirtualCard = (cardId: string) => {
+    if (!confirm('Remove this virtual card metadata from this device?')) return;
+
     const updated = virtualCards.filter((card) => card.id !== cardId);
     setVirtualCards(updated);
     persistVirtualCards(updated);
@@ -199,6 +280,45 @@ export default function WalletsPage() {
       delete next[cardId];
       return next;
     });
+  };
+
+  const toggleSecurityChecklistItem = (itemId: string) => {
+    const updated = securityChecklist.includes(itemId)
+      ? securityChecklist.filter((id) => id !== itemId)
+      : [...securityChecklist, itemId];
+    setSecurityChecklist(updated);
+    persistSecurityChecklist(updated);
+  };
+
+  const downloadCardBackup = () => {
+    if (!virtualCards.length) {
+      alert('Create at least one card before exporting a backup.');
+      return;
+    }
+
+    const payload = {
+      exportedAt: new Date().toISOString(),
+      note: 'This backup contains only non-sensitive card metadata. Never store PAN, CVV, or issuer tokens in the browser.',
+      cards: virtualCards.map(({ id, name, network, last4, expiry, status, limit, used, currency, createdAt }) => ({
+        id,
+        name,
+        network,
+        last4,
+        expiry,
+        status,
+        limit,
+        used,
+        currency,
+        createdAt,
+      })),
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = `blackpayments-virtual-cards-${new Date().toISOString().slice(0, 10)}.json`;
+    anchor.click();
+    URL.revokeObjectURL(url);
   };
 
   const toggleCardVisibility = (cardId: string) => {
@@ -216,6 +336,15 @@ export default function WalletsPage() {
   };
 
   const formatMaskedNumber = (last4: string) => `•••• •••• •••• ${last4}`;
+
+  const formatCurrency = (value: string | number, currency: string) => {
+    const numeric = Number(value || 0);
+    if (!Number.isFinite(numeric)) return `${currency} 0.00`;
+    return `${currency} ${numeric.toLocaleString(undefined, {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })}`;
+  };
 
   const transferToCold = () => {
     alert('This would initiate a transfer from Hot Wallet to Cold Wallet. In production, this would require multi-signature approval.');
@@ -493,6 +622,21 @@ export default function WalletsPage() {
             </span>
           </div>
 
+          <div className="grid gap-3 md:grid-cols-3 mb-6">
+            <div className="rounded-xl bg-gray-800/50 border border-gray-700/50 p-4">
+              <p className="text-xs text-gray-400">Total monthly card limit</p>
+              <p className="text-lg font-bold text-white">{formatCurrency(totalCardLimit, 'USD')}</p>
+            </div>
+            <div className="rounded-xl bg-gray-800/50 border border-gray-700/50 p-4">
+              <p className="text-xs text-gray-400">Active cards</p>
+              <p className="text-lg font-bold text-emerald-400">{activeCardCount}</p>
+            </div>
+            <div className="rounded-xl bg-gray-800/50 border border-gray-700/50 p-4">
+              <p className="text-xs text-gray-400">Frozen cards</p>
+              <p className="text-lg font-bold text-yellow-400">{frozenCardCount}</p>
+            </div>
+          </div>
+
           <div className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
             <div className="rounded-2xl bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 p-6">
               <div className="flex items-center gap-2 mb-4">
@@ -568,7 +712,17 @@ export default function WalletsPage() {
                   <h3 className="font-semibold text-white">Your cards</h3>
                   <p className="text-sm text-gray-400">{virtualCards.length} card{virtualCards.length === 1 ? '' : 's'} saved on this device</p>
                 </div>
-                <Sparkles className="h-5 w-5 text-emerald-400" />
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={downloadCardBackup}
+                    disabled={!virtualCards.length}
+                    className="p-2 rounded-lg bg-gray-700/60 hover:bg-gray-700 text-white disabled:opacity-40"
+                    title="Export non-sensitive card metadata"
+                  >
+                    <Download className="h-4 w-4" />
+                  </button>
+                  <Sparkles className="h-5 w-5 text-emerald-400" />
+                </div>
               </div>
 
               {virtualCards.length === 0 ? (
@@ -604,7 +758,26 @@ export default function WalletsPage() {
                           </p>
                           <div className="flex items-center justify-between mt-4 text-xs text-gray-400">
                             <span>Expires {card.expiry}</span>
-                            <span>{card.currency} {Number(card.limit || 0).toLocaleString()}</span>
+                            <span>{formatCurrency(card.limit, card.currency)}</span>
+                          </div>
+                        </div>
+
+                        <div className="mb-4">
+                          <div className="flex items-center justify-between text-xs text-gray-400 mb-1">
+                            <span>Monthly spend</span>
+                            <span>{formatCurrency(card.used || 0, card.currency)} / {formatCurrency(card.limit, card.currency)}</span>
+                          </div>
+                          <div className="h-2 bg-gray-700 rounded-full overflow-hidden">
+                            <div
+                              className={`h-full rounded-full ${
+                                Number(card.used || 0) / Math.max(Number(card.limit || 1), 1) >= 0.9
+                                  ? 'bg-red-500'
+                                  : Number(card.used || 0) / Math.max(Number(card.limit || 1), 1) >= 0.7
+                                    ? 'bg-yellow-500'
+                                    : 'bg-emerald-500'
+                              }`}
+                              style={{ width: `${Math.min(100, Math.round((Number(card.used || 0) / Math.max(Number(card.limit || 1), 1)) * 100))}%` }}
+                            />
                           </div>
                         </div>
 
@@ -617,6 +790,13 @@ export default function WalletsPage() {
                             {isVisible ? 'Hide' : 'Show'}
                           </button>
                           <button
+                            onClick={() => toggleCardFreeze(card.id)}
+                            className="py-2 rounded-xl bg-gray-700/60 hover:bg-gray-700 text-white text-sm font-semibold flex items-center justify-center gap-2"
+                          >
+                            <Ban className="h-4 w-4" />
+                            {card.status === 'frozen' ? 'Unfreeze' : 'Freeze'}
+                          </button>
+                          <button
                             onClick={() => copyCardToken(card)}
                             className="py-2 rounded-xl bg-gray-700/60 hover:bg-gray-700 text-white text-sm font-semibold flex items-center justify-center gap-2"
                           >
@@ -625,10 +805,10 @@ export default function WalletsPage() {
                           </button>
                           <button
                             onClick={() => deleteVirtualCard(card.id)}
-                            className="col-span-2 py-2 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-300 text-sm font-semibold flex items-center justify-center gap-2"
+                            className="py-2 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-300 text-sm font-semibold flex items-center justify-center gap-2"
                           >
                             <Trash2 className="h-4 w-4" />
-                            Remove card
+                            Remove
                           </button>
                         </div>
                       </div>
@@ -646,10 +826,41 @@ export default function WalletsPage() {
             </h3>
             <ul className="grid gap-2 text-sm text-gray-300 md:grid-cols-2">
               <li>• Connect a PCI-DSS card issuer such as Stripe Issuing, Marqate, or Lithic for real card creation.</li>
-              <li>• Add freeze/unfreeze, merchant category controls, daily limits, and one-time card numbers.</li>
+              <li>• Add merchant category controls, daily limits, and one-time card numbers.</li>
               <li>• Add 3DS authentication, KYC/KYB checks, sanctions screening, and transaction monitoring.</li>
               <li>• Add real-time webhooks, accounting exports, approval workflows, and team card permissions.</li>
             </ul>
+          </div>
+
+          <div id="security-checklist" className="mt-6 rounded-2xl bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 p-6 scroll-mt-24">
+            <div className="flex items-center justify-between gap-4 mb-4">
+              <div>
+                <h3 className="font-semibold text-white">Production readiness checklist</h3>
+                <p className="text-sm text-gray-400">Track the controls to complete before moving cards and wallets into production.</p>
+              </div>
+              <span className="px-3 py-1 rounded-full text-xs font-bold bg-indigo-500/20 text-indigo-300">{securityScore}% ready</span>
+            </div>
+
+            <div className="h-3 bg-gray-700 rounded-full overflow-hidden mb-5">
+              <div
+                className={`h-full rounded-full transition-all ${securityScore >= 80 ? 'bg-emerald-500' : securityScore >= 50 ? 'bg-yellow-500' : 'bg-red-500'}`}
+                style={{ width: `${securityScore}%` }}
+              />
+            </div>
+
+            <div className="grid gap-3 md:grid-cols-2">
+              {securityChecklistItems.map((item) => (
+                <label key={item.id} className="flex items-start gap-3 rounded-xl border border-gray-700/60 bg-gray-900/40 p-4 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={securityChecklist.includes(item.id)}
+                    onChange={() => toggleSecurityChecklistItem(item.id)}
+                    className="mt-1 h-4 w-4 rounded border-gray-600 text-emerald-500 focus:ring-emerald-500"
+                  />
+                  <span className="text-sm text-gray-300">{item.label}</span>
+                </label>
+              ))}
+            </div>
           </div>
         </section>
 
