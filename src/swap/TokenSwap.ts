@@ -1,9 +1,11 @@
 /**
  * Token Swap Module
  * Provides token swapping via 1inch aggregator
+ * Production-ready with real API integration
  */
 
 import { ethers } from 'ethers';
+import { getPrimaryRpcUrl } from '@/config/chains';
 
 export type SwapChainId = 
   | 1    // Ethereum
@@ -56,13 +58,13 @@ export class TokenSwap {
   private privateKey: string | null = null;
   private provider: ethers.JsonRpcProvider | null = null;
   private chainProviders: Record<SwapChainId, string> = {
-    1: 'https://eth.llamarpc.com',
+    1: 'https://eth.drpc.org',
     56: 'https://bsc-dataseed.binance.org',
     137: 'https://polygon-rpc.com',
     42161: 'https://arb1.arbitrum.io/rpc',
     10: 'https://mainnet.optimism.io',
     43114: 'https://api.avax.network/ext/bc/C/rpc',
-    8453: 'https://base-mainnet.g.alchemy.com/v2/demo',
+    8453: 'https://mainnet.base.org',
     59144: 'https://rpc.linea.build',
     42220: 'https://forno.celo.org',
   };
@@ -131,8 +133,24 @@ export class TokenSwap {
    */
   initialize(privateKey: string, chainId: SwapChainId): void {
     this.privateKey = privateKey;
-    const rpcUrl = this.chainProviders[chainId];
+    const chainKey = this.getChainKey(chainId);
+    const rpcUrl = chainKey ? getPrimaryRpcUrl(chainKey) : this.chainProviders[chainId];
     this.provider = new ethers.JsonRpcProvider(rpcUrl);
+  }
+
+  private getChainKey(chainId: SwapChainId): 'ethereum' | 'bsc' | 'polygon' | 'arbitrum' | 'optimism' | 'avalanche' | 'base' | 'linea' | 'celo' | undefined {
+    switch (chainId) {
+      case 1: return 'ethereum';
+      case 56: return 'bsc';
+      case 137: return 'polygon';
+      case 42161: return 'arbitrum';
+      case 10: return 'optimism';
+      case 43114: return 'avalanche';
+      case 8453: return 'base';
+      case 59144: return 'linea';
+      case 42220: return 'celo';
+      default: return undefined;
+    }
   }
 
   /**
@@ -167,24 +185,32 @@ export class TokenSwap {
     }
 
     // In production, call 1inch API
-    // const response = await fetch(
-    //   `${this.apiUrl}/${params.chainId}/quote?fromTokenAddress=${fromToken.address}&toTokenAddress=${toToken.address}&amount=${params.amount}`
-    // );
+    try {
+      const response = await fetch(
+        `${this.apiUrl}/${params.chainId}/quote?fromTokenAddress=${fromToken.address}&toTokenAddress=${toToken.address}&amount=${params.amount}`
+      );
 
-    // For demo, calculate mock quote
-    const mockToAmount = params.amount * 10000n / 10001n; // ~0.01% slippage
-    
-    return {
-      fromToken,
-      toToken,
-      fromAmount: params.amount,
-      toAmount: mockToAmount,
-      toAmountMin: mockToAmount * 99n / 100n, // 1% slippage
-      estimatedGas: 150000n,
-      protocol: '1inch',
-      route: [fromToken.symbol, toToken.symbol],
-      priceImpact: 0.01,
-    };
+      if (!response.ok) {
+        throw new Error(`1inch API error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      
+      return {
+        fromToken,
+        toToken,
+        fromAmount: params.amount,
+        toAmount: BigInt(data.toTokenAmount),
+        toAmountMin: BigInt(data.toTokenAmount) * 99n / 100n, // 1% slippage
+        estimatedGas: BigInt(data.estimatedGas || 150000),
+        protocol: '1inch',
+        route: data.protocols?.flatMap((p: string[]) => p) || [fromToken.symbol, toToken.symbol],
+        priceImpact: parseFloat(data.priceImpact || '0.01'),
+      };
+    } catch (error) {
+      logger.error('Failed to get swap quote from 1inch', error as Error);
+      throw new Error('Failed to get swap quote');
+    }
   }
 
   /**

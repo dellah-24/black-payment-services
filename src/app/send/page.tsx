@@ -1,918 +1,152 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { ethers } from 'ethers';
-import { ChainKey, getActiveChainConfig } from '@/config/chains';
-import Link from 'next/link';
-import { 
-  Send, 
-  ArrowLeft, 
-  Copy, 
-  Check, 
-  ExternalLink,
-  Wallet,
-  AlertCircle,
-  Zap,
-  ArrowRight,
-  QrCode,
-  Shield,
-  Loader2,
-  Book,
-  Gauge,
-  Eye,
-  EyeOff,
-  CreditCard,
-  Clock,
-  CheckCircle2,
-  XCircle,
-  Maximize2
-} from 'lucide-react';
-import { showToast } from '@/components/Toast';
-import { walletStorage } from '@/lib/secureWalletStorage';
+import { useState } from 'react';
+import { AuthGuard } from '@/components/AuthGuard';
+import { WalletBalance } from '@/components/WalletBalance';
+import { useWalletAuth } from '@/hooks/useWalletAuth';
+import { WalletChain } from '@/wallet/types';
+import { getChainConfig, SUPPORTED_CHAINS } from '@/config/chains';
+import { walletService } from '@/services/walletService';
 import { logger } from '@/lib/logger';
-import { QRCode } from '@/components/QRCode';
-import { AddressBook } from '@/components/AddressBook';
-import {
-  estimateGasFees,
-  GasSpeed,
-  simulateTransaction,
-  calculateMaxAmount,
-  AddressBookEntry,
-  getExplorerTxUrl,
-  isValidTronAddress,
-  saveTransaction,
-  TransactionRecord
-} from '@/lib/walletUtils';
-import { getTxManager } from '@/lib/rpcProvider';
-import { supabase } from '@/lib/supabaseClient';
-import { profileApi } from '@/lib/profileApi';
-import { getTronUSDTBalance, sendTronUSDT } from '@/lib/tronWallet';
-
-// Using shared chain config from @/config/chains
-const USDT_ABI = [
-  'function balanceOf(address owner) view returns (uint256)',
-  'function transfer(address to, uint256 amount) returns (boolean)',
-  'function decimals() view returns (uint8)',
-];
 
 export default function SendPage() {
-  const [theme, setTheme] = useState<'dark' | 'light'>('dark');
-  const [account, setAccount] = useState<string | null>(null);
-  const [walletAddress, setWalletAddress] = useState<string>('');
-  const [selectedChain, setSelectedChain] = useState<ChainKey>('tron');
+  const { user } = useWalletAuth();
   const [recipient, setRecipient] = useState('');
   const [amount, setAmount] = useState('');
-  const [selectedSpeed, setSelectedSpeed] = useState<GasSpeed>('standard');
-  const [gasEstimates, setGasEstimates] = useState({
-    slow: '0.001',
-    standard: '0.003',
-    fast: '0.008',
-    slowGwei: '10',
-    standardGwei: '30',
-    fastGwei: '80',
-  });
-  const [estimatedFee, setEstimatedFee] = useState<string>('0.003');
+  const [selectedChain, setSelectedChain] = useState<WalletChain>(SUPPORTED_CHAINS[0]);
+  const [balance, setBalance] = useState<string>('0');
+  const [usdtBalance, setUsdtBalance] = useState<string>('0');
   const [isLoading, setIsLoading] = useState(false);
-  const [txHash, setTxHash] = useState<string | null>(null);
-  const [txStatus, setTxStatus] = useState<'pending' | 'confirmed' | 'failed'>('pending');
   const [error, setError] = useState<string | null>(null);
-  const [showConfirm, setShowConfirm] = useState(false);
-  const [showQR, setShowQR] = useState(false);
-  const [showAddressBook, setShowAddressBook] = useState(false);
-  const [confirmationTx, setConfirmationTx] = useState<{
-    recipient: string;
-    amount: string;
-    chain: string;
-    fee: string;
-  } | null>(null);
-  const [showSimulation, setShowSimulation] = useState(false);
-  const [simulationResult, setSimulationResult] = useState<any>(null);
-  const [copied, setCopied] = useState(false);
-  const [tokenBalance, setTokenBalance] = useState<string>('0');
-  const [showAddress, setShowAddress] = useState(false);
-  const [showFiatRamp, setShowFiatRamp] = useState(false);
-  const [isMounted, setIsMounted] = useState(false);
-  const router = useRouter();
+  const [success, setSuccess] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    
-    setIsMounted(true);
-    
-    const savedTheme = localStorage.getItem('theme') as 'dark' | 'light' | null;
-    if (savedTheme) setTheme(savedTheme);
-    
-    // Check authentication - redirect to auth if not logged in
-    const checkAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        router.push('/auth');
-        return;
-      }
-      
-      // Check for profile with wallet
-      try {
-        const profile = await profileApi.getByUserId(session.user.id);
-        if (!profile || !profile.wallet_address) {
-          router.push('/onboarding');
-          return;
-        }
-        
-        const savedAccount = profile.wallet_address.toLowerCase();
-        setAccount(savedAccount);
-        loadWalletData(savedAccount);
-      } catch (e) {
-        // Keep the user on the Send page so the navigation URL remains stable.
-      }
-    };
-    
-    checkAuth();
-  }, []);
+  const handleSend = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user) return;
 
-  useEffect(() => {
-    estimateGas();
-  }, [selectedChain, selectedSpeed]);
-
-  useEffect(() => {
-    if (recipient && amount && selectedChain !== 'tron' && selectedChain !== 'solana') {
-      runSimulation();
-    }
-  }, [recipient, amount, selectedChain, estimatedFee]);
-
-  const loadWalletData = async (accountAddress: string) => {
-    try {
-      // Try to load wallet data, but don't fail if encryption key is missing
-      // The page can still function showing the connected wallet address
-      const walletData = await walletStorage.retrieveWallet(accountAddress);
-      if (walletData) {
-        setWalletAddress(accountAddress);
-        await fetchTokenBalance(accountAddress);
-      } else {
-        // Wallet data not available (no encryption key) - that's okay, show address anyway
-        setWalletAddress(accountAddress);
-      }
-    } catch (err) {
-      // Encryption key not found - this is expected on fresh page load
-      // Just show the account address that was stored
-      setWalletAddress(accountAddress);
-      logger.info('Wallet data not available without password, showing stored address');
-    }
-  };
-
-  const fetchTokenBalance = async (address: string) => {
-    try {
-      if (selectedChain === 'tron') {
-        const usdtBalance = await getTronUSDTBalance(address);
-        setTokenBalance(usdtBalance.formatted);
-        return;
-      }
-
-      if (selectedChain === 'solana') {
-        setTokenBalance('0');
-        return;
-      }
-      
-      const chain = getActiveChainConfig(selectedChain);
-      const provider = new ethers.JsonRpcProvider(chain.rpcUrls[0]);
-      const usdtContract = new ethers.Contract(chain.usdtAddress, USDT_ABI, provider);
-      const [balance, decimals] = await Promise.all([
-        usdtContract.balanceOf(address),
-        usdtContract.decimals()
-      ]);
-      setTokenBalance(ethers.formatUnits(balance, Number(decimals)));
-    } catch (err) {
-      logger.error('Failed to fetch balance', err as Error);
-      setTokenBalance('0');
-    }
-  };
-
-  const estimateGas = async () => {
-    try {
-      const estimates = await estimateGasFees(selectedChain);
-      setGasEstimates(estimates);
-      setEstimatedFee(estimates[selectedSpeed]);
-    } catch (err) {
-      logger.error('Failed to estimate gas', err as Error);
-    }
-  };
-
-  const runSimulation = async () => {
-    if (!account || !recipient || !amount) return;
-    
-    try {
-      const result = await simulateTransaction(
-        selectedChain,
-        walletAddress,
-        recipient,
-        amount,
-        estimatedFee
-      );
-      setSimulationResult(result);
-      setShowSimulation(true);
-    } catch (err) {
-      logger.error('Simulation failed', err as Error);
-    }
-  };
-
-  const handleSetMax = async () => {
-    if (!walletAddress || parseFloat(tokenBalance) <= 0) return;
-    
-    try {
-      const maxAmount = await calculateMaxAmount(
-        selectedChain,
-        walletAddress,
-        tokenBalance,
-        estimatedFee
-      );
-      setAmount(maxAmount);
-    } catch (err) {
-      logger.error('Failed to calculate max', err as Error);
-      // Fallback: use full balance minus estimated fee
-      const max = Math.max(0, parseFloat(tokenBalance) - parseFloat(estimatedFee) * 10).toString();
-      setAmount(max);
-    }
-  };
-
-  const handleAddressSelect = (entry: AddressBookEntry) => {
-    setRecipient(entry.address);
-    setShowAddressBook(false);
-  };
-
-  // Handle send button click - show confirmation first
-  const handleSend = async () => {
-    if (!account || !recipient || !amount) return;
-    
-    // Validate recipient address
-    if (selectedChain === 'tron') {
-      if (!isValidTronAddress(recipient)) {
-        setError('Invalid TRON recipient address');
-        showToast('error', 'Invalid TRON recipient address');
-        return;
-      }
-    } else if (selectedChain !== 'solana') {
-      if (!ethers.isAddress(recipient)) {
-        setError('Invalid recipient address');
-        showToast('error', 'Invalid recipient address');
-        return;
-      }
-    }
-    
-    // Validate amount
-    const amountNum = parseFloat(amount);
-    if (isNaN(amountNum) || amountNum <= 0) {
-      setError('Please enter a valid amount');
-      showToast('error', 'Please enter a valid amount');
-      return;
-    }
-    
-    // Check balance
-    if (amountNum > parseFloat(tokenBalance)) {
-      setError('Insufficient USDT balance');
-      showToast('error', 'Insufficient USDT balance');
-      return;
-    }
-    
-    // Set confirmation details and show dialog
-    setConfirmationTx({
-      recipient,
-      amount,
-      chain: selectedChain,
-      fee: estimatedFee
-    });
-    setShowConfirm(true);
-  };
-
-  const handleConfirm = async () => {
-    // Validate recipient address
-    if (selectedChain === 'tron') {
-      if (!isValidTronAddress(recipient)) {
-        setError('Invalid TRON recipient address');
-        showToast('error', 'Invalid TRON recipient address');
-        return;
-      }
-    } else if (selectedChain !== 'solana') {
-      if (!ethers.isAddress(recipient)) {
-        setError('Invalid recipient address');
-        showToast('error', 'Invalid recipient address');
-        return;
-      }
-    }
-    
-    // Validate amount
-    const amountNum = parseFloat(amount);
-    if (isNaN(amountNum) || amountNum <= 0) {
-      setError('Please enter a valid amount');
-      showToast('error', 'Please enter a valid amount');
-      return;
-    }
-    
-    // Check balance
-    if (amountNum > parseFloat(tokenBalance)) {
-      setError('Insufficient USDT balance');
-      showToast('error', 'Insufficient USDT balance');
-      return;
-    }
-    
     setIsLoading(true);
     setError(null);
-    setTxStatus('pending');
+    setSuccess(null);
 
     try {
-      const walletData = await walletStorage.retrieveWallet(account!);
-      
-      if (!walletData) {
-        setError('Wallet not found. Please create or import a wallet first.');
-        showToast('error', 'Wallet not found');
-        setIsLoading(false);
-        return;
-      }
-      
-      const privateKey = walletData.privateKey;
-
-      if (selectedChain === 'tron') {
-        const feeLimit = Math.max(1_000_000, Math.round(Number(estimatedFee || '14.9') * 1_000_000));
-        const result = await sendTronUSDT({
-          fromAddress: walletAddress,
-          privateKey,
-          to: recipient,
-          amount,
-          feeLimit,
-        });
-
-        const txRecord: Omit<TransactionRecord, 'id' | 'timestamp'> = {
-          hash: result.hash,
-          from: walletAddress,
-          to: recipient,
-          amount,
-          token: 'USDT',
-          chain: selectedChain,
-          status: result.status,
-          explorerUrl: getExplorerTxUrl(selectedChain, result.hash),
-          type: 'send'
-        };
-        saveTransaction(txRecord);
-        
-        setTxHash(result.hash);
-        setTxStatus(result.status);
-        showToast(result.status === 'confirmed' ? 'success' : 'warning', `TRC-20 USDT ${result.status === 'confirmed' ? 'sent' : 'broadcast'}`);
-        return;
-      }
-
-      if (selectedChain === 'solana') {
-        setError('SPL transfers require special handling. Please use a different network.');
-        showToast('warning', 'Please use a different network for this transaction');
-        setIsLoading(false);
-        return;
-      }
-
-      const chain = getActiveChainConfig(selectedChain);
-      const provider = new ethers.JsonRpcProvider(chain.rpcUrls[0]);
-      const signer = new ethers.Wallet(privateKey, provider);
-      
-      // Get transaction manager for nonce management
-      const txManager = getTxManager(selectedChain);
-      const nonce = await txManager.getNextNonce(provider, walletAddress);
-      
-      const usdtContract = new ethers.Contract(chain.usdtAddress, USDT_ABI, signer);
-      const amountInWei = ethers.parseUnits(amount, 6);
-      
-      // Build transaction with nonce
-      const tx = await usdtContract.transfer.populateTransaction(recipient, amountInWei);
-      tx.nonce = nonce;
-      
-      // Get gas estimate with buffer
-      let gasLimit: bigint;
-      try {
-        const estimated = await usdtContract.transfer.estimateGas(recipient, amountInWei, { from: walletAddress });
-        gasLimit = (estimated * 130n) / 100n; // 30% buffer
-      } catch {
-        gasLimit = 100000n;
-      }
-      tx.gasLimit = gasLimit;
-      
-      // Sign and send with 3 block confirmations
-      const signedTx = await signer.signTransaction(tx);
-      const response = await provider.broadcastTransaction(signedTx);
-      
-      // Wait for 3 confirmations
-      const receipt = await response.wait(3);
-      
-      // Save pending transaction
-      const txRecord: Omit<TransactionRecord, 'id' | 'timestamp'> = {
-        hash: response.hash,
-        from: walletAddress,
+      const result = await walletService.transfer({
+        from: user.id,
         to: recipient,
         amount,
-        token: 'USDT',
         chain: selectedChain,
-        status: receipt?.status === 1 ? 'confirmed' : 'pending',
-        explorerUrl: getExplorerTxUrl(selectedChain, response.hash),
-        type: 'send'
-      };
-      saveTransaction(txRecord);
-      
-      setTxHash(response.hash);
-      
-      if (receipt?.status === 1) {
-        setTxStatus('confirmed');
-        showToast('success', `Successfully sent ${amount} USDT!`);
-      } else {
-        setTxStatus('failed');
-        showToast('error', 'Transaction failed on chain');
-      }
-      
-    } catch (err: any) {
-      setTxStatus('failed');
-      setError(err.message || 'Transaction failed');
-      showToast('error', err.message || 'Transaction failed');
+      });
+
+      setSuccess(`Transaction submitted! Hash: ${result.txHash}`);
+      setRecipient('');
+      setAmount('');
+    } catch (error) {
+      const message = (error as Error).message;
+      setError(message);
+      logger.error('Transfer failed', error as Error);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const copyAddress = () => {
-    navigator.clipboard.writeText(recipient);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+  const handleMaxClick = () => {
+    setAmount(usdtBalance);
   };
 
-  const chain = getActiveChainConfig(selectedChain);
-
-  // Success/Failed View
-  if (txHash) {
-    return (
-      <div className="min-h-screen py-8">
-        <div className="max-w-2xl mx-auto px-4">
-          <div className={`relative overflow-hidden rounded-3xl p-8 shadow-2xl border text-center ${
-            txStatus === 'confirmed' 
-              ? 'bg-gradient-to-br from-green-900/50 to-gray-900 border-green-500/30'
-              : txStatus === 'failed'
-              ? 'bg-gradient-to-br from-red-900/50 to-gray-900 border-red-500/30'
-              : 'bg-gradient-to-br from-yellow-900/50 to-gray-900 border-yellow-500/30'
-          }`}>
-            <div className="absolute top-0 right-0 w-64 h-64 bg-green-500/10 rounded-full blur-3xl" />
-            <div className="relative">
-              <div className={`w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 ${
-                txStatus === 'confirmed' ? 'bg-green-500/20'
-                : txStatus === 'failed' ? 'bg-red-500/20'
-                : 'bg-yellow-500/20'
-              }`}>
-                {txStatus === 'confirmed' ? (
-                  <CheckCircle2 className="h-10 w-10 text-green-500" />
-                ) : txStatus === 'failed' ? (
-                  <XCircle className="h-10 w-10 text-red-500" />
-                ) : (
-                  <Loader2 className="h-10 w-10 text-yellow-500 animate-spin" />
-                )}
-              </div>
-              <h2 className="text-2xl font-bold text-white mb-2">
-                {txStatus === 'confirmed' ? 'Transaction Sent!'
-                  : txStatus === 'failed' ? 'Transaction Failed'
-                  : 'Processing...'}
-              </h2>
-              <p className="text-gray-400 mb-6">
-                {txStatus === 'confirmed' ? 'Your USDT has been sent successfully'
-                  : txStatus === 'failed' ? 'There was an issue with your transaction'
-                  : 'Waiting for blockchain confirmation'}
-              </p>
-              
-              <div className="p-4 rounded-xl bg-gray-900/50 backdrop-blur-sm mb-6">
-                <p className="text-xs text-gray-500 mb-1">Transaction Hash</p>
-                <a
-                  href={getExplorerTxUrl(selectedChain, txHash)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="font-mono text-sm text-indigo-400 hover:underline flex items-center justify-center gap-2"
-                >
-                  {txHash.slice(0, 20)}...{txHash.slice(-20)}
-                  <ExternalLink className="h-4 w-4" />
-                </a>
-              </div>
-              
-              <div className="flex gap-4 justify-center">
-                <Link href="/" className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-medium">
-                  Back to Dashboard
-                </Link>
-                <button 
-                  onClick={() => { setTxHash(null); setTxStatus('pending'); }}
-                  className="px-6 py-3 bg-white/10 text-white rounded-xl font-medium hover:bg-white/20 backdrop-blur-sm"
-                >
-                  Send Another
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // No Account - wait for mounted to avoid hydration mismatch
-  if (!isMounted || !account) {
-    return (
-      <div className="min-h-screen py-8">
-        <div className="max-w-2xl mx-auto px-4">
-          <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-gray-800 to-gray-900 p-8 shadow-2xl border border-gray-700/50 text-center">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/10 rounded-full blur-3xl" />
-            <div className="relative">
-              <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center mx-auto mb-6 shadow-lg">
-                <Wallet className="h-10 w-10 text-white" />
-              </div>
-              <h2 className="text-2xl font-bold text-white mb-2">
-                Connect Wallet First
-              </h2>
-              <p className="text-gray-400 mb-6">
-                Please connect your wallet from the Dashboard first
-              </p>
-              <Link href="/" className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-medium hover:scale-105 transition-transform">
-                Go to Dashboard <ArrowRight className="h-4 w-4" />
-              </Link>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-screen py-8">
-      <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="flex items-center mb-8">
-          <Link href="/" className="p-2.5 rounded-xl bg-gray-800/50 hover:bg-gray-700/50 transition-colors mr-4">
-            <ArrowLeft className="h-5 w-5" />
-          </Link>
-          <h1 className="text-2xl font-bold bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">
-            Send USDT
-          </h1>
-        </div>
+    <AuthGuard>
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
+        <div className="container mx-auto px-4 py-8">
+          <header className="mb-8">
+            <h1 className="text-3xl font-bold text-white mb-2">Send</h1>
+            <p className="text-gray-400">Send cryptocurrency to any address</p>
+          </header>
 
-        {/* Quick Actions */}
-        <div className="grid grid-cols-3 gap-3 mb-6">
-          <button
-            onClick={() => setShowQR(true)}
-            className="flex items-center justify-center gap-2 py-3 bg-gray-800/50 hover:bg-gray-700/50 rounded-xl border border-gray-700/50 transition-colors"
-          >
-            <QrCode className="h-5 w-5 text-indigo-400" />
-            <span className="text-gray-300 text-sm">Receive</span>
-          </button>
-          <button
-            onClick={() => setShowFiatRamp(true)}
-            className="flex items-center justify-center gap-2 py-3 bg-green-600/20 hover:bg-green-600/30 rounded-xl border border-green-500/30 transition-colors"
-          >
-            <CreditCard className="h-5 w-5 text-green-400" />
-            <span className="text-green-400 text-sm">Buy USDT</span>
-          </button>
-          <button
-            onClick={() => setShowAddressBook(true)}
-            className="flex items-center justify-center gap-2 py-3 bg-gray-800/50 hover:bg-gray-700/50 rounded-xl border border-gray-700/50 transition-colors"
-          >
-            <Book className="h-5 w-5 text-indigo-400" />
-            <span className="text-gray-300 text-sm">Address Book</span>
-          </button>
-        </div>
-
-        <div className="relative overflow-hidden rounded-2xl bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 p-6">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/5 rounded-full blur-3xl pointer-events-none" />
-
-          {/* Network Selection */}
-          <div className="relative mb-6">
-            <label className="block text-sm font-medium text-gray-300 mb-2">
-              Network
-            </label>
-            <select
-              value={selectedChain}
-              onChange={(e) => setSelectedChain(e.target.value as ChainKey)}
-              className="w-full px-4 py-3.5 rounded-xl bg-gray-900/50 border border-gray-700 text-white appearance-none cursor-pointer"
-            >
-              <option value="tron">🔥 TRON (TRC-20) - Recommended</option>
-              <option value="bsc">💎 BNB Chain (BEP-20)</option>
-              <option value="ethereum">🔷 Ethereum (ERC-20)</option>
-              <option value="arbitrum">🔵 Arbitrum</option>
-            </select>
-            {selectedChain === 'tron' && (
-              <p className="mt-2 text-sm flex items-center gap-1 text-green-400">
-                <Zap className="h-4 w-4" /> Lowest fees: ~$0.3-$1 per transaction
-              </p>
-            )}
-          </div>
-
-          {/* Recipient Address */}
-          <div className="relative mb-6">
-            <label className="block text-sm font-medium text-gray-300 mb-2">
-              Recipient Address
-            </label>
-            <div className="relative">
-              <input
-                type="text"
-                value={recipient}
-                onChange={(e) => setRecipient(e.target.value)}
-                placeholder="Enter wallet address"
-                className="w-full px-4 py-3.5 pr-14 rounded-xl bg-gray-900/50 border border-gray-700 text-white placeholder-gray-500"
+          <div className="max-w-2xl mx-auto">
+            <div className="bg-gray-800 rounded-2xl p-8 shadow-xl">
+              <WalletBalance
+                balance={balance}
+                usdtBalance={usdtBalance}
+                chain={selectedChain}
               />
-              <button
-                onClick={copyAddress}
-                className="absolute right-3 top-1/2 -translate-y-1/2 p-2 hover:bg-gray-700 rounded-lg transition-colors"
-              >
-                {copied ? <Check className="h-5 w-5 text-green-500" /> : <Copy className="h-5 w-5 text-gray-400" />}
-              </button>
-            </div>
-          </div>
 
-          {/* Amount */}
-          <div className="relative mb-6">
-            <div className="flex justify-between items-center mb-2">
-              <label className="block text-sm font-medium text-gray-300">
-                Amount (USDT)
-              </label>
-              <span className="text-xs text-gray-500">
-                Balance: {parseFloat(tokenBalance).toFixed(2)} USDT
-              </span>
-            </div>
-            <div className="relative">
-              <input
-                type="number"
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-                placeholder="0.00"
-                className="w-full px-4 py-3.5 pr-24 rounded-xl bg-gray-900/50 border border-gray-700 text-2xl font-bold text-white placeholder-gray-500"
-              />
-              <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 font-medium">
-                USDT
-              </span>
-              <button
-                onClick={handleSetMax}
-                className="absolute left-3 top-1/2 -translate-y-1/2 p-1.5 hover:bg-gray-700 rounded-lg transition-colors"
-                title="Set max amount"
-              >
-                <Maximize2 className="h-4 w-4 text-indigo-400" />
-              </button>
-            </div>
-          </div>
+              <form onSubmit={handleSend} className="mt-8 space-y-6">
+                <div>
+                  <label className="block text-gray-300 mb-2">Network</label>
+                  <select
+                    value={selectedChain}
+                    onChange={(e) => setSelectedChain(e.target.value as WalletChain)}
+                    className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-blue-500"
+                  >
+                    {SUPPORTED_CHAINS.map((chain) => (
+                      <option key={chain} value={chain}>
+                        {getChainConfig(chain).name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
 
-          {/* Gas Speed Selection */}
-          <div className="relative mb-6">
-            <label className="block text-sm font-medium text-gray-300 mb-2">
-              <Gauge className="h-4 w-4 inline mr-1" />
-              Transaction Speed
-            </label>
-            <div className="grid grid-cols-3 gap-2">
-              {(['slow', 'standard', 'fast'] as GasSpeed[]).map((speed) => (
-                <button
-                  key={speed}
-                  onClick={() => setSelectedSpeed(speed)}
-                  className={`p-3 rounded-xl border transition-all ${
-                    selectedSpeed === speed
-                      ? 'bg-indigo-600 border-indigo-500 text-white'
-                      : 'bg-gray-900/50 border-gray-700 text-gray-400 hover:border-gray-600'
-                  }`}
-                >
-                  <div className="text-sm font-medium capitalize">{speed}</div>
-                  <div className="text-xs mt-1 opacity-75">
-                    ~{parseFloat(gasEstimates[speed]).toFixed(4)} {chain.symbol}
+                <div>
+                  <label className="block text-gray-300 mb-2">Recipient Address</label>
+                  <input
+                    type="text"
+                    value={recipient}
+                    onChange={(e) => setRecipient(e.target.value)}
+                    placeholder="Enter wallet address"
+                    required
+                    className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-blue-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-gray-300 mb-2">Amount (USDT)</label>
+                  <div className="relative">
+                    <input
+                      type="number"
+                      value={amount}
+                      onChange={(e) => setAmount(e.target.value)}
+                      placeholder="0.00"
+                      required
+                      min="0"
+                      step="0.01"
+                      className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-blue-500"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleMaxClick}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm transition-colors"
+                    >
+                      MAX
+                    </button>
                   </div>
-                </button>
-              ))}
-            </div>
-          </div>
+                  <p className="text-gray-400 text-sm mt-2">
+                    Available: {usdtBalance} USDT
+                  </p>
+                </div>
 
-          {/* Fee Estimation */}
-          <div className="p-4 rounded-xl bg-gray-900/50 backdrop-blur-sm mb-6 border border-gray-700/50">
-            <div className="flex justify-between items-center">
-              <span className="text-gray-400 flex items-center gap-2">
-                <Shield className="h-4 w-4" /> Network Fee
-              </span>
-              <span className="font-medium text-white">
-                ~{parseFloat(estimatedFee).toFixed(6)} {chain.symbol}
-              </span>
-            </div>
-          </div>
-
-          {/* Transaction Simulation Result */}
-          {showSimulation && simulationResult && (
-            <div className={`p-4 rounded-xl mb-6 border ${
-              simulationResult.success 
-                ? 'bg-green-500/10 border-green-500/30'
-                : 'bg-red-500/10 border-red-500/30'
-            }`}>
-              <div className="flex items-center gap-2 mb-2">
-                {simulationResult.success ? (
-                  <CheckCircle2 className="h-5 w-5 text-green-500" />
-                ) : (
-                  <XCircle className="h-5 w-5 text-red-500" />
+                {error && (
+                  <div className="p-4 bg-red-900/50 border border-red-500 rounded-lg">
+                    <p className="text-red-200">{error}</p>
+                  </div>
                 )}
-                <span className={`font-medium ${
-                  simulationResult.success ? 'text-green-400' : 'text-red-400'
-                }`}>
-                  {simulationResult.message}
-                </span>
-              </div>
-              {simulationResult.details && (
-                <div className="text-xs text-gray-400 mt-2 space-y-1">
-                  <div>Token Balance: {simulationResult.details.tokenBalance} USDT</div>
-                  <div>Native Balance: {simulationResult.details.nativeBalance} {chain.symbol}</div>
-                </div>
-              )}
-            </div>
-          )}
 
-          {/* Error Message */}
-          {error && (
-            <div className="mb-6 p-4 rounded-xl bg-red-500/10 border border-red-500/30 flex items-center gap-2">
-              <AlertCircle className="h-5 w-5 text-red-500 flex-shrink-0" />
-              <span className="text-red-400 text-sm">{error}</span>
-            </div>
-          )}
-
-          {/* Send Button */}
-          <button
-            onClick={handleSend}
-            disabled={!recipient || !amount || isLoading}
-            className={`w-full py-4 rounded-xl font-bold text-lg transition-all ${
-              !recipient || !amount || isLoading
-                ? 'bg-gray-700 cursor-not-allowed opacity-50 text-gray-400'
-                : 'bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white hover:scale-[1.02]'
-            }`}
-            aria-label="Review transaction"
-          >
-            {isLoading ? (
-              <span className="flex items-center justify-center gap-2">
-                <Loader2 className="h-5 w-5 animate-spin" />
-                Processing...
-              </span>
-            ) : 'Review Transaction'}
-          </button>
-        </div>
-
-        {/* QR Code Modal */}
-        {showQR && (
-          <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-            <div className="relative overflow-hidden rounded-2xl bg-gray-800 p-6 max-w-md w-full border border-gray-700">
-              <button
-                onClick={() => setShowQR(false)}
-                className="absolute top-4 right-4 p-1 hover:bg-gray-700 rounded-lg"
-              >
-                <XCircle className="h-6 w-6 text-gray-400" />
-              </button>
-              
-              <h3 className="text-xl font-bold text-white mb-4 text-center">
-                Receive USDT
-              </h3>
-              <p className="text-sm text-gray-400 text-center mb-4">
-                Send only {getActiveChainConfig(selectedChain).name} USDT to this address
-              </p>
-              
-              <QRCode address={walletAddress} size={200} />
-              
-              <div className="mt-4 p-3 rounded-xl bg-yellow-500/10 border border-yellow-500/30">
-                <p className="text-xs text-yellow-400 text-center">
-                  Warning: Send only USDT. Other tokens sent to this address may be lost.
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Address Book Modal */}
-        {showAddressBook && (
-          <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-            <div className="relative overflow-hidden rounded-2xl bg-gray-800 p-6 max-w-md w-full border border-gray-700 max-h-[80vh] overflow-y-auto">
-              <button
-                onClick={() => setShowAddressBook(false)}
-                className="absolute top-4 right-4 p-1 hover:bg-gray-700 rounded-lg"
-              >
-                <XCircle className="h-6 w-6 text-gray-400" />
-              </button>
-              
-              <h3 className="text-xl font-bold text-white mb-4">
-                Select Address
-              </h3>
-              
-              <AddressBook onSelect={handleAddressSelect} chain={selectedChain} />
-            </div>
-          </div>
-        )}
-
-        {/* Confirmation Modal */}
-        {showConfirm && (
-          <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-            <div className="relative overflow-hidden rounded-2xl bg-gray-800 p-6 max-w-md w-full border border-gray-700">
-              <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/10 rounded-full blur-3xl" />
-              
-              <h3 className="text-xl font-bold text-white mb-4 relative">
-                Confirm Transaction
-              </h3>
-              
-              <div className="space-y-3 mb-6 relative">
-                <div className="flex justify-between">
-                  <span className="text-gray-400">Network</span>
-                  <span className="text-white">{chain.name}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-400">To</span>
-                  <code className="text-sm text-gray-300">{recipient.slice(0, 10)}...{recipient.slice(-8)}</code>
-                </div>
-                <div className="flex justify-between font-bold">
-                  <span className="text-white">Amount</span>
-                  <span className="text-indigo-400">{amount} USDT</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-400">Speed</span>
-                  <span className="text-gray-300 capitalize">{selectedSpeed}</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-400">Fee</span>
-                  <span className="text-gray-300">~{parseFloat(estimatedFee).toFixed(6)} {chain.symbol}</span>
-                </div>
-                <div className="border-t border-gray-700 pt-3 mt-3">
-                  <div className="flex justify-between font-bold">
-                    <span className="text-white">Total</span>
-                    <span className="text-indigo-400">{amount} USDT + {parseFloat(estimatedFee).toFixed(6)} {chain.symbol}</span>
+                {success && (
+                  <div className="p-4 bg-green-900/50 border border-green-500 rounded-lg">
+                    <p className="text-green-200">{success}</p>
                   </div>
-                </div>
-              </div>
+                )}
 
-              <div className="flex gap-3 relative">
                 <button
-                  onClick={() => setShowConfirm(false)}
-                  className="flex-1 py-3 bg-gray-700 text-white rounded-xl font-medium hover:bg-gray-600"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleConfirm}
+                  type="submit"
                   disabled={isLoading}
-                  className="flex-1 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-medium hover:from-indigo-500 hover:to-purple-500 disabled:opacity-50"
+                  className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-800 text-white font-semibold py-4 px-6 rounded-xl transition-colors"
                 >
-                  {isLoading ? 'Sending...' : 'Confirm & Send'}
+                  {isLoading ? 'Sending...' : 'Send USDT'}
                 </button>
-              </div>
+              </form>
             </div>
           </div>
-        )}
-
-        {/* Fiat On-Ramp Modal - Disabled */}
-        {showFiatRamp && (
-          <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-            <div className="relative overflow-hidden rounded-2xl bg-gray-800 p-6 max-w-md w-full border border-gray-700">
-              <button
-                onClick={() => setShowFiatRamp(false)}
-                className="absolute top-4 right-4 p-1 hover:bg-gray-700 rounded-lg"
-              >
-                <XCircle className="h-6 w-6 text-gray-400" />
-              </button>
-              
-              <h3 className="text-xl font-bold text-white mb-2 text-center">
-                Buy USDT with Fiat
-              </h3>
-              
-              <div className="mt-4 p-4 rounded-xl bg-yellow-500/10 border border-yellow-500/30">
-                <p className="text-yellow-400 text-center">
-                  Fiat on-ramp is currently unavailable. Please use P2P trading to buy USDT.
-                </p>
-              </div>
-              <p className="text-sm text-gray-400 text-center mb-4">
-                Purchase USDT using your credit/debit card
-              </p>
-              
-              <div className="space-y-3">
-                <div className="p-4 rounded-xl bg-gray-900/50 border border-gray-700 hover:border-green-500/50 cursor-pointer transition-colors">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <CreditCard className="h-8 w-8 text-green-400" />
-                      <div>
-                        <p className="font-medium text-white">MoonPay</p>
-                        <p className="text-xs text-gray-400">Credit/Debit Card • Instant</p>
-                      </div>
-                    </div>
-                    <span className="text-green-400 text-sm">Recommended</span>
-                  </div>
-                </div>
-                
-                <div className="p-4 rounded-xl bg-gray-900/50 border border-gray-700 hover:border-indigo-500/50 cursor-pointer transition-colors opacity-50">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <CreditCard className="h-8 w-8 text-indigo-400" />
-                      <div>
-                        <p className="font-medium text-white">Simplex</p>
-                        <p className="text-xs text-gray-400">Credit/Debit Card</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              
-              <button
-                onClick={() => setShowFiatRamp(false)}
-                className="w-full mt-4 py-3 bg-gray-700 text-white rounded-xl font-medium hover:bg-gray-600"
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        )}
+        </div>
       </div>
-    </div>
+    </AuthGuard>
   );
 }

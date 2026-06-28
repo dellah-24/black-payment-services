@@ -13,6 +13,8 @@ import {
   getTronUSDTBalance,
   parseUSDTAmountToBase,
 } from '@/lib/tronWallet';
+import { getChainConfig, getPrimaryRpcUrl, getUsdtAddress } from '@/config/chains';
+import { ChainKey } from '@/config/chains';
 
 // ============================================
 // QR Code Generation
@@ -97,11 +99,16 @@ export interface GasEstimate {
   fastGwei: string;
 }
 
-const CHAIN_RPC: Record<string, string> = {
-  ethereum: 'https://cloudflare-eth.com',
-  bsc: 'https://bsc-dataseed1.binance.org',
-  arbitrum: 'https://arb1.arbitrum.io/rpc',
-};
+/**
+ * Get RPC URL for a chain from centralized config
+ */
+function getChainRpcUrl(chain: string): string | undefined {
+  const chainKey = chain as ChainKey;
+  if (chainKey in getChainConfig(chainKey as ChainKey)) {
+    return getPrimaryRpcUrl(chainKey);
+  }
+  return undefined;
+}
 
 /**
  * Estimate gas fees for EVM chains with different speed options
@@ -120,7 +127,7 @@ export async function estimateGasFees(chain: string): Promise<GasEstimate> {
       };
     }
 
-    const rpcUrl = CHAIN_RPC[chain];
+    const rpcUrl = getChainRpcUrl(chain);
     if (!rpcUrl) {
       return getDefaultGasEstimate();
     }
@@ -203,7 +210,7 @@ export async function simulateTransaction(
       };
     }
 
-    const rpcUrl = CHAIN_RPC[chain];
+    const rpcUrl = getChainRpcUrl(chain);
     if (!rpcUrl) {
       return {
         success: false,
@@ -219,7 +226,7 @@ export async function simulateTransaction(
       'function decimals() view returns (uint8)',
     ];
     
-    const chainConfig = getChainConfig(chain);
+    const chainConfig = getChainConfig(chain as ChainKey);
     const usdtContract = new ethers.Contract(chainConfig.usdtAddress, USDT_ABI, provider);
     
     const [usdtBalance, decimals] = await Promise.all([
@@ -253,15 +260,6 @@ export async function simulateTransaction(
       message: error.message || 'Simulation failed',
     };
   }
-}
-
-function getChainConfig(chain: string) {
-  const configs: Record<string, { usdtAddress: string }> = {
-    ethereum: { usdtAddress: '0xdAC17F958D2ee523a2206206994597C13D831ec7' },
-    bsc: { usdtAddress: '0x55d398326f99059fF775485246999027B3197955' },
-    arbitrum: { usdtAddress: '0xFd086bC7CD5C481DCC93C85BD42c402bDe6B9614' },
-  };
-  return configs[chain] || configs.ethereum;
 }
 
 // ============================================
@@ -337,7 +335,7 @@ export async function calculateMaxAmount(
       return chain === 'tron' ? tokenBalance : '0';
     }
 
-    const rpcUrl = CHAIN_RPC[chain];
+    const rpcUrl = getChainRpcUrl(chain);
     if (!rpcUrl) return '0';
 
     const provider = new ethers.JsonRpcProvider(rpcUrl);
@@ -387,7 +385,7 @@ export async function getTransactionStatus(
       return getTronTransactionStatus(hash);
     }
 
-    const rpcUrl = CHAIN_RPC[chain];
+    const rpcUrl = getChainRpcUrl(chain);
     if (!rpcUrl) return 'pending';
 
     const provider = new ethers.JsonRpcProvider(rpcUrl);
@@ -410,7 +408,7 @@ export async function fetchUSDTBalance(chain: string, address: string): Promise<
     return '0';
   }
 
-  const rpcUrl = CHAIN_RPC[chain];
+  const rpcUrl = getChainRpcUrl(chain);
   if (!rpcUrl) {
     return '0';
   }
@@ -420,7 +418,7 @@ export async function fetchUSDTBalance(chain: string, address: string): Promise<
     'function balanceOf(address owner) view returns (uint256)',
     'function decimals() view returns (uint8)',
   ];
-  const chainConfig = getChainConfig(chain);
+  const chainConfig = getChainConfig(chain as ChainKey);
   const usdtContract = new ethers.Contract(chainConfig.usdtAddress, USDT_ABI, provider);
   const [balance, decimals] = await Promise.all([
     usdtContract.balanceOf(address),
@@ -440,7 +438,7 @@ export async function fetchNativeBalance(chain: string, address: string): Promis
     return '0';
   }
 
-  const rpcUrl = CHAIN_RPC[chain];
+  const rpcUrl = getChainRpcUrl(chain);
   if (!rpcUrl) {
     return '0';
   }

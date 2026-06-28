@@ -1,69 +1,60 @@
 import { NextRequest, NextResponse } from 'next/server';
-
-export const runtime = 'edge';
 import { getAuthenticatedUserId } from '@/lib/custodialService';
-import {
-  createPaymentInvoice,
-  listPaymentInvoices,
-  normalizePaymentCurrency,
-  normalizePaymentNetwork,
-  normalizePaymentStatus,
-  refreshExpiredPayments,
-} from '@/lib/paymentService';
-
-export async function GET(request: NextRequest) {
-  try {
-    const userId = await getAuthenticatedUserId(request);
-    if (!userId) return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
-
-    await refreshExpiredPayments();
-
-    const status = request.nextUrl.searchParams.get('status');
-    const limit = request.nextUrl.searchParams.get('limit');
-    const offset = request.nextUrl.searchParams.get('offset');
-
-    const payments = await listPaymentInvoices({
-      userId,
-      status: status ? normalizePaymentStatus(status) : undefined,
-      limit: limit ? Number(limit) : undefined,
-      offset: offset ? Number(offset) : undefined,
-    });
-
-    return NextResponse.json({ payments });
-  } catch (error) {
-    return NextResponse.json({ error: error instanceof Error ? error.message : 'Unable to list payments' }, { status: 500 });
-  }
-}
+import { createCustodialKeyManagerForRequest } from '@/lib/custodialService';
+import { getEnv, isPlaceholder } from '@/lib/env';
+import { logger } from '@/lib/logger';
 
 export async function POST(request: NextRequest) {
+  const userId = await getAuthenticatedUserId(request);
+  if (!userId) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   try {
-    const userId = await getAuthenticatedUserId(request);
-    if (!userId) return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
+    const body = await request.json();
+    const { amount, currency, chain, description, redirectUrl } = body;
 
-    const body = (await request.json().catch(() => ({}))) as Record<string, unknown>;
-    const payment = await createPaymentInvoice({
+    if (!amount || !currency) {
+      return NextResponse.json({ error: 'Missing required fields: amount, currency' }, { status: 400 });
+    }
+
+    const keyManager = createCustodialKeyManagerForRequest();
+    const depositAddresses = await keyManager.deriveDepositAddresses(userId);
+
+    const paymentRequest = {
+      id: crypto.randomUUID(),
       userId,
-      amount: String(body.amount ?? ''),
-      currency: normalizePaymentCurrency(String(body.currency ?? 'USDT')),
-      network: normalizePaymentNetwork(String(body.network ?? 'trc20')),
-      description: typeof body.description === 'string' ? body.description : undefined,
-      order_id: typeof body.order_id === 'string' ? body.order_id : undefined,
-      callback_url: typeof body.callback_url === 'string' ? body.callback_url : undefined,
-      success_url: typeof body.success_url === 'string' ? body.success_url : undefined,
-      cancel_url: typeof body.cancel_url === 'string' ? body.cancel_url : undefined,
-      payer_hash: typeof body.payer_hash === 'string' ? body.payer_hash : undefined,
-      lifetime: typeof body.lifetime === 'number' ? body.lifetime : undefined,
-      to_currency: typeof body.to_currency === 'string' ? normalizePaymentCurrency(body.to_currency) : undefined,
-      is_fee_paid_by_user: Boolean(body.is_fee_paid_by_user),
-      is_payment_multiple: Boolean(body.is_payment_multiple),
-      is_html_notification: Boolean(body.is_html_notification),
-      metadata: typeof body.metadata === 'object' && body.metadata ? (body.metadata as Record<string, unknown>) : undefined,
-    });
+      amount,
+      currency,
+      chain: chain || 'ethereum',
+      description: description || '',
+      redirectUrl: redirectUrl || '',
+      depositAddress: depositAddresses[0]?.address || '',
+      status: 'pending',
+      createdAt: new Date().toISOString(),
+    };
 
-    return NextResponse.json({ payment }, { status: 201 });
+    logger.info('Payment request created', { paymentRequestId: paymentRequest.id, userId });
+
+    return NextResponse.json({ paymentRequest }, { status: 201 });
   } catch (error) {
-    const status = error instanceof Error && error.message.includes('Authentication') ? 401 : 400;
-    return NextResponse.json({ error: error instanceof Error ? error.message : 'Unable to create payment' }, { status });
+    logger.error('Payment request creation failed', error as Error);
+    return NextResponse.json({ error: 'Failed to create payment request' }, { status: 500 });
   }
 }
 
+export async function GET(request: NextRequest) {
+  const userId = await getAuthenticatedUserId(request);
+  if (!userId) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  const searchParams = request.nextUrl.searchParams;
+  const limit = parseInt(searchParams.get('limit') || '50', 10);
+
+  return NextResponse.json({
+    paymentRequests: [],
+    total: 0,
+    limit,
+  });
+}

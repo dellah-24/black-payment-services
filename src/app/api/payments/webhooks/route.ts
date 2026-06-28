@@ -1,37 +1,38 @@
 import { NextRequest, NextResponse } from 'next/server';
-
-export const runtime = 'edge';
-import { getAuthenticatedUserId } from '@/lib/custodialService';
-import { createWebhook, listWebhooks, normalizeWebhookEvent } from '@/lib/paymentService';
-
-export async function GET(request: NextRequest) {
-  try {
-    const userId = await getAuthenticatedUserId(request);
-    if (!userId) return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
-    const webhooks = await listWebhooks(userId);
-    return NextResponse.json({ webhooks });
-  } catch (error) {
-    return NextResponse.json({ error: error instanceof Error ? error.message : 'Unable to list webhooks' }, { status: 500 });
-  }
-}
+import { createClient } from '@supabase/supabase-js';
+import { getEnv, isPlaceholder } from '@/lib/env';
+import { logger } from '@/lib/logger';
 
 export async function POST(request: NextRequest) {
   try {
-    const userId = await getAuthenticatedUserId(request);
-    if (!userId) return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
+    const body = await request.json();
+    const { event, data } = body;
 
-    const body = (await request.json().catch(() => ({}))) as Record<string, unknown>;
-    const events = Array.isArray(body.events) ? body.events.map((event) => normalizeWebhookEvent(String(event))) : undefined;
-    const webhook = await createWebhook({
-      userId,
-      url: String(body.url ?? ''),
-      events,
-      secret: typeof body.secret === 'string' ? body.secret : undefined,
-    });
+    if (!event || !data) {
+      return NextResponse.json({ error: 'Missing required fields: event, data' }, { status: 400 });
+    }
 
-    return NextResponse.json({ webhook }, { status: 201 });
+    const supabase = createClient(getEnv('NEXT_PUBLIC_SUPABASE_URL'), getEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY'));
+
+    const { error } = await supabase
+      .from('payment_webhooks')
+      .insert({
+        event,
+        data,
+        processed: false,
+        received_at: new Date().toISOString(),
+      });
+
+    if (error) {
+      logger.error('Failed to store webhook', error);
+      return NextResponse.json({ error: 'Failed to process webhook' }, { status: 500 });
+    }
+
+    logger.info('Webhook received', { event });
+
+    return NextResponse.json({ received: true });
   } catch (error) {
-    return NextResponse.json({ error: error instanceof Error ? error.message : 'Unable to create webhook' }, { status: 400 });
+    logger.error('Webhook processing failed', error as Error);
+    return NextResponse.json({ error: 'Failed to process webhook' }, { status: 500 });
   }
 }
-

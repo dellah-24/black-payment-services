@@ -50,7 +50,6 @@ export class HotWallet {
   private providers: Map<WalletChain, JsonRpcProvider> = new Map();
   private signers: Map<WalletChain, SignerAdapter> = new Map();
   private addresses: Map<WalletChain, string> = new Map();
-  private isTestnet: boolean;
   private config: HotWalletConfig;
   private whitelist: Map<string, WhitelistEntry> = new Map(); // address -> entry
   private dailyVolumeUsed: bigint = 0n;
@@ -62,15 +61,12 @@ export class HotWallet {
   constructor(
     signerAdapters: Record<WalletChain, SignerAdapter> | string,
     chains: WalletChain[],
-    config: HotWalletConfig,
-    isTestnet = false
+    config: HotWalletConfig
   ) {
-    this.isTestnet = isTestnet;
     this.config = config;
 
     for (const chain of chains) {
-      const chainConfigs = isTestnet ? TESTNET_CONFIGS : CHAIN_CONFIGS;
-      const cfg = chainConfigs[chain];
+      const cfg = CHAIN_CONFIGS[chain];
       if (!cfg) continue;
       this.providers.set(chain, new JsonRpcProvider(cfg.rpcUrl));
     }
@@ -79,8 +75,7 @@ export class HotWallet {
     if (typeof signerAdapters === 'string') {
       const privateKey = signerAdapters;
       for (const chain of chains) {
-        const chainConfigs = isTestnet ? TESTNET_CONFIGS : CHAIN_CONFIGS;
-        const cfg = chainConfigs[chain];
+        const cfg = CHAIN_CONFIGS[chain];
         if (!cfg) continue;
         const provider = new JsonRpcProvider(cfg.rpcUrl);
         const wallet = new Wallet(privateKey, provider);

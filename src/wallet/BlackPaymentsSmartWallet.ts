@@ -67,7 +67,6 @@ export enum WalletMode {
 export interface SmartWalletConfig {
   privateKeyOrMnemonic: string;
   chains: WalletChain[];
-  isTestnet?: boolean;
   customRpcUrls?: Record<WalletChain, string>;
   /** Enable Smart Account features */
   enableAA?: boolean;
@@ -86,7 +85,6 @@ export class BlackPaymentsSmartWallet {
   private wallets: Map<WalletChain, Wallet>;
   private providers: Map<WalletChain, JsonRpcProvider>;
   private addresses: Map<WalletChain, string>;
-  private isTestnet: boolean;
   private moonpayConfig: MoonPayConfig | null;
 
   // AA components
@@ -107,11 +105,10 @@ export class BlackPaymentsSmartWallet {
     this.wallets = new Map();
     this.providers = new Map();
     this.addresses = new Map();
-    this.isTestnet = config.isTestnet ?? false;
     this.moonpayConfig = null;
     this.enableAA = config.enableAA ?? false;
     this.aaService = new AlchemyAccountAbstractionService();
-    this.aaChain = config.defaultAAChain ?? 'sepolia';
+    this.aaChain = config.defaultAAChain ?? 'ethereum';
 
     // Determine if input is mnemonic or private key
     const words = config.privateKeyOrMnemonic.trim().split(/\s+/);
@@ -119,9 +116,7 @@ export class BlackPaymentsSmartWallet {
 
     // Create wallets for each chain
     for (const chain of config.chains) {
-      const config_ = this.isTestnet
-        ? TESTNET_CONFIGS[chain]
-        : CHAIN_CONFIGS[chain];
+      const config_ = CHAIN_CONFIGS[chain];
       
       if (!config_) {
         throw new Error(`Chain ${chain} not configured`);
@@ -596,9 +591,7 @@ export class BlackPaymentsSmartWallet {
       throw new Error(`No address for chain ${chain}`);
     }
 
-    const baseUrl = this.moonpayConfig.isTestnet 
-      ? 'https://buy-sandbox.moonpay.com' 
-      : 'https://buy.moonpay.com';
+    const baseUrl = 'https://buy.moonpay.com';
     
     const urlParams = new URLSearchParams({
       apiKey: this.moonpayConfig.apiKey,

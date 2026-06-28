@@ -1,6 +1,5 @@
 import { NextRequest } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
-import { getCustodialSupabaseClient } from '@/lib/adminSupabaseClient';
 import {
   assertCustodyReady,
   CUSTODIAL_TOKEN,
@@ -14,7 +13,7 @@ import {
   toWalletChain,
   validateCustodialAddress,
 } from '@/lib/custodyPolicy';
-import { createCustodialKeyManager, createCustodialKeyManagerFromEnv, type CustodialKeyManager } from '@/lib/custodialKeyManager';
+import { createCustodialKeyManagerFromEnv, type CustodialKeyManager } from '@/lib/custodialKeyManager';
 import { getEnv, isPlaceholder, isProduction } from '@/lib/env';
 import { logger } from '@/lib/logger';
 import { IdempotencyStore, WithdrawalLock } from '@/lib/redis';
@@ -93,7 +92,7 @@ export async function getAuthenticatedUserId(request: NextRequest): Promise<stri
   const authorization = request.headers.get('authorization');
   if (authorization?.startsWith('Bearer ')) {
     const { data } = await supabase.auth.getUser(authorization.slice('Bearer '.length));
-    if (data.user) {
+    if (data?.user) {
       return data.user.id;
     }
   }
@@ -102,7 +101,7 @@ export async function getAuthenticatedUserId(request: NextRequest): Promise<stri
     const accessToken = getAccessTokenFromSupabaseCookie(cookieHeader) ?? request.cookies.get('access-token')?.value ?? null;
     if (accessToken) {
       const { data } = await supabase.auth.getUser(accessToken);
-      if (data.user) {
+      if (data?.user) {
         return data.user.id;
       }
     }
@@ -407,19 +406,4 @@ export function getCustodialReadiness() {
     redis: !isPlaceholder(redisUrl) && !isPlaceholder(redisToken),
     production: isProduction(),
   };
-}
-
-export function createCustodialSupabaseClientForTests(url: string, serviceRoleKey: string) {
-  return createClient(url, serviceRoleKey, {
-    auth: { persistSession: false, autoRefreshToken: false },
-    global: {
-      headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-        apiKey: serviceRoleKey,
-        Authorization: `Bearer ${serviceRoleKey}`,
-        Prefer: 'return=representation',
-      },
-    },
-  });
 }

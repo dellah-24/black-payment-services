@@ -1,6 +1,7 @@
 /**
  * Shared Chain Configuration
  * Consolidated from multiple sources for single source of truth
+ * Production-only mainnet configurations
  */
 
 import { getEnv } from '@/lib/env';
@@ -14,7 +15,6 @@ export interface ChainConfig {
   explorerUrl: string;
   chainId: number;
   usdtAddress: string;
-  isTestnet?: boolean;
   color?: string;
 }
 
@@ -153,157 +153,6 @@ export const CHAINS: Record<ChainKey, ChainConfig> = {
 };
 
 /**
- * Testnet Chain Configurations
- * Used for development and testing
- */
-export const TESTNET_CHAINS: Record<ChainKey, ChainConfig> = {
-  ethereum: {
-    name: 'Ethereum Sepolia',
-    symbol: 'ETH',
-    rpcUrls: [
-      'https://eth-sepolia.g.alchemy.com/v2/demo',
-      'https://rpc.sepolia.org',
-      'https://eth-sepolia.publicnode.com'
-    ],
-    explorerUrl: 'https://sepolia.etherscan.io',
-    chainId: 11155111,
-    usdtAddress: '0xaA8E23fb10225F21FEF27844aeEEBC3b6F8D3d8e',
-    isTestnet: true,
-    color: '#627EEA',
-  },
-  bsc: {
-    name: 'BNB Chain Testnet',
-    symbol: 'BNB',
-    rpcUrls: [
-      'https://data-seed-prebsc-1-s1.bnbchain.org:8545',
-      'https://testnet-bsc.nodereal.io'
-    ],
-    explorerUrl: 'https://testnet.bscscan.com',
-    chainId: 97,
-    usdtAddress: '0x7d87123dC52A4A4A7F1d4d4C5d4B5d4C5d4B5d4C',
-    isTestnet: true,
-    color: '#F3BA2F',
-  },
-  polygon: {
-    name: 'Polygon Amoy',
-    symbol: 'MATIC',
-    rpcUrls: [
-      'https://rpc-amoy.polygon.technology',
-      'https://polygon-amoy.blockpi.network/v1/rpc/public'
-    ],
-    explorerUrl: 'https://amoy.polygonscan.com',
-    chainId: 80002,
-    usdtAddress: '0x534c3937A1b8A4D4C4b4C5D4C5d4C5D4C5d4C5D',
-    isTestnet: true,
-    color: '#8247E5',
-  },
-  arbitrum: {
-    name: 'Arbitrum Sepolia',
-    symbol: 'ETH',
-    rpcUrls: [
-      'https://sepolia.arbitrum.io/rpc',
-      'https://arbitrum-sepolia.drpc.org'
-    ],
-    explorerUrl: 'https://sepolia.arbiscan.io',
-    chainId: 421614,
-    usdtAddress: '0x8b99F9C5bCd7D4C5d4C5D4C5d4C5D4C5d4C5D4',
-    isTestnet: true,
-    color: '#28A0F0',
-  },
-  optimism: {
-    name: 'Optimism Sepolia',
-    symbol: 'ETH',
-    rpcUrls: [
-      'https://sepolia.optimism.io',
-      'https://optimism-sepolia.drpc.org'
-    ],
-    explorerUrl: 'https://sepolia-optimistic.etherscan.io',
-    chainId: 11155420,
-    usdtAddress: '0x9c4C9C5d4C5D4C5D4C5D4C5d4C5D4C5d4C5D',
-    isTestnet: true,
-    color: '#FF0420',
-  },
-  avalanche: {
-    name: 'Avalanche Fuji',
-    symbol: 'AVAX',
-    rpcUrls: [
-      'https://api.avax-test.network/ext/bc/C/rpc',
-      'https://ava-c02d43c5-3518-4d9e-b13d-8bd8bf45a9bb-x:8090/ext/bc/C/rpc'
-    ],
-    explorerUrl: 'https://testnet.snowtrace.io',
-    chainId: 43113,
-    usdtAddress: '0xD4C5C4d4C5D4C5D4C5D4C5d4C5D4C5d4C5D',
-    isTestnet: true,
-    color: '#E84142',
-  },
-  tron: {
-    name: 'TRON Nile Testnet',
-    symbol: 'TRX',
-    rpcUrls: [
-      'https://nile.trongrid.io',
-      'https://api.nileex.io'
-    ],
-    explorerUrl: 'https://nile.tronscan.org',
-    chainId: 3448148188,
-    usdtAddress: 'TDyWzKdd4r3hK1P4K4P4K4P4K4P4K4P4K4P4',
-    isTestnet: true,
-    color: '#FF0013',
-  },
-  celo: {
-    name: 'Celo Alfajores',
-    symbol: 'CELO',
-    rpcUrls: [
-      'https://alfajores-forno.celo-testnet.org',
-      'https://celo-alfajores-rpc.allthatnode.com'
-    ],
-    explorerUrl: 'https://alfajores.celoscan.io',
-    chainId: 44787,
-    usdtAddress: '0xB4FB3D6f08Ac2dC83F9d8d44B9d4aB92C4f2E7e6',
-    isTestnet: true,
-    color: '#35D07F',
-  },
-  linea: {
-    name: 'Linea Sepolia',
-    symbol: 'ETH',
-    rpcUrls: [
-      'https://rpc.sepolia.linea.build',
-      'https://linea-sepolia.drpc.org'
-    ],
-    explorerUrl: 'https://sepolia.lineascan.build',
-    chainId: 59141,
-    usdtAddress: '0xE4C4C4d4C5D4C5D4C5D4C5d4C5D4C5d4C5D',
-    isTestnet: true,
-    color: '#121212',
-  },
-  base: {
-    name: 'Base Sepolia',
-    symbol: 'ETH',
-    rpcUrls: [
-      'https://sepolia.base.org',
-      'https://base-sepolia.drpc.org'
-    ],
-    explorerUrl: 'https://sepolia.basescan.org',
-    chainId: 84532,
-    usdtAddress: '0xF4C4C4d4C5D4C5D4C5D4C5d4C5D4C5d4C5D',
-    isTestnet: true,
-    color: '#0052FF',
-  },
-  solana: {
-    name: 'Solana Devnet',
-    symbol: 'SOL',
-    rpcUrls: [
-      'https://api.devnet.solana.com',
-      'https://solana-devnet-rpc.allthatnode.com'
-    ],
-    explorerUrl: 'https://solscan.io?cluster=devnet',
-    chainId: 103,
-    usdtAddress: '',
-    isTestnet: true,
-    color: '#14F195',
-  },
-};
-
-/**
  * Get chain config by key
  */
 export function getChainConfig(chain: ChainKey): ChainConfig {
@@ -311,27 +160,10 @@ export function getChainConfig(chain: ChainKey): ChainConfig {
 }
 
 /**
- * Get chain config for active chain (supports both mainnet and testnet)
- */
-export function getActiveChainConfig(chain: ChainKey, isTestnet?: boolean): ChainConfig {
-  if (isTestnet) {
-    return TESTNET_CHAINS[chain] || TESTNET_CHAINS.ethereum;
-  }
-  return getChainConfig(chain);
-}
-
-/**
  * Get all supported chain keys
  */
 export function getSupportedChains(): ChainKey[] {
   return Object.keys(CHAINS) as ChainKey[];
-}
-
-/**
- * Get all supported testnet chain keys
- */
-export function getSupportedTestnetChains(): ChainKey[] {
-  return Object.keys(TESTNET_CHAINS) as ChainKey[];
 }
 
 /**
@@ -343,37 +175,28 @@ export function getChainById(chainId: number): ChainKey | undefined {
       return key as ChainKey;
     }
   }
-  // Also check testnets
-  for (const [key, config] of Object.entries(TESTNET_CHAINS)) {
-    if (config.chainId === chainId) {
-      return key as ChainKey;
-    }
-  }
   return undefined;
 }
 
 /**
  * Get primary RPC URL (first in the list)
  */
-export function getPrimaryRpcUrl(chain: ChainKey, isTestnet?: boolean): string {
-  const config = getActiveChainConfig(chain, isTestnet);
-  return config.rpcUrls[0];
+export function getPrimaryRpcUrl(chain: ChainKey): string {
+  return CHAINS[chain]?.rpcUrls[0] || '';
 }
 
 /**
  * Get all RPC URLs for failover
  */
-export function getRpcUrls(chain: ChainKey, isTestnet?: boolean): string[] {
-  const config = getActiveChainConfig(chain, isTestnet);
-  return config?.rpcUrls || [];
+export function getRpcUrls(chain: ChainKey): string[] {
+  return CHAINS[chain]?.rpcUrls || [];
 }
 
 /**
- * Get USDT address for a chain (mainnet or testnet)
+ * Get USDT address for a chain
  */
-export function getUsdtAddress(chain: ChainKey, isTestnet?: boolean): string {
-  const config = getActiveChainConfig(chain, isTestnet);
-  return config.usdtAddress;
+export function getUsdtAddress(chain: ChainKey): string {
+  return CHAINS[chain]?.usdtAddress || '';
 }
 
 export default CHAINS;

@@ -60,7 +60,6 @@ export class ColdWallet {
   private wallets: Map<WalletChain, Wallet>;
   private providers: Map<WalletChain, JsonRpcProvider>;
   private addresses: Map<WalletChain, string>;
-  private isTestnet: boolean;
   private config: ColdWalletConfig;
   private whitelist: Map<string, WhitelistEntry>;
   private pendingTransfers: Map<string, MultiSigRequest>;
@@ -82,21 +81,18 @@ export class ColdWallet {
    * @param privateKeyOrMnemonic - Private key or mnemonic phrase
    * @param chains - Supported chains
    * @param config - Cold wallet configuration
-   * @param isTestnet - Whether to use testnet
    * @param customRpcUrls - Custom RPC URLs
    */
-  constructor(
-    privateKeyOrMnemonic: string,
-    chains: WalletChain[],
-    config: ColdWalletConfig,
-    isTestnet = false,
-    customRpcUrls?: Record<WalletChain, string>
-  ) {
-    this.wallets = new Map();
-    this.providers = new Map();
-    this.addresses = new Map();
-    this.isTestnet = isTestnet;
-    this.config = config;
+ constructor(
+   privateKeyOrMnemonic: string,
+   chains: WalletChain[],
+   config: ColdWalletConfig,
+   customRpcUrls?: Record<WalletChain, string>
+ ) {
+   this.wallets = new Map();
+   this.providers = new Map();
+   this.addresses = new Map();
+   this.config = config;
     this.whitelist = new Map();
     this.pendingTransfers = new Map();
     this.lastWithdrawalTime = new Map();
@@ -108,8 +104,7 @@ export class ColdWallet {
 
     // Create wallets for each chain
     for (const chain of chains) {
-      const chainConfigs = isTestnet ? TESTNET_CONFIGS : CHAIN_CONFIGS;
-      const chainConfig = chainConfigs[chain];
+      const chainConfig = CHAIN_CONFIGS[chain];
       
       if (!chainConfig) {
         logger.warn(`Chain ${chain} not configured, skipping`);
@@ -508,7 +503,7 @@ export class ColdWallet {
    * Format native balance for display
    */
   private formatNativeBalance(balance: bigint, chain: WalletChain): string {
-    const chainConfig = this.isTestnet ? TESTNET_CONFIGS[chain] : CHAIN_CONFIGS[chain];
+    const chainConfig = CHAIN_CONFIGS[chain];
     const decimals = 18;
     const formatted = Number(balance) / Math.pow(10, decimals);
     return `${formatted.toFixed(6)} ${chainConfig?.symbol || 'ETH'}`;

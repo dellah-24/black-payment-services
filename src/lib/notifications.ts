@@ -1,237 +1,180 @@
-/**
- * Push Notification Service
- * Web Push API for transaction notifications
- */
-
+import { createClient } from '@supabase/supabase-js';
+import { getEnv, isPlaceholder, isProduction } from '@/lib/env';
 import { logger } from '@/lib/logger';
 
-export interface NotificationOptions {
+export interface Notification {
+  id: string;
+  userId: string;
+  type: 'payment' | 'withdrawal' | 'deposit' | 'system' | 'security' | 'promotion';
   title: string;
-  body: string;
-  icon?: string;
-  badge?: string;
-  tag?: string;
-  data?: any;
-  requireInteraction?: boolean;
+  message: string;
+  data: Record<string, any>;
+  read: boolean;
+  createdAt: string;
+  readAt: string | null;
 }
 
-export interface NotificationPermission {
-  status: 'granted' | 'denied' | 'default';
+export interface NotificationPreferences {
+  userId: string;
+  email: boolean;
+  push: boolean;
+  sms: boolean;
+  inApp: boolean;
+  paymentNotifications: boolean;
+  securityNotifications: boolean;
+  marketingNotifications: boolean;
 }
 
-/**
- * Check if push notifications are supported
- */
-export function isPushSupported(): boolean {
-  if (typeof window === 'undefined') return false;
-  return 'Notification' in window;
-}
+export async function getNotifications(userId: string, limit = 50, offset = 0): Promise<Notification[]> {
+  const supabase = createClient(getEnv('NEXT_PUBLIC_SUPABASE_URL'), getEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY'));
 
-/**
- * Get current notification permission status
- */
-export function getNotificationPermission(): NotificationPermission {
-  if (!isPushSupported()) {
-    return { status: 'denied' };
+  const { data, error } = await supabase
+    .from('notifications')
+    .select('*')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false })
+    .range(offset, offset + limit - 1);
+
+  if (error) {
+    logger.error('Failed to fetch notifications', error);
+    return [];
   }
+
+  return (data || []).map((notification) => ({
+    id: notification.id,
+    userId: notification.user_id,
+    type: notification.type,
+    title: notification.title,
+    message: notification.message,
+    data: notification.data,
+    read: notification.read,
+    createdAt: notification.created_at,
+    readAt: notification.read_at,
+  }));
+}
+
+export async function getUnreadNotificationsCount(userId: string): Promise<number> {
+  const supabase = createClient(getEnv('NEXT_PUBLIC_SUPABASE_URL'), getEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY'));
+
+  const { count, error } = await supabase
+    .from('notifications')
+    .select('*', { count: 'exact', head: true })
+    .eq('user_id', userId)
+    .eq('read', false);
+
+  if (error) {
+    logger.error('Failed to count unread notifications', error);
+    return 0;
+  }
+
+  return count || 0;
+}
+
+export async function markNotificationAsRead(notificationId: string, userId: string): Promise<void> {
+  const supabase = createClient(getEnv('NEXT_PUBLIC_SUPABASE_URL'), getEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY'));
+
+  const { error } = await supabase
+    .from('notifications')
+    .update({ read: true, read_at: new Date().toISOString() })
+    .eq('id', notificationId)
+    .eq('user_id', userId);
+
+  if (error) {
+    logger.error('Failed to mark notification as read', error);
+    throw new Error('Failed to mark notification as read');
+  }
+}
+
+export async function markAllNotificationsAsRead(userId: string): Promise<void> {
+  const supabase = createClient(getEnv('NEXT_PUBLIC_SUPABASE_URL'), getEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY'));
+
+  const { error } = await supabase
+    .from('notifications')
+    .update({ read: true, read_at: new Date().toISOString() })
+    .eq('user_id', userId)
+    .eq('read', false);
+
+  if (error) {
+    logger.error('Failed to mark all notifications as read', error);
+    throw new Error('Failed to mark all notifications as read');
+  }
+}
+
+export async function deleteNotification(notificationId: string, userId: string): Promise<void> {
+  const supabase = createClient(getEnv('NEXT_PUBLIC_SUPABASE_URL'), getEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY'));
+
+  const { error } = await supabase
+    .from('notifications')
+    .delete()
+    .eq('id', notificationId)
+    .eq('user_id', userId);
+
+  if (error) {
+    logger.error('Failed to delete notification', error);
+    throw new Error('Failed to delete notification');
+  }
+}
+
+export async function getNotificationPreferences(userId: string): Promise<NotificationPreferences | null> {
+  const supabase = createClient(getEnv('NEXT_PUBLIC_SUPABASE_URL'), getEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY'));
+
+  const { data, error } = await supabase
+    .from('notification_preferences')
+    .select('*')
+    .eq('user_id', userId)
+    .single();
+
+  if (error || !data) {
+    return null;
+  }
+
   return {
-    status: Notification.permission as 'granted' | 'denied' | 'default',
+    userId: data.user_id,
+    email: data.email,
+    push: data.push,
+    sms: data.sms,
+    inApp: data.in_app,
+    paymentNotifications: data.payment_notifications,
+    securityNotifications: data.security_notifications,
+    marketingNotifications: data.marketing_notifications,
   };
 }
 
-/**
- * Request notification permission
- */
-export async function requestNotificationPermission(): Promise<boolean> {
-  if (!isPushSupported()) {
-    logger.warn('Push notifications not supported');
-    return false;
+export async function updateNotificationPreferences(
+  userId: string,
+  preferences: Partial<NotificationPreferences>
+): Promise<NotificationPreferences> {
+  const supabase = createClient(getEnv('NEXT_PUBLIC_SUPABASE_URL'), getEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY'));
+
+  const { data, error } = await supabase
+    .from('notification_preferences')
+    .upsert({
+      user_id: userId,
+      email: preferences.email,
+      push: preferences.push,
+      sms: preferences.sms,
+      in_app: preferences.inApp,
+      payment_notifications: preferences.paymentNotifications,
+      security_notifications: preferences.securityNotifications,
+      marketing_notifications: preferences.marketingNotifications,
+      updated_at: new Date().toISOString(),
+    })
+    .select()
+    .single();
+
+  if (error) {
+    logger.error('Failed to update notification preferences', error);
+    throw new Error('Failed to update notification preferences');
   }
 
-  try {
-    const permission = await Notification.requestPermission();
-    return permission === 'granted';
-  } catch (error) {
-    logger.error('Error requesting notification permission', error as Error);
-    return false;
-  }
-}
-
-/**
- * Show a local notification
- */
-export function showNotification(options: NotificationOptions): Notification | null {
-  if (!isPushSupported()) {
-    logger.warn('Push notifications not supported');
-    return null;
-  }
-
-  if (getNotificationPermission().status !== 'granted') {
-    logger.warn('Notification permission not granted');
-    return null;
-  }
-
-  try {
-    const notification = new Notification(options.title, {
-      body: options.body,
-      icon: options.icon || '/icons/notification-icon.png',
-      badge: options.badge || '/icons/badge-icon.png',
-      tag: options.tag,
-      data: options.data,
-      requireInteraction: options.requireInteraction,
-    });
-
-    notification.onclick = () => {
-      window.focus();
-      notification.close();
-    };
-
-    return notification;
-  } catch (error) {
-    logger.error('Error showing notification', error as Error);
-    return null;
-  }
-}
-
-/**
- * Show transaction notification
- */
-export function notifyTransaction(
-  type: 'send' | 'receive' | 'swap',
-  amount: string,
-  status: 'pending' | 'confirmed' | 'failed'
-): void {
-  const titles = {
-    send: 'USDT Sent',
-    receive: 'USDT Received',
-    swap: 'Swap Completed',
+  return {
+    userId: data.user_id,
+    email: data.email,
+    push: data.push,
+    sms: data.sms,
+    inApp: data.in_app,
+    paymentNotifications: data.payment_notifications,
+    securityNotifications: data.security_notifications,
+    marketingNotifications: data.marketing_notifications,
   };
-
-  const bodies = {
-    pending: `Your ${type === 'swap' ? 'swap' : 'transaction'} is being processed...`,
-    confirmed: `Successfully ${type === 'send' ? 'sent' : type === 'receive' ? 'received' : 'swapped'} ${amount} USDT`,
-    failed: `Transaction failed. Please try again.`,
-  };
-
-  showNotification({
-    title: titles[type],
-    body: bodies[status],
-    tag: `tx-${type}-${Date.now()}`,
-  });
-}
-
-/**
- * Show price alert notification
- */
-export function notifyPriceAlert(
-  token: string,
-  currentPrice: number,
-  targetPrice: number,
-  direction: 'above' | 'below'
-): void {
-  showNotification({
-    title: `${token} Price Alert`,
-    body: `${token} is now $${currentPrice.toFixed(2)} - ${direction} your target of $${targetPrice.toFixed(2)}`,
-    tag: `price-${token.toLowerCase()}`,
-  });
-}
-
-/**
- * Subscribe to push notifications (requires service worker)
- */
-export async function subscribeToPush(): Promise<PushSubscription | null> {
-  if (typeof window === 'undefined' || !('serviceWorker' in navigator)) {
-    return null;
-  }
-
-  const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
-  if (!vapidPublicKey) {
-    logger.warn('Push notifications skipped because NEXT_PUBLIC_VAPID_PUBLIC_KEY is not configured');
-    return null;
-  }
-
-  try {
-    const registration = await navigator.serviceWorker.ready;
-
-    const applicationServerKey = urlBase64ToUint8Array(vapidPublicKey);
-
-    const subscription = await registration.pushManager.subscribe({
-      userVisibleOnly: true,
-      applicationServerKey: applicationServerKey.buffer.slice(
-        applicationServerKey.byteOffset,
-        applicationServerKey.byteOffset + applicationServerKey.byteLength
-      ) as ArrayBuffer,
-    });
-    
-    return subscription;
-  } catch (error) {
-    logger.error('Error subscribing to push', error as Error);
-    return null;
-  }
-}
-
-/**
- * Unsubscribe from push notifications
- */
-export async function unsubscribeFromPush(): Promise<boolean> {
-  if (typeof window === 'undefined' || !('serviceWorker' in navigator)) {
-    return false;
-  }
-
-  try {
-    const registration = await navigator.serviceWorker.ready;
-    const subscription = await registration.pushManager.getSubscription();
-    
-    if (subscription) {
-      await subscription.unsubscribe();
-      return true;
-    }
-    return false;
-  } catch (error) {
-    logger.error('Error unsubscribing from push', error as Error);
-    return false;
-  }
-}
-
-/**
- * Helper: Convert VAPID key to Uint8Array
- */
-function urlBase64ToUint8Array(base64String: string): Uint8Array {
-  if (!base64String) return new Uint8Array();
-  
-  const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
-  const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
-  
-  const rawData = window.atob(base64);
-  const outputArray = new Uint8Array(rawData.length);
-  
-  for (let i = 0; i < rawData.length; ++i) {
-    outputArray[i] = rawData.charCodeAt(i);
-  }
-  
-  return outputArray;
-}
-
-/**
- * Request browser notification permission and show welcome
- */
-export async function initNotifications(): Promise<boolean> {
-  const permission = getNotificationPermission();
-  
-  if (permission.status === 'granted') {
-    return true;
-  }
-  
-  if (permission.status === 'default') {
-    const granted = await requestNotificationPermission();
-    if (granted) {
-      showNotification({
-        title: 'Notifications Enabled',
-        body: 'You will receive alerts for transactions and price updates.',
-      });
-    }
-    return granted;
-  }
-  
-  return false;
 }

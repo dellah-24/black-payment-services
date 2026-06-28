@@ -78,18 +78,16 @@ export class SplitCustodyManager {
 
   /**
    * Create a SplitCustodyManager
-   * 
+   *
    * @param hotWalletPrivateKey - Private key for hot wallet
    * @param coldWalletPrivateKey - Private key for cold wallet (keep secure!)
    * @param config - Split custody configuration
-   * @param isTestnet - Whether to use testnet
    */
-  constructor(
-    hotWalletPrivateKey: string,
-    coldWalletPrivateKey: string,
-    config: SplitCustodyConfig,
-    isTestnet = false
-  ) {
+ constructor(
+   hotWalletPrivateKey: string,
+   coldWalletPrivateKey: string,
+   config: SplitCustodyConfig
+ ) {
     this.config = config;
     this.pendingTransfers = new Map();
     this.transferHistory = [];
@@ -107,8 +105,7 @@ export class SplitCustodyManager {
     this.hotWallet = new HotWallet(
       hotWalletPrivateKey,
       config.hotWalletConfig.chains,
-      hotConfig,
-      isTestnet
+      hotConfig
     );
 
     // Initialize cold wallet
@@ -124,8 +121,7 @@ export class SplitCustodyManager {
     this.coldWallet = new ColdWallet(
       coldWalletPrivateKey,
       config.coldWalletConfig.chains,
-      coldConfig,
-      isTestnet
+      coldConfig
     );
   }
 
@@ -737,7 +733,6 @@ export function createSplitCustodySystem(
   return new SplitCustodyManager(
     hotWalletPrivateKey,
     coldWalletPrivateKey,
-    config,
-    options?.isTestnet
+    config
   );
 }

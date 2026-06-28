@@ -1,19 +1,41 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
+import { getEnv, isPlaceholder } from '@/lib/env';
 
-export const runtime = 'edge';
-import { createExchangeQuote } from '@/lib/paymentService';
+export async function GET() {
+  const apiKey = getEnv('EXCHANGE_API_KEY');
+  const apiUrl = getEnv('EXCHANGE_API_URL');
 
-export async function POST(request: NextRequest) {
-  try {
-    const body = (await request.json().catch(() => ({}))) as Record<string, unknown>;
-    const quote = createExchangeQuote({
-      from: String(body.from ?? ''),
-      to: String(body.to ?? ''),
-      amount: String(body.amount ?? ''),
+  if (isPlaceholder(apiKey) || isPlaceholder(apiUrl)) {
+    return NextResponse.json({
+      rates: {},
+      source: 'unavailable',
+      error: 'Exchange API not configured',
     });
-    return NextResponse.json({ quote }, { status: 201 });
+  }
+
+  try {
+    const response = await fetch(`${apiUrl}/rates`, {
+      headers: {
+        'X-API-Key': apiKey,
+      },
+      next: { revalidate: 60 },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Exchange API error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return NextResponse.json({
+      rates: data.rates || {},
+      source: 'api',
+    });
   } catch (error) {
-    return NextResponse.json({ error: error instanceof Error ? error.message : 'Unable to create exchange quote' }, { status: 400 });
+    console.error('Exchange rates fetch error:', error);
+    return NextResponse.json({
+      rates: {},
+      source: 'error',
+      error: 'Failed to fetch exchange rates',
+    });
   }
 }
-

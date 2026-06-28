@@ -1,859 +1,491 @@
-/**
- * Internationalization (i18n) Module
- * Supports multiple languages for global P2P marketplace
- */
+export const locales = ['en', 'es', 'fr', 'de', 'zh', 'ja', 'ko', 'pt', 'ru', 'ar'] as const;
+export type Locale = (typeof locales)[number];
 
-export type Language = 
-  | 'en'  // English
-  | 'zh'  // Chinese
-  | 'es'  // Spanish
-  | 'hi'  // Hindi
-  | 'ar'  // Arabic
-  | 'pt'  // Portuguese
-  | 'ru'  // Russian
-  | 'ja'  // Japanese
-  | 'ko'  // Korean
-  | 'tr'  // Turkish
-  | 'fr'  // French
-  | 'de'  // German
-  | 'vi'  // Vietnamese
-  | 'th'  // Thai
-  | 'he'  // Hebrew
-  | 'fa'  // Persian
-  | 'ur'  // Urdu
-  | 'id'  // Indonesian
-  | 'ms'  // Malay
-  | 'fa'  // Persian
-  | 'ur'  // Urdu
-  | 'sw'  // Swahili
-  | 'tl'  // Tagalog
-  | 'bn'  // Bengali
-  | 'ta'  // Tamil
-  | 'te'  // Telugu
-  | 'ml'  // Malayalam
-  | 'kn'  // Kannada
-  | 'gu'  // Gujarati
-  | 'mr'  // Marathi
-  | 'pa'  // Punjabi
-  | 'am'  // Amharic
-  | 'ha'  // Hausa
-  | 'yo'  // Yoruba
-  | 'zu'  // Zulu;
+export const defaultLocale: Locale = 'en';
 
-export interface Translation {
-  // Common
-  [key: string]: string | Translation;
-}
-
-export interface Translations {
-  [key: string]: Translation;
-}
-
-const translations: Translations = {
+export const translations: Record<Locale, Record<string, string>> = {
   en: {
-    // Common
-    app: {
-      name: 'BlackPayments',
-      tagline: 'Secure USDT P2P Wallet',
-    },
-    common: {
-      loading: 'Loading...',
-      error: 'Error',
-      success: 'Success',
-      cancel: 'Cancel',
-      confirm: 'Confirm',
-      save: 'Save',
-      delete: 'Delete',
-      edit: 'Edit',
-      close: 'Close',
-      back: 'Back',
-      next: 'Next',
-      submit: 'Submit',
-      search: 'Search',
-      filter: 'Filter',
-      sort: 'Sort',
-      refresh: 'Refresh',
-      copy: 'Copy',
-      copied: 'Copied!',
-      show: 'Show',
-      hide: 'Hide',
-      viewAll: 'View All',
-      seeMore: 'See More',
-      noData: 'No data available',
-      retry: 'Retry',
-    },
-    auth: {
-      welcome: 'Welcome',
-      createWallet: 'Create Wallet',
-      importWallet: 'Import Wallet',
-      unlock: 'Unlock',
-      pin: 'PIN',
-      enterPin: 'Enter PIN',
-      confirmPin: 'Confirm PIN',
-      setPin: 'Set PIN',
-      changePin: 'Change PIN',
-      forgotPin: 'Forgot PIN?',
-      biometric: 'Biometric',
-      enableBiometric: 'Enable Biometric',
-      useBiometric: 'Use Biometric',
-      password: 'Password',
-      confirmPassword: 'Confirm Password',
-      privateKey: 'Private Key',
-      mnemonicPhrase: 'Recovery Phrase',
-      seedPhrase: 'Seed Phrase',
-      keepSecret: 'Keep this safe - never share it!',
-      invalidPin: 'Invalid PIN',
-      pinMismatch: 'PINs do not match',
-      tooManyAttempts: 'Too many failed attempts',
-      lockedOut: 'Account locked',
-    },
-    wallet: {
-      myWallet: 'My Wallet',
-      balance: 'Balance',
-      totalBalance: 'Total Balance',
-      send: 'Send',
-      receive: 'Receive',
-      swap: 'Swap',
-      address: 'Address',
-      qrCode: 'QR Code',
-      copyAddress: 'Copy Address',
-      showPrivateKey: 'Show Private Key',
-      exportPrivateKey: 'Export Private Key',
-      backup: 'Backup',
-      backupNow: 'Backup Now',
-      backupReminder: 'Backup reminder',
-      noWallet: 'No wallet found',
-      connect: 'Connect',
-      disconnect: 'Disconnect',
-      connected: 'Connected',
-    },
-    send: {
-      sendUsdt: 'Send USDT',
-      recipient: 'Recipient',
-      recipientAddress: 'Recipient Address',
-      amount: 'Amount',
-      fee: 'Fee',
-      estimatedFee: 'Estimated Fee',
-      total: 'Total',
-      memo: 'Memo (optional)',
-      review: 'Review',
-      sending: 'Sending...',
-      sent: 'Sent!',
-      failed: 'Failed',
-      confirmSend: 'Confirm Send',
-      enterAmount: 'Enter amount',
-      insufficientBalance: 'Insufficient balance',
-      invalidAddress: 'Invalid address',
-    },
-    receive: {
-      receiveUsdt: 'Receive USDT',
-      yourAddress: 'Your Address',
-      shareQrCode: 'Share QR Code',
-      deposit: 'Deposit',
-      depositUsdt: 'Deposit USDT',
-    },
-    p2p: {
-      p2pTrading: 'P2P Trading',
-      buy: 'Buy',
-      sell: 'Sell',
-      orders: 'Orders',
-      myOrders: 'My Orders',
-      createOrder: 'Create Order',
-      availableOrders: 'Available Orders',
-      price: 'Price',
-      quantity: 'Quantity',
-      total: 'Total',
-      payment: 'Payment',
-      paymentMethod: 'Payment Method',
-      bankTransfer: 'Bank Transfer',
-      mobileMoney: 'Mobile Money',
-      cashDeposit: 'Cash Deposit',
-      paypal: 'PayPal',
-      wise: 'Wise',
-      revolut: 'Revolut',
-      crypto: 'Crypto',
-      terms: 'Terms',
-      status: 'Status',
-      pending: 'Pending',
-      completed: 'Completed',
-      cancelled: 'Cancelled',
-      disputed: 'Disputed',
-      counterparty: 'Counterparty',
-      timeLimit: 'Time Limit',
-      release: 'Release',
-      cancelOrder: 'Cancel Order',
-      appeal: 'Appeal',
-      chat: 'Chat',
-      noOrders: 'No orders available',
-      createFirst: 'Create your first order',
-    },
-    settings: {
-      settings: 'Settings',
-      profile: 'Profile',
-      security: 'Security',
-      appearance: 'Appearance',
-      language: 'Language',
-      currency: 'Currency',
-      network: 'Network',
-      notifications: 'Notifications',
-      privacy: 'Privacy',
-      about: 'About',
-      help: 'Help',
-      terms: 'Terms',
-      privacyPolicy: 'Privacy Policy',
-      darkMode: 'Dark Mode',
-      lightMode: 'Light Mode',
-      autoLock: 'Auto-Lock',
-      autoLockMinutes: 'Auto-lock after {{minutes}} minutes',
-      clearData: 'Clear Data',
-      exportData: 'Export Data',
-    },
-    kyc: {
-      verify: 'Verify',
-      verified: 'Verified',
-      pending: 'Pending',
-      rejected: 'Rejected',
-      kyc: 'KYC Verification',
-      startKyc: 'Start Verification',
-      submitDocuments: 'Submit Documents',
-      takeSelfie: 'Take Selfie',
-      verifyIdentity: 'Verify Identity',
-      uploadId: 'Upload ID',
-      proofOfAddress: 'Proof of Address',
-    },
-    trade: {
-      iWantToBuy: 'I want to buy',
-      iWantToSell: 'I want to sell',
-      pricePerUsdt: 'Price per USDT',
-      limit: 'Limit',
-      available: 'Available',
-      traded: 'Traded',
-      completionRate: 'Completion Rate',
-      avgReleaseTime: 'Avg. Release Time',
-      ordersCount: 'Orders',
-      tradesCount: 'Trades',
-    },
-  },
-  tr: {
-    // Turkish (for P2P market in Turkey)
-    common: {
-      loading: 'Yükleniyor...',
-      error: 'Hata',
-      success: 'Başarılı',
-      cancel: 'İptal',
-      confirm: 'Onayla',
-      save: 'Kaydet',
-      delete: 'Sil',
-      edit: 'Düzenle',
-      close: 'Kapat',
-      back: 'Geri',
-      next: 'İleri',
-      submit: 'Gönder',
-      search: 'Ara',
-      filter: 'Filtrele',
-      sort: 'Sırala',
-      refresh: 'Yenile',
-      copy: 'Kopyala',
-      copied: 'Kopyalandı!',
-    },
-    auth: {
-      welcome: 'Hoş Geldiniz',
-      createWallet: 'Cüzdan Oluştur',
-      importWallet: 'Cüzdan İçe Aktar',
-      unlock: 'Kilidi Aç',
-      pin: 'PIN',
-      enterPin: 'PIN Girin',
-      confirmPin: 'PIN Doğrula',
-      setPin: 'PIN Belirle',
-      changePin: 'PIN Değiştir',
-    },
-    wallet: {
-      myWallet: 'Cüzdanım',
-      balance: 'Bakiye',
-      totalBalance: 'Toplam Bakiye',
-      send: 'Gönder',
-      receive: 'Al',
-      swap: 'Takas',
-    },
-    p2p: {
-      p2pTrading: 'P2P İşlem',
-      buy: 'Al',
-      sell: 'Sat',
-      orders: 'Siparişler',
-      createOrder: 'Sipariş Oluştur',
-    },
-    settings: {
-      settings: 'Ayarlar',
-      language: 'Dil',
-      darkMode: 'Karanlık Mod',
-    },
+    'app.name': 'BlackPayments Wallet',
+    'app.tagline': 'Secure Multi-Chain USDT Wallet',
+    'nav.wallet': 'Wallet',
+    'nav.send': 'Send',
+    'nav.receive': 'Receive',
+    'nav.swap': 'Swap',
+    'nav.history': 'History',
+    'nav.settings': 'Settings',
+    'wallet.balance': 'Balance',
+    'wallet.usdt': 'USDT',
+    'wallet.native': 'Native',
+    'wallet.send': 'Send',
+    'wallet.receive': 'Receive',
+    'wallet.swap': 'Swap',
+    'wallet.history': 'History',
+    'wallet.settings': 'Settings',
+    'common.loading': 'Loading...',
+    'common.error': 'Error',
+    'common.success': 'Success',
+    'common.cancel': 'Cancel',
+    'common.confirm': 'Confirm',
+    'common.save': 'Save',
+    'common.delete': 'Delete',
+    'common.edit': 'Edit',
+    'common.close': 'Close',
+    'common.back': 'Back',
+    'common.next': 'Next',
+    'common.submit': 'Submit',
+    'common.retry': 'Retry',
+    'auth.login': 'Login',
+    'auth.logout': 'Logout',
+    'auth.signup': 'Sign Up',
+    'auth.email': 'Email',
+    'auth.password': 'Password',
+    'auth.confirmPassword': 'Confirm Password',
+    'auth.forgotPassword': 'Forgot Password?',
+    'auth.resetPassword': 'Reset Password',
+    'auth.noAccount': "Don't have an account?",
+    'auth.hasAccount': 'Already have an account?',
+    'settings.language': 'Language',
+    'settings.theme': 'Theme',
+    'settings.security': 'Security',
+    'settings.notifications': 'Notifications',
+    'settings.about': 'About',
+    'settings.version': 'Version',
   },
   es: {
-    // Spanish
-    common: {
-      loading: 'Cargando...',
-      error: 'Error',
-      success: 'Éxito',
-      cancel: 'Cancelar',
-      confirm: 'Confirmar',
-    },
-    auth: {
-      welcome: 'Bienvenido',
-      createWallet: 'Crear Billetera',
-      importWallet: 'Importar Billetera',
-    },
-    wallet: {
-      myWallet: 'Mi Billetera',
-      balance: 'Saldo',
-      send: 'Enviar',
-      receive: 'Recibir',
-    },
-    p2p: {
-      p2pTrading: 'Trading P2P',
-      buy: 'Comprar',
-      sell: 'Vender',
-    },
-  },
-  zh: {
-    // Chinese
-    common: {
-      loading: '加载中...',
-      error: '错误',
-      success: '成功',
-      cancel: '取消',
-      confirm: '确认',
-    },
-    auth: {
-      welcome: '欢迎',
-      createWallet: '创建钱包',
-      importWallet: '导入钱包',
-    },
-    wallet: {
-      myWallet: '我的钱包',
-      balance: '余额',
-      send: '发送',
-      receive: '接收',
-    },
-    p2p: {
-      p2pTrading: 'P2P交易',
-      buy: '购买',
-      sell: '出售',
-    },
-  },
-  hi: {
-    // Hindi (for Indian P2P market)
-    common: {
-      loading: 'लोड हो रहा है...',
-      error: 'त्रुटि',
-      success: 'सफल',
-      cancel: 'रद्द करें',
-      confirm: 'पुष्टि करें',
-    },
-    auth: {
-      welcome: 'स्वागत है',
-      createWallet: 'वॉलेट बनाएं',
-      importWallet: 'वॉलेट आयात करें',
-    },
-    wallet: {
-      myWallet: 'मेरा वॉलेट',
-      balance: 'शेष राशि',
-      send: 'भेजें',
-      receive: 'प्राप्त करें',
-    },
-    p2p: {
-      p2pTrading: 'P2P व्यापार',
-      buy: 'खरीदें',
-      sell: 'बेचें',
-    },
-  },
-  ar: {
-    // Arabic (RTL support)
-    common: {
-      loading: 'جاري التحميل...',
-      error: 'خطأ',
-      success: 'نجاح',
-      cancel: 'إلغاء',
-      confirm: 'تأكيد',
-    },
-    auth: {
-      welcome: 'مرحباً',
-      createWallet: 'إنشاء محفظة',
-      importWallet: 'استيراد محفظة',
-    },
-    wallet: {
-      myWallet: 'محفظتي',
-      balance: 'الرصيد',
-      send: 'إرسال',
-      receive: 'استلام',
-    },
-    p2p: {
-      p2pTrading: 'تداول P2P',
-      buy: 'شراء',
-      sell: 'بيع',
-    },
+    'app.name': 'BlackPayments Wallet',
+    'app.tagline': 'Billetera USDT Multi-Chain Segura',
+    'nav.wallet': 'Billetera',
+    'nav.send': 'Enviar',
+    'nav.receive': 'Recibir',
+    'nav.swap': 'Intercambiar',
+    'nav.history': 'Historial',
+    'nav.settings': 'Configuración',
+    'wallet.balance': 'Saldo',
+    'wallet.usdt': 'USDT',
+    'wallet.native': 'Nativo',
+    'wallet.send': 'Enviar',
+    'wallet.receive': 'Recibir',
+    'wallet.swap': 'Intercambiar',
+    'wallet.history': 'Historial',
+    'wallet.settings': 'Configuración',
+    'common.loading': 'Cargando...',
+    'common.error': 'Error',
+    'common.success': 'Éxito',
+    'common.cancel': 'Cancelar',
+    'common.confirm': 'Confirmar',
+    'common.save': 'Guardar',
+    'common.delete': 'Eliminar',
+    'common.edit': 'Editar',
+    'common.close': 'Cerrar',
+    'common.back': 'Atrás',
+    'common.next': 'Siguiente',
+    'common.submit': 'Enviar',
+    'common.retry': 'Reintentar',
+    'auth.login': 'Iniciar Sesión',
+    'auth.logout': 'Cerrar Sesión',
+    'auth.signup': 'Registrarse',
+    'auth.email': 'Correo',
+    'auth.password': 'Contraseña',
+    'auth.confirmPassword': 'Confirmar Contraseña',
+    'auth.forgotPassword': '¿Olvidaste tu contraseña?',
+    'auth.resetPassword': 'Restablecer Contraseña',
+    'auth.noAccount': '¿No tienes cuenta?',
+    'auth.hasAccount': '¿Ya tienes cuenta?',
+    'settings.language': 'Idioma',
+    'settings.theme': 'Tema',
+    'settings.security': 'Seguridad',
+    'settings.notifications': 'Notificaciones',
+    'settings.about': 'Acerca de',
+    'settings.version': 'Versión',
   },
   fr: {
-    // French
-    common: {
-      loading: 'Chargement...',
-      error: 'Erreur',
-      success: 'Succès',
-      cancel: 'Annuler',
-      confirm: 'Confirmer',
-    },
-    auth: {
-      welcome: 'Bienvenue',
-      createWallet: 'Créer un portefeuille',
-      importWallet: 'Importer un portefeuille',
-    },
-    wallet: {
-      myWallet: 'Mon portefeuille',
-      balance: 'Solde',
-      send: 'Envoyer',
-      receive: 'Recevoir',
-    },
-    p2p: {
-      p2pTrading: 'Trading P2P',
-      buy: 'Acheter',
-      sell: 'Vendre',
-    },
+    'app.name': 'BlackPayments Wallet',
+    'app.tagline': 'Portefeuille USDT Multi-Chaîne Sécurisé',
+    'nav.wallet': 'Portefeuille',
+    'nav.send': 'Envoyer',
+    'nav.receive': 'Recevoir',
+    'nav.swap': 'Échanger',
+    'nav.history': 'Historique',
+    'nav.settings': 'Paramètres',
+    'wallet.balance': 'Solde',
+    'wallet.usdt': 'USDT',
+    'wallet.native': 'Natif',
+    'wallet.send': 'Envoyer',
+    'wallet.receive': 'Recevoir',
+    'wallet.swap': 'Échanger',
+    'wallet.history': 'Historique',
+    'wallet.settings': 'Paramètres',
+    'common.loading': 'Chargement...',
+    'common.error': 'Erreur',
+    'common.success': 'Succès',
+    'common.cancel': 'Annuler',
+    'common.confirm': 'Confirmer',
+    'common.save': 'Enregistrer',
+    'common.delete': 'Supprimer',
+    'common.edit': 'Modifier',
+    'common.close': 'Fermer',
+    'common.back': 'Retour',
+    'common.next': 'Suivant',
+    'common.submit': 'Soumettre',
+    'common.retry': 'Réessayer',
+    'auth.login': 'Connexion',
+    'auth.logout': 'Déconnexion',
+    'auth.signup': 'Inscription',
+    'auth.email': 'E-mail',
+    'auth.password': 'Mot de passe',
+    'auth.confirmPassword': 'Confirmer le mot de passe',
+    'auth.forgotPassword': 'Mot de passe oublié?',
+    'auth.resetPassword': 'Réinitialiser le mot de passe',
+    'auth.noAccount': "Vous n'avez pas de compte?",
+    'auth.hasAccount': 'Vous avez déjà un compte?',
+    'settings.language': 'Langue',
+    'settings.theme': 'Thème',
+    'settings.security': 'Sécurité',
+    'settings.notifications': 'Notifications',
+    'settings.about': 'À propos',
+    'settings.version': 'Version',
   },
   de: {
-    // German
-    common: {
-      loading: 'Laden...',
-      error: 'Fehler',
-      success: 'Erfolg',
-      cancel: 'Abbrechen',
-      confirm: 'Bestätigen',
-    },
-    auth: {
-      welcome: 'Willkommen',
-      createWallet: 'Wallet erstellen',
-      importWallet: 'Wallet importieren',
-    },
-    wallet: {
-      myWallet: 'Mein Wallet',
-      balance: 'Guthaben',
-      send: 'Senden',
-      receive: 'Empfangen',
-    },
-    p2p: {
-      p2pTrading: 'P2P-Handel',
-      buy: 'Kaufen',
-      sell: 'Verkaufen',
-    },
+    'app.name': 'BlackPayments Wallet',
+    'app.tagline': 'Sicheres Multi-Chain USDT Wallet',
+    'nav.wallet': 'Wallet',
+    'nav.send': 'Senden',
+    'nav.receive': 'Empfangen',
+    'nav.swap': 'Tauschen',
+    'nav.history': 'Verlauf',
+    'nav.settings': 'Einstellungen',
+    'wallet.balance': 'Guthaben',
+    'wallet.usdt': 'USDT',
+    'wallet.native': 'Nativ',
+    'wallet.send': 'Senden',
+    'wallet.receive': 'Empfangen',
+    'wallet.swap': 'Tauschen',
+    'wallet.history': 'Verlauf',
+    'wallet.settings': 'Einstellungen',
+    'common.loading': 'Laden...',
+    'common.error': 'Fehler',
+    'common.success': 'Erfolg',
+    'common.cancel': 'Abbrechen',
+    'common.confirm': 'Bestätigen',
+    'common.save': 'Speichern',
+    'common.delete': 'Löschen',
+    'common.edit': 'Bearbeiten',
+    'common.close': 'Schließen',
+    'common.back': 'Zurück',
+    'common.next': 'Weiter',
+    'common.submit': 'Absenden',
+    'common.retry': 'Wiederholen',
+    'auth.login': 'Anmelden',
+    'auth.logout': 'Abmelden',
+    'auth.signup': 'Registrieren',
+    'auth.email': 'E-Mail',
+    'auth.password': 'Passwort',
+    'auth.confirmPassword': 'Passwort bestätigen',
+    'auth.forgotPassword': 'Passwort vergessen?',
+    'auth.resetPassword': 'Passwort zurücksetzen',
+    'auth.noAccount': 'Noch kein Konto?',
+    'auth.hasAccount': 'Bereits ein Konto?',
+    'settings.language': 'Sprache',
+    'settings.theme': 'Design',
+    'settings.security': 'Sicherheit',
+    'settings.notifications': 'Benachrichtigungen',
+    'settings.about': 'Über',
+    'settings.version': 'Version',
   },
-  pt: {
-    // Portuguese
-    common: {
-      loading: 'Carregando...',
-      error: 'Erro',
-      success: 'Sucesso',
-      cancel: 'Cancelar',
-      confirm: 'Confirmar',
-    },
-    auth: {
-      welcome: 'Bem-vindo',
-      createWallet: 'Criar Carteira',
-      importWallet: 'Importar Carteira',
-    },
-    wallet: {
-      myWallet: 'Minha Carteira',
-      balance: 'Saldo',
-      send: 'Enviar',
-      receive: 'Receber',
-    },
-    p2p: {
-      p2pTrading: 'Negociação P2P',
-      buy: 'Comprar',
-      sell: 'Vender',
-    },
-  },
-  ru: {
-    // Russian
-    common: {
-      loading: 'Загрузка...',
-      error: 'Ошибка',
-      success: 'Успех',
-      cancel: 'Отмена',
-      confirm: 'Подтвердить',
-    },
-    auth: {
-      welcome: 'Добро пожаловать',
-      createWallet: 'Создать кошелек',
-      importWallet: 'Импортировать кошелек',
-    },
-    wallet: {
-      myWallet: 'Мой кошелек',
-      balance: 'Баланс',
-      send: 'Отправить',
-      receive: 'Получить',
-    },
-    p2p: {
-      p2pTrading: 'P2P торговля',
-      buy: 'Купить',
-      sell: 'Продать',
-    },
+  zh: {
+    'app.name': 'BlackPayments 钱包',
+    'app.tagline': '安全多链 USDT 钱包',
+    'nav.wallet': '钱包',
+    'nav.send': '发送',
+    'nav.receive': '接收',
+    'nav.swap': '兑换',
+    'nav.history': '历史',
+    'nav.settings': '设置',
+    'wallet.balance': '余额',
+    'wallet.usdt': 'USDT',
+    'wallet.native': '原生',
+    'wallet.send': '发送',
+    'wallet.receive': '接收',
+    'wallet.swap': '兑换',
+    'wallet.history': '历史',
+    'wallet.settings': '设置',
+    'common.loading': '加载中...',
+    'common.error': '错误',
+    'common.success': '成功',
+    'common.cancel': '取消',
+    'common.confirm': '确认',
+    'common.save': '保存',
+    'common.delete': '删除',
+    'common.edit': '编辑',
+    'common.close': '关闭',
+    'common.back': '返回',
+    'common.next': '下一步',
+    'common.submit': '提交',
+    'common.retry': '重试',
+    'auth.login': '登录',
+    'auth.logout': '退出',
+    'auth.signup': '注册',
+    'auth.email': '邮箱',
+    'auth.password': '密码',
+    'auth.confirmPassword': '确认密码',
+    'auth.forgotPassword': '忘记密码?',
+    'auth.resetPassword': '重置密码',
+    'auth.noAccount': '还没有账户?',
+    'auth.hasAccount': '已有账户?',
+    'settings.language': '语言',
+    'settings.theme': '主题',
+    'settings.security': '安全',
+    'settings.notifications': '通知',
+    'settings.about': '关于',
+    'settings.version': '版本',
   },
   ja: {
-    // Japanese
-    common: {
-      loading: '読み込み中...',
-      error: 'エラー',
-      success: '成功',
-      cancel: 'キャンセル',
-      confirm: '確認',
-    },
-    auth: {
-      welcome: 'ようこそ',
-      createWallet: 'ウォレットを作成',
-      importWallet: 'ウォレットをインポート',
-    },
-    wallet: {
-      myWallet: 'マイウォレット',
-      balance: '残高',
-      send: '送金',
-      receive: '入金',
-    },
-    p2p: {
-      p2pTrading: 'P2P取引',
-      buy: '購入',
-      sell: '売却',
-    },
+    'app.name': 'BlackPayments Wallet',
+    'app.tagline': '安全なマルチチェーンUSDTウォレット',
+    'nav.wallet': 'ウォレット',
+    'nav.send': '送金',
+    'nav.receive': '受取',
+    'nav.swap': 'スワップ',
+    'nav.history': '履歴',
+    'nav.settings': '設定',
+    'wallet.balance': '残高',
+    'wallet.usdt': 'USDT',
+    'wallet.native': 'ネイティブ',
+    'wallet.send': '送金',
+    'wallet.receive': '受取',
+    'wallet.swap': 'スワップ',
+    'wallet.history': '履歴',
+    'wallet.settings': '設定',
+    'common.loading': '読み込み中...',
+    'common.error': 'エラー',
+    'common.success': '成功',
+    'common.cancel': 'キャンセル',
+    'common.confirm': '確認',
+    'common.save': '保存',
+    'common.delete': '削除',
+    'common.edit': '編集',
+    'common.close': '閉じる',
+    'common.back': '戻る',
+    'common.next': '次へ',
+    'common.submit': '送信',
+    'common.retry': '再試行',
+    'auth.login': 'ログイン',
+    'auth.logout': 'ログアウト',
+    'auth.signup': '新規登録',
+    'auth.email': 'メール',
+    'auth.password': 'パスワード',
+    'auth.confirmPassword': 'パスワード確認',
+    'auth.forgotPassword': 'パスワードをお忘れですか?',
+    'auth.resetPassword': 'パスワードリセット',
+    'auth.noAccount': 'アカウントをお持ちでないですか?',
+    'auth.hasAccount': '既にアカウントをお持ちですか?',
+    'settings.language': '言語',
+    'settings.theme': 'テーマ',
+    'settings.security': 'セキュリティ',
+    'settings.notifications': '通知',
+    'settings.about': 'について',
+    'settings.version': 'バージョン',
   },
   ko: {
-    // Korean
-    common: {
-      loading: '로딩 중...',
-      error: '오류',
-      success: '성공',
-      cancel: '취소',
-      confirm: '확인',
-    },
-    auth: {
-      welcome: '환영합니다',
-      createWallet: '지갑 만들기',
-      importWallet: '지갑 가져오기',
-    },
-    wallet: {
-      myWallet: '내 지갑',
-      balance: '잔액',
-      send: '보내기',
-      receive: '받기',
-    },
-    p2p: {
-      p2pTrading: 'P2P 거래',
-      buy: '구매',
-      sell: '판매',
-    },
+    'app.name': 'BlackPayments Wallet',
+    'app.tagline': '안전한 멀티체인 USDT 지갑',
+    'nav.wallet': '지갑',
+    'nav.send': '보내기',
+    'nav.receive': '받기',
+    'nav.swap': '스왑',
+    'nav.history': '기록',
+    'nav.settings': '설정',
+    'wallet.balance': '잔액',
+    'wallet.usdt': 'USDT',
+    'wallet.native': '네이티브',
+    'wallet.send': '보내기',
+    'wallet.receive': '받기',
+    'wallet.swap': '스왑',
+    'wallet.history': '기록',
+    'wallet.settings': '설정',
+    'common.loading': '로딩 중...',
+    'common.error': '오류',
+    'common.success': '성공',
+    'common.cancel': '취소',
+    'common.confirm': '확인',
+    'common.save': '저장',
+    'common.delete': '삭제',
+    'common.edit': '편집',
+    'common.close': '닫기',
+    'common.back': '뒤로',
+    'common.next': '다음',
+    'common.submit': '제출',
+    'common.retry': '재시도',
+    'auth.login': '로그인',
+    'auth.logout': '로그아웃',
+    'auth.signup': '가입',
+    'auth.email': '이메일',
+    'auth.password': '비밀번호',
+    'auth.confirmPassword': '비밀번호 확인',
+    'auth.forgotPassword': '비밀번호를 잊으셨나요?',
+    'auth.resetPassword': '비밀번호 재설정',
+    'auth.noAccount': '계정이 없으신가요?',
+    'auth.hasAccount': '이미 계정이 있으신가요?',
+    'settings.language': '언어',
+    'settings.theme': '테마',
+    'settings.security': '보안',
+    'settings.notifications': '알림',
+    'settings.about': '정보',
+    'settings.version': '버전',
   },
-  vi: {
-    // Vietnamese
-    common: {
-      loading: 'Đang tải...',
-      error: 'Lỗi',
-      success: 'Thành công',
-      cancel: 'Hủy',
-      confirm: 'Xác nhận',
-    },
-    auth: {
-      welcome: 'Chào mừng',
-      createWallet: 'Tạo ví',
-      importWallet: 'Nhập ví',
-    },
-    wallet: {
-      myWallet: 'Ví của tôi',
-      balance: 'Số dư',
-      send: 'Gửi',
-      receive: 'Nhận',
-    },
-    p2p: {
-      p2pTrading: 'Giao dịch P2P',
-      buy: 'Mua',
-      sell: 'Bán',
-    },
+  pt: {
+    'app.name': 'BlackPayments Wallet',
+    'app.tagline': 'Carteira USDT Multi-Chain Segura',
+    'nav.wallet': 'Carteira',
+    'nav.send': 'Enviar',
+    'nav.receive': 'Receber',
+    'nav.swap': 'Trocar',
+    'nav.history': 'Histórico',
+    'nav.settings': 'Configurações',
+    'wallet.balance': 'Saldo',
+    'wallet.usdt': 'USDT',
+    'wallet.native': 'Nativo',
+    'wallet.send': 'Enviar',
+    'wallet.receive': 'Receber',
+    'wallet.swap': 'Trocar',
+    'wallet.history': 'Histórico',
+    'wallet.settings': 'Configurações',
+    'common.loading': 'Carregando...',
+    'common.error': 'Erro',
+    'common.success': 'Sucesso',
+    'common.cancel': 'Cancelar',
+    'common.confirm': 'Confirmar',
+    'common.save': 'Salvar',
+    'common.delete': 'Excluir',
+    'common.edit': 'Editar',
+    'common.close': 'Fechar',
+    'common.back': 'Voltar',
+    'common.next': 'Próximo',
+    'common.submit': 'Enviar',
+    'common.retry': 'Tentar novamente',
+    'auth.login': 'Entrar',
+    'auth.logout': 'Sair',
+    'auth.signup': 'Cadastrar',
+    'auth.email': 'E-mail',
+    'auth.password': 'Senha',
+    'auth.confirmPassword': 'Confirmar Senha',
+    'auth.forgotPassword': 'Esqueceu a senha?',
+    'auth.resetPassword': 'Redefinir Senha',
+    'auth.noAccount': 'Não tem conta?',
+    'auth.hasAccount': 'Já tem conta?',
+    'settings.language': 'Idioma',
+    'settings.theme': 'Tema',
+    'settings.security': 'Segurança',
+    'settings.notifications': 'Notificações',
+    'settings.about': 'Sobre',
+    'settings.version': 'Versão',
   },
-  id: {
-    // Indonesian
-    common: {
-      loading: 'Memuat...',
-      error: 'Kesalahan',
-      success: 'Berhasil',
-      cancel: 'Batal',
-      confirm: 'Konfirmasi',
-    },
-    auth: {
-      welcome: 'Selamat datang',
-      createWallet: 'Buat Dompet',
-      importWallet: 'Impor Dompet',
-    },
-    wallet: {
-      myWallet: 'Dompet Saya',
-      balance: 'Saldo',
-      send: 'Kirim',
-      receive: 'Terima',
-    },
-    p2p: {
-      p2pTrading: 'Trading P2P',
-      buy: 'Beli',
-      sell: 'Jual',
-    },
+  ru: {
+    'app.name': 'BlackPayments Wallet',
+    'app.tagline': 'Безопасный мультичейн USDT кошелек',
+    'nav.wallet': 'Кошелек',
+    'nav.send': 'Отправить',
+    'nav.receive': 'Получить',
+    'nav.swap': 'Обмен',
+    'nav.history': 'История',
+    'nav.settings': 'Настройки',
+    'wallet.balance': 'Баланс',
+    'wallet.usdt': 'USDT',
+    'wallet.native': 'Нативный',
+    'wallet.send': 'Отправить',
+    'wallet.receive': 'Получить',
+    'wallet.swap': 'Обмен',
+    'wallet.history': 'История',
+    'wallet.settings': 'Настройки',
+    'common.loading': 'Загрузка...',
+    'common.error': 'Ошибка',
+    'common.success': 'Успех',
+    'common.cancel': 'Отмена',
+    'common.confirm': 'Подтвердить',
+    'common.save': 'Сохранить',
+    'common.delete': 'Удалить',
+    'common.edit': 'Изменить',
+    'common.close': 'Закрыть',
+    'common.back': 'Назад',
+    'common.next': 'Далее',
+    'common.submit': 'Отправить',
+    'common.retry': 'Повторить',
+    'auth.login': 'Войти',
+    'auth.logout': 'Выйти',
+    'auth.signup': 'Регистрация',
+    'auth.email': 'Email',
+    'auth.password': 'Пароль',
+    'auth.confirmPassword': 'Подтвердить пароль',
+    'auth.forgotPassword': 'Забыли пароль?',
+    'auth.resetPassword': 'Сброс пароля',
+    'auth.noAccount': 'Нет аккаунта?',
+    'auth.hasAccount': 'Уже есть аккаунт?',
+    'settings.language': 'Язык',
+    'settings.theme': 'Тема',
+    'settings.security': 'Безопасность',
+    'settings.notifications': 'Уведомления',
+    'settings.about': 'О нас',
+    'settings.version': 'Версия',
   },
-  th: {
-    // Thai
-    common: {
-      loading: 'กำลังโหลด...',
-      error: 'ข้อผิดพลาด',
-      success: 'สำเร็จ',
-      cancel: 'ยกเลิก',
-      confirm: 'ยืนยัน',
-    },
-    auth: {
-      welcome: 'ยินดีต้อนรับ',
-      createWallet: 'สร้างกระเป๋า',
-      importWallet: 'นำเข้ากระเป๋า',
-    },
-    wallet: {
-      myWallet: 'กระเป๋าของฉัน',
-      balance: 'ยอดเงิน',
-      send: 'ส่ง',
-      receive: 'รับ',
-    },
-    p2p: {
-      p2pTrading: 'เทรด P2P',
-      buy: 'ซื้อ',
-      sell: 'ขาย',
-    },
-  },
-  sw: {
-    // Swahili (for African markets)
-    common: {
-      loading: 'Inapakia...',
-      error: 'Hitilafu',
-      success: 'Mafanikio',
-      cancel: 'Ghairi',
-      confirm: 'Thibitisha',
-    },
-    auth: {
-      welcome: 'Karibu',
-      createWallet: 'Unda Pochi',
-      importWallet: 'Ingiza Pochi',
-    },
-    wallet: {
-      myWallet: 'Pochi Yangu',
-      balance: 'Salio',
-      send: 'Tuma',
-      receive: 'Pokea',
-    },
-    p2p: {
-      p2pTrading: 'Biashara P2P',
-      buy: 'Nunua',
-      sell: 'Uza',
-    },
-  },
-  tl: {
-    // Tagalog/Filipino
-    common: {
-      loading: 'Naglo-load...',
-      error: 'Error',
-      success: 'Tagumpay',
-      cancel: 'Kanselahin',
-      confirm: 'Kumpirmahin',
-    },
-    auth: {
-      welcome: 'Maligayang pagdating',
-      createWallet: 'Gumawa ng Wallet',
-      importWallet: 'Mag-import ng Wallet',
-    },
-    wallet: {
-      myWallet: 'Aking Wallet',
-      balance: 'Balanse',
-      send: 'Magpadala',
-      receive: 'Tumanggap',
-    },
-    p2p: {
-      p2pTrading: 'P2P Trading',
-      buy: 'Bumili',
-      sell: 'Magbenta',
-    },
+  ar: {
+    'app.name': 'BlackPayments Wallet',
+    'app.tagline': 'محفظة USDT متعددة السلاسل الآمنة',
+    'nav.wallet': 'المحفظة',
+    'nav.send': 'إرسال',
+    'nav.receive': 'استلام',
+    'nav.swap': 'تبديل',
+    'nav.history': 'السجل',
+    'nav.settings': 'الإعدادات',
+    'wallet.balance': 'الرصيد',
+    'wallet.usdt': 'USDT',
+    'wallet.native': 'أصلي',
+    'wallet.send': 'إرسال',
+    'wallet.receive': 'استلام',
+    'wallet.swap': 'تبديل',
+    'wallet.history': 'السجل',
+    'wallet.settings': 'الإعدادات',
+    'common.loading': 'جاري التحميل...',
+    'common.error': 'خطأ',
+    'common.success': 'نجاح',
+    'common.cancel': 'إلغاء',
+    'common.confirm': 'تأكيد',
+    'common.save': 'حفظ',
+    'common.delete': 'حذف',
+    'common.edit': 'تعديل',
+    'common.close': 'إغلاق',
+    'common.back': 'رجوع',
+    'common.next': 'التالي',
+    'common.submit': 'إرسال',
+    'common.retry': 'إعادة المحاولة',
+    'auth.login': 'تسجيل الدخول',
+    'auth.logout': 'تسجيل الخروج',
+    'auth.signup': 'إنشاء حساب',
+    'auth.email': 'البريد الإلكتروني',
+    'auth.password': 'كلمة المرور',
+    'auth.confirmPassword': 'تأكيد كلمة المرور',
+    'auth.forgotPassword': 'نسيت كلمة المرور؟',
+    'auth.resetPassword': 'إعادة تعيين كلمة المرور',
+    'auth.noAccount': 'ليس لديك حساب؟',
+    'auth.hasAccount': 'لديك حساب بالفعل؟',
+    'settings.language': 'اللغة',
+    'settings.theme': 'المظهر',
+    'settings.security': 'الأمان',
+    'settings.notifications': 'الإشعارات',
+    'settings.about': 'حول',
+    'settings.version': 'الإصدار',
   },
 };
 
-// Fallback to English for any missing translations
-function getNestedValue(obj: Translation, path: string): string | undefined {
-  const keys = path.split('.');
-  let current: Translation | string = obj;
-  
-  for (const key of keys) {
-    if (typeof current === 'object' && key in current) {
-      current = current[key];
-    } else {
-      return undefined;
-    }
-  }
-  
-  return typeof current === 'string' ? current : undefined;
+export function getTranslation(locale: Locale, key: string): string {
+  return translations[locale]?.[key] || translations[defaultLocale]?.[key] || key;
 }
 
-/**
- * i18n Manager
- */
-export class I18nManager {
-  private static instance: I18nManager;
-  private currentLanguage: Language = 'en';
-  private listeners: (() => void)[] = [];
-
-  private constructor() {
-    // Try to get saved language or detect from browser
-    this.detectLanguage();
-  }
-
-  static getInstance(): I18nManager {
-    if (!I18nManager.instance) {
-      I18nManager.instance = new I18nManager();
+export function detectLocale(): Locale {
+  if (typeof window !== 'undefined') {
+    const browserLang = navigator.language.split('-')[0] as Locale;
+    if (locales.includes(browserLang)) {
+      return browserLang;
     }
-    return I18nManager.instance;
   }
-
-  /**
-   * Detect user's preferred language
-   */
-  private detectLanguage(): void {
-    // Try localStorage first
-    const saved = localStorage.getItem('bp_language') as Language;
-    if (saved && translations[saved]) {
-      this.currentLanguage = saved;
-      return;
-    }
-
-    // Try browser language
-    const browserLang = navigator.language.split('-')[0] as Language;
-    if (translations[browserLang]) {
-      this.currentLanguage = browserLang;
-      return;
-    }
-
-    // Default to English
-    this.currentLanguage = 'en';
-  }
-
-  /**
-   * Set language
-   */
-  setLanguage(language: Language): void {
-    if (!translations[language]) {
-      console.warn(`Language ${language} not supported, falling back to English`);
-      language = 'en';
-    }
-
-    this.currentLanguage = language;
-    localStorage.setItem('bp_language', language);
-    
-    // Update document direction for RTL languages
-    const rtlLanguages: Language[] = ['ar', 'fa', 'ur', 'he'];
-    document.documentElement.dir = rtlLanguages.includes(language) ? 'rtl' : 'ltr';
-    document.documentElement.lang = language;
-
-    this.notifyListeners();
-  }
-
-  /**
-   * Get current language
-   */
-  getLanguage(): Language {
-    return this.currentLanguage;
-  }
-
-  /**
-   * Translate a key
-   */
-  t(key: string, params?: Record<string, string | number>): string {
-    // Try current language first
-    let translation = getNestedValue(translations[this.currentLanguage] as Translation, key);
-    
-    // Fallback to English
-    if (!translation) {
-      translation = getNestedValue(translations.en, key);
-    }
-
-    // Return key if no translation found
-    if (!translation) {
-      console.warn(`Missing translation: ${key}`);
-      return key;
-    }
-
-    // Replace parameters
-    if (params) {
-      Object.entries(params).forEach(([paramKey, value]) => {
-        translation = translation!.replace(new RegExp(`{{${paramKey}}}`, 'g'), String(value));
-      });
-    }
-
-    return translation;
-  }
-
-  /**
-   * Get all available languages
-   */
-  getAvailableLanguages(): { code: Language; name: string; nativeName: string }[] {
-    return [
-      { code: 'en', name: 'English', nativeName: 'English' },
-      { code: 'zh', name: 'Chinese', nativeName: '中文' },
-      { code: 'es', name: 'Spanish', nativeName: 'Español' },
-      { code: 'hi', name: 'Hindi', nativeName: 'हिन्दी' },
-      { code: 'ar', name: 'Arabic', nativeName: 'العربية' },
-      { code: 'pt', name: 'Portuguese', nativeName: 'Português' },
-      { code: 'ru', name: 'Russian', nativeName: 'Русский' },
-      { code: 'ja', name: 'Japanese', nativeName: '日本語' },
-      { code: 'ko', name: 'Korean', nativeName: '한국어' },
-      { code: 'tr', name: 'Turkish', nativeName: 'Türkçe' },
-      { code: 'fr', name: 'French', nativeName: 'Français' },
-      { code: 'de', name: 'German', nativeName: 'Deutsch' },
-      { code: 'vi', name: 'Vietnamese', nativeName: 'Tiếng Việt' },
-      { code: 'th', name: 'Thai', nativeName: 'ไทย' },
-      { code: 'id', name: 'Indonesian', nativeName: 'Bahasa Indonesia' },
-      { code: 'ms', name: 'Malay', nativeName: 'Bahasa Melayu' },
-      { code: 'fa', name: 'Persian', nativeName: 'فارسی' },
-      { code: 'ur', name: 'Urdu', nativeName: 'اردو' },
-      { code: 'sw', name: 'Swahili', nativeName: 'Kiswahili' },
-      { code: 'tl', name: 'Filipino', nativeName: 'Filipino' },
-    ];
-  }
-
-  /**
-   * Check if current language is RTL
-   */
-  isRTL(): boolean {
-    const rtlLanguages: Language[] = ['ar', 'fa', 'ur', 'he'];
-    return rtlLanguages.includes(this.currentLanguage);
-  }
-
-  /**
-   * Add listener for language changes
-   */
-  addListener(listener: () => void): void {
-    this.listeners.push(listener);
-  }
-
-  /**
-   * Remove listener
-   */
-  removeListener(listener: () => void): void {
-    this.listeners = this.listeners.filter(l => l !== listener);
-  }
-
-  /**
-   * Notify all listeners
-   */
-  private notifyListeners(): void {
-    this.listeners.forEach(listener => listener());
-  }
-}
-
-export const i18n = I18nManager.getInstance();
-
-// Convenience function
-export function t(key: string, params?: Record<string, string | number>): string {
-  return i18n.t(key, params);
+  return defaultLocale;
 }

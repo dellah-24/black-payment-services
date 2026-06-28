@@ -3,28 +3,16 @@ import type { NextRequest } from 'next/server';
 import { checkRateLimit } from '@/lib/rateLimiterSupabase';
 import { logger } from '@/lib/logger';
 import { generateCSRFToken, validateCSRFToken, cleanupCSRFTokens } from '@/lib/csrf';
+import { isSupabaseConfigured } from '@/lib/supabaseClient';
 
-// Rate limiting constants (legacy fallback only)
+// Rate limiting constants
 const WINDOW_MS = 15 * 60 * 1000; // 15 minutes
 const MAX_REQUESTS = 100; // Max requests per window
-
-// Legacy in-memory rate limiting (fallback only - Supabase is primary)
-const legacyRateLimit = new Map<string, { count: number; startTime: number }>();
-
-
-
-function cleanUpLegacyRateLimit(now: number): void {
-  for (const [key, value] of legacyRateLimit.entries()) {
-    if (now - value.startTime > WINDOW_MS) {
-      legacyRateLimit.delete(key);
-    }
-  }
-}
 
 export async function middleware(request: NextRequest) {
   try {
     // Get client IP
-    const ip = request.ip ?? request.headers.get('x-forwarded-for') ?? '127.0.0.1';
+    const ip = request.ip ?? request.headers.get('x-forwarded-for') ?? '';
     const now = Date.now();
 
     // Get the pathname
@@ -49,36 +37,23 @@ export async function middleware(request: NextRequest) {
        }
      }
 
-    const isLocalhost = ip === '127.0.0.1' || ip === '::1';
-    if (!isLocalhost || process.env.NODE_ENV !== 'development') {
-      // Check rate limit using Supabase (persistent across serverless instances)
-      const rateLimit = await checkRateLimit(ip);
-      if (!rateLimit.allowed) {
-        return NextResponse.json(
-          {
-            error: 'Too many requests. Please try again later.',
-            retryAfter: Math.ceil((rateLimit.resetAt - Date.now()) / 1000)
-          },
-          { status: 429 }
-        );
-      }
-    }
-
-    // Legacy fallback: also check in-memory for backward compatibility during migration
-    // This provides double-layer protection in development mode
-    if (process.env.NODE_ENV === 'development') {
-      cleanUpLegacyRateLimit(now);
-      const legacyRecord = legacyRateLimit.get(ip);
-      if (legacyRecord && now - legacyRecord.startTime < WINDOW_MS) {
-        if (legacyRecord.count >= MAX_REQUESTS) {
+    // Apply rate limiting in production
+    if (isSupabaseConfigured()) {
+      try {
+        // Check rate limit using Supabase (persistent across serverless instances)
+        const rateLimit = await checkRateLimit(ip);
+        if (!rateLimit.allowed) {
           return NextResponse.json(
-            { error: 'Rate limit exceeded (development mode)' },
+            {
+              error: 'Too many requests. Please try again later.',
+              retryAfter: Math.ceil((rateLimit.resetAt - Date.now()) / 1000)
+            },
             { status: 429 }
           );
         }
-        legacyRecord.count++;
-      } else {
-        legacyRateLimit.set(ip, { count: 1, startTime: now });
+      } catch (rateLimitError) {
+        // Log but don't block the request if rate limiting fails
+        logger.error('Rate limit check failed in middleware', rateLimitError as Error, { ip });
       }
     }
 

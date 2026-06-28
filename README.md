@@ -1,216 +1,244 @@
 # BlackPayments Wallet
 
-A multi-chain USDT wallet built with WDK (Wallet Development Kit) for facilitating USDT payments and withdrawals.
+Production-ready multi-chain cryptocurrency wallet supporting USDT on EVM chains and TRON.
 
 ## Features
 
-- **Multi-chain USDT Support**: Ethereum, Polygon, BSC (Binance Smart Chain), Arbitrum, Optimism, Avalanche, Celo, Linea, Base
-- **Balance Checking**: Check native and USDT balances across all supported chains
-- **Send USDT Transactions**: Send USDT to any EVM-compatible address
-- **Receive USDT Deposits**: Get your wallet address to receive USDT deposits
-- **Fiat On/Off-Ramp**: Integration with MoonPay for buying and selling USDT with fiat currency
-- **Gasless Transactions**: Support for ERC-4337 account abstraction (optional)
+- **Multi-Chain Support**: Ethereum, BSC, Polygon, Arbitrum, Optimism, Base, TRON
+- **USDT Transfers**: Send and receive USDT across all supported chains
+- **Custodial & Non-Custodial**: Flexible custody options with HSM-backed security
+- **P2P Trading**: Peer-to-peer cryptocurrency exchange
+- **Payment Requests**: Create and manage payment requests
+- **KYC Integration**: Built-in Know Your Customer verification
+- **Rate Limiting**: Supabase-backed rate limiting for API protection
+- **Security**: AES-GCM encryption, CSRF protection, HSM custody
 
-## Installation
+## Tech Stack
+
+- **Frontend**: Next.js 14, React 18, TypeScript, Tailwind CSS
+- **Backend**: Next.js API Routes, Supabase
+- **Blockchain**: ethers.js, TronWeb, Alchemy SDK
+- **State Management**: Zustand, React Query
+- **Security**: HSM (Hardware Security Module), AES-GCM encryption
+- **Monitoring**: Sentry, Datadog
+
+## Production Deployment
+
+### Prerequisites
+
+- Node.js 18+
+- Docker & Docker Compose
+- Supabase account
+- Alchemy API key
+- HSM service (Hardware Security Module)
+- Redis/Upstash for rate limiting
+
+### Environment Setup
+
+1. Clone the repository:
+```bash
+git clone https://github.com/blackpayments/wallet.git
+cd wallet
+```
+
+2. Copy environment file:
+```bash
+cp .env.example .env.local
+```
+
+3. Configure all required environment variables in `.env.local`
+
+### Docker Deployment (Recommended)
 
 ```bash
-npm install blackpayments-wallet
+# Build and start all services
+docker-compose up -d
+
+# View logs
+docker-compose logs -f
+
+# Stop services
+docker-compose down
 ```
 
-Or if you want to use the latest from source:
+### Manual Deployment
 
 ```bash
-npm install @tetherto/wdk
-npm install @tetherto/wdk-wallet-evm
-npm install @tetherto/wdk-wallet-evm-erc-4337
-npm install @tetherto/wdk-protocol-fiat-moonpay
+# Install dependencies
+npm ci --only=production
+
+# Build application
+npm run build
+
+# Start production server
+npm start
 ```
 
-## Quick Start
+### Cloudflare Workers Deployment
 
-### Node.js / TypeScript
+```bash
+# Install Wrangler CLI
+npm install -g wrangler
 
-```typescript
-import { createWallet, WalletChain } from 'blackpayments-wallet';
+# Login to Cloudflare
+wrangler login
 
-async function main() {
-  // Create a new wallet
-  const wallet = await createWallet([
-    WalletChain.ETHEREUM,
-    WalletChain.POLYGON,
-    WalletChain.BSC,
-  ]);
+# Set secrets
+wrangler secret put SUPABASE_URL
+wrangler secret put SUPABASE_ANON_KEY
+wrangler secret put HSM_API_URL
+wrangler secret put HSM_API_KEY
+wrangler secret put JWT_SECRET
+wrangler secret put WALLET_ENCRYPTION_KEY
 
-  // Get wallet addresses
-  const addresses = wallet.getAllAddresses();
-  console.log('Ethereum:', addresses[WalletChain.ETHEREUM]);
-  console.log('Polygon:', addresses[WalletChain.POLYGON]);
-  console.log('BSC:', addresses[WalletChain.BSC]);
-
-  // Check USDT balance
-  const balance = await wallet.getBalance(WalletChain.ETHEREUM);
-  console.log('USDT Balance:', balance.formattedUSDTBalance);
-  console.log('Native Balance:', balance.formattedNativeBalance);
-
-  // Send USDT
-  const result = await wallet.sendUSDT({
-    to: '0x742d35Cc6634C0532925a3b8D4C9db96C4b4d8b6',
-    amount: 10_000_000n, // 10 USDT (6 decimals)
-    chain: WalletChain.ETHEREUM,
-  });
-  console.log('Transaction Hash:', result.hash);
-
-  // Don't forget to dispose when done
-  wallet.dispose();
-}
-
-main();
+# Deploy
+wrangler deploy
 ```
 
-### Import Existing Wallet
+## Environment Variables
 
-```typescript
-import { createWalletWithExistingSeed, WalletChain } from 'blackpayments-wallet';
+See [`.env.example`](.env.example) for all required production environment variables.
 
-const wallet = await createWalletWithExistingSeed(
-  'your twelve word seed phrase here',
-  [WalletChain.ETHEREUM, WalletChain.POLYGON]
-);
+### Critical Production Variables
+
+- `NODE_ENV=production`
+- `SUPABASE_URL` - Your Supabase project URL
+- `SUPABASE_ANON_KEY` - Supabase anonymous key
+- `HSM_API_URL` - HSM service URL (REQUIRED)
+- `HSM_API_KEY` - HSM API key (REQUIRED)
+- `JWT_SECRET` - JWT signing secret (min 32 chars)
+- `WALLET_ENCRYPTION_KEY` - Wallet encryption key (min 32 chars)
+- `ALCHEMY_API_KEY` - Alchemy API key for blockchain RPC
+
+## Security
+
+### Production Security Checklist
+
+- [ ] All environment variables are configured
+- [ ] HSM is properly configured and accessible
+- [ ] Supabase RLS policies are enabled
+- [ ] Rate limiting is active
+- [ ] CSRF protection is enabled
+- [ ] HTTPS is enforced
+- [ ] Security headers are configured
+- [ ] Error tracking (Sentry) is configured
+- [ ] Backup system is configured
+- [ ] Monitoring and alerting are set up
+
+### Security Features
+
+- **HSM Custody**: All custodial keys stored in Hardware Security Module
+- **AES-GCM Encryption**: Wallet data encrypted with AES-GCM
+- **CSRF Protection**: Token-based CSRF protection on all forms
+- **Rate Limiting**: Supabase-backed rate limiting
+- **Input Validation**: Zod schema validation on all inputs
+- **SQL Injection Prevention**: Parameterized queries via Supabase
+- **XSS Protection**: Content Security Policy headers
+
+## API Endpoints
+
+### Public Endpoints
+- `GET /api/health` - Health check
+- `GET /api/exchange` - Exchange rates
+- `GET /api/exchange/courses` - Exchange courses
+- `POST /api/csrf` - CSRF token
+
+### Authenticated Endpoints
+- `GET /api/custodial/health` - Custodial health check
+- `GET /api/custodial/addresses` - Get custodial addresses
+- `GET /api/custodial/balances` - Get balances
+- `GET /api/custodial/history` - Transaction history
+- `POST /api/custodial/withdraw` - Initiate withdrawal
+- `POST /api/payments/requests` - Create payment request
+- `GET /api/payments/[id]` - Get payment details
+- `GET /api/payments/[id]/status` - Get payment status
+- `POST /api/merchant/api-keys` - Create API key
+- `DELETE /api/merchant/api-keys/[id]` - Delete API key
+- `POST /api/payments/webhooks` - Register webhook
+- `GET /api/payments/webhooks/[id]` - Get webhook status
+
+## Development
+
+```bash
+# Install dependencies
+npm install
+
+# Run development server
+npm run dev
+
+# Run tests
+npm test
+
+# Run E2E tests
+npm run test:e2e
+
+# Type check
+npm run type-check
+
+# Lint
+npm run lint
 ```
 
-### React Native
+## Testing
 
-```typescript
-import { useWallet, useBalance, useTransfer } from 'blackpayments-wallet/react';
-import { WalletChain } from 'blackpayments-wallet';
+```bash
+# Unit tests
+npm test
 
-function MyWalletScreen() {
-  const { wallet, createNewWallet, addresses } = useWallet([
-    WalletChain.ETHEREUM,
-    WalletChain.POLYGON,
-  ]);
-  
-  const { balance, refetch } = useBalance(wallet, WalletChain.ETHEREUM);
-  const { sendUSDT } = useTransfer(wallet);
+# E2E tests
+npm run test:e2e
 
-  const handleCreate = async () => {
-    await createNewWallet([WalletChain.ETHEREUM]);
-  };
-
-  return (
-    <View>
-      <Text>Address: {addresses[WalletChain.ETHEREUM]}</Text>
-      <Text>Balance: {balance?.formattedUSDTBalance}</Text>
-    </View>
-  );
-}
+# Test coverage
+npm run test:coverage
 ```
 
-## Supported Chains
+## Database
 
-| Chain | Chain ID | USDT Address |
-|-------|----------|--------------|
-| Ethereum | 1 | 0xdAC17F958D2ee523a2206206994597C13D831ec7 |
-| Polygon | 137 | 0xc2132D05D31c914a87C6611C10748AEb04B58e8F |
-| BSC | 56 | 0x55d398326f99059fF775485246999027B3197955 |
-| Arbitrum | 42161 | 0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9 |
-| Optimism | 10 | 0x94b008aA5d2057d2D4C21e4D8dDAc6E9D48e6b7F |
-| Avalanche | 43114 | 0x9702230A8Ea53601f5cD2dc4fD0C8c5a4d8C9e8A |
+### Supabase Setup
 
-## API Reference
-
-### Core Functions
-
-#### `createWallet(chains, options)`
-Creates a new wallet with randomly generated seed phrase.
-
-- `chains`: Array of chains to support (default: [ETHEREUM, POLYGON, BSC])
-- `options`: Configuration options
-  - `isGasless`: Enable ERC-4337 gasless transactions
-  - `isTestnet`: Use testnet networks
-  - `customRpcUrls`: Custom RPC URLs per chain
-
-#### `createWalletWithExistingSeed(seedPhrase, chains, options)`
-Import an existing wallet using a seed phrase.
-
-### Wallet Methods
-
-#### `wallet.getBalance(chain)`
-Get native and USDT balance for a specific chain.
-
-#### `wallet.sendUSDT(params)`
-Send USDT to another address.
-
-- `to`: Recipient address
-- `amount`: Amount in base units (wei for USDT)
-- `chain`: Target chain
-
-#### `wallet.quoteUSDTTransfer(to, amount, chain)`
-Get fee estimate for a USDT transfer.
-
-#### `wallet.configureMoonPay(config)`
-Configure MoonPay for fiat on/off-ramp.
-
-#### `wallet.buyUSDT(params)`
-Generate a MoonPay URL to buy USDT with fiat.
-
-#### `wallet.sellUSDT(params)`
-Generate a MoonPay URL to sell USDT for fiat.
-
-## MoonPay Integration
-
-To use MoonPay for fiat on/off-ramp:
-
-1. Get API keys from [MoonPay Dashboard](https://dashboard.moonpay.com)
-2. Configure the wallet:
-
-```typescript
-wallet.configureMoonPay({
-  apiKey: 'pk_live_xxxxx',      // Your MoonPay API key
-  secretKey: 'sk_live_xxxxx',   // Your MoonPay secret key
-});
+1. Create a new Supabase project
+2. Run the schema migration:
+```bash
+supabase db push
 ```
 
-3. Generate buy/sell URLs:
-
-```typescript
-// Buy USDT
-const buyUrl = await wallet.buyUSDT({
-  cryptoAsset: 'usdt',
-  fiatCurrency: 'usd',
-  fiatAmount: 10000n, // $100.00 in cents
-  config: {
-    theme: 'dark',
-  },
-});
-
-// Open in browser
- Linking.openURL(buyUrl);
+3. Seed initial data:
+```bash
+supabase db seed
 ```
 
-## Gasless Transactions (ERC-4337)
+### Database Schema
 
-To enable gasless transactions (users don't need native tokens for gas):
+See [`src/supabase/schema.sql`](src/supabase/schema.sql) for the complete database schema.
 
-```typescript
-const wallet = await createWallet(
-  [WalletChain.ETHEREUM, WalletChain.POLYGON],
-  { isGasless: true }
-);
-```
+## Monitoring
 
-Note: Gasless transactions require:
-- A compatible ERC-4337 bundler
-- A paymaster service
+### Health Checks
 
-## Security Best Practices
+- Application: `GET /api/health`
+- Custodial Service: `GET /api/custodial/health`
 
-1. **Secure Seed Phrase**: Store the seed phrase securely. Never expose it in code or logs.
-2. **Validate Addresses**: Always validate recipient addresses before sending.
-3. **Check Balances**: Verify sufficient balance before transactions.
-4. **Test First**: Always test on testnet before mainnet.
-5. **Dispose**: Call `wallet.dispose()` when done to clear sensitive data from memory.
+### Metrics
+
+- Sentry for error tracking
+- Datadog for APM
+- Custom audit logging via `src/lib/audit.ts`
+
+## Backup
+
+Backups are configured via the backup service. See `.env.example` for backup configuration.
+
+## Compliance
+
+- KYC verification via SumSub
+- AML screening
+- Sanctions screening
+- Audit logging for all transactions
 
 ## License
 
-MIT
+Proprietary - All rights reserved
+
+## Support
+
+For support, contact support@blackpayments.com

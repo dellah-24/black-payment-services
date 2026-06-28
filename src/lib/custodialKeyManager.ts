@@ -1,5 +1,5 @@
 import { TronWeb } from 'tronweb';
-import { isLocalhostUrl, isProduction } from '@/lib/env';
+import { isProduction } from '@/lib/env';
 import { logger } from '@/lib/logger';
 import { WalletChain } from '@/wallet/types';
 import { deriveHDKey, getBIP44Path, normalizeMnemonic, validateMnemonic } from '@/lib/hdWallet';
@@ -22,7 +22,7 @@ export interface DerivedCustodialKey {
   address: string;
   privateKey?: string;
   publicKey?: string;
-  source: 'local-hd' | 'hsm' | 'http-hsm';
+  source: 'hsm' | 'http-hsm';
 }
 
 export interface SignEVMParams {
@@ -55,90 +55,12 @@ export interface HSMClient {
 }
 
 export interface CustodialKeyManager {
-  readonly source: 'local-hd' | 'hsm' | 'http-hsm';
+  readonly source: 'hsm' | 'http-hsm';
   deriveKey(params: CustodialDeriveParams): Promise<DerivedCustodialKey>;
   signEVMTransaction(params: SignEVMParams): Promise<string>;
   signTronTransaction(params: SignTronParams): Promise<string>;
   signAndBroadcastEVMTransaction(params: SignEVMParams): Promise<string>;
   signAndBroadcastTronTransaction(params: SignTronParams): Promise<string>;
-}
-
-export class LocalHDCustodialKeyManager implements CustodialKeyManager {
-  readonly source = 'local-hd' as const;
-
-  constructor(private readonly masterSeed: string) {
-    const normalized = normalizeMnemonic(masterSeed);
-    if (!validateMnemonic(normalized)) {
-      throw new Error('Invalid BIP-39 master seed');
-    }
-  }
-
-  async deriveKey(params: CustodialDeriveParams): Promise<DerivedCustodialKey> {
-    const purpose = params.purpose ?? 'deposit';
-    const accountIndex = getAccountIndex(params.accountIndex, purpose);
-    const derived = deriveHDKey(this.masterSeed, params.chain, accountIndex);
-    const path = getBIP44Path({ chain: params.chain, accountIndex, change: purposeToChange(purpose) });
-
-    return {
-      userId: params.userId,
-      chain: toWalletChain(params.chain),
-      accountIndex,
-      purpose,
-      path,
-      address: derived.address,
-      privateKey: derived.privateKey,
-      publicKey: derived.publicKey,
-      source: this.source,
-    };
-  }
-
-  async signEVMTransaction(_params: SignEVMParams): Promise<string> {
-    throw new Error('Local HD manager only signs through signAndBroadcastEVMTransaction.');
-  }
-
-  async signTronTransaction(_params: SignTronParams): Promise<string> {
-    throw new Error('Local HD manager only signs through signAndBroadcastTronTransaction.');
-  }
-
-  async signAndBroadcastEVMTransaction(params: SignEVMParams): Promise<string> {
-    const derived = await this.deriveKey({
-      userId: params.userId,
-      chain: params.chain,
-      accountIndex: params.accountIndex,
-      purpose: 'withdrawal',
-    });
-
-    if (!derived.privateKey) {
-      throw new Error('Unable to derive withdrawal private key for EVM broadcast');
-    }
-
-    return writeEVMUSDTTransfer({
-      chain: params.chain,
-      privateKey: derived.privateKey,
-      to: params.to,
-      amount: params.value ?? 0n,
-    });
-  }
-
-  async signAndBroadcastTronTransaction(params: SignTronParams): Promise<string> {
-    const derived = await this.deriveKey({
-      userId: params.userId,
-      chain: 'tron',
-      accountIndex: params.accountIndex,
-      purpose: 'withdrawal',
-    });
-
-    if (!derived.privateKey) {
-      throw new Error('Unable to derive withdrawal private key for TRON broadcast');
-    }
-
-    return writeTronUSDTTransfer({
-      privateKey: derived.privateKey,
-      to: params.to,
-      amount: params.amount,
-      feeLimit: params.feeLimit,
-    });
-  }
 }
 
 export class HttpHSMCustodialKeyManager implements CustodialKeyManager {
@@ -227,24 +149,12 @@ export class AdapterCustodialKeyManager implements CustodialKeyManager {
 }
 
 export function createCustodialKeyManager(options: {
-  mode?: 'local-hd' | 'hsm' | 'http-hsm';
-  masterSeed?: string;
+  mode?: 'hsm' | 'http-hsm';
   hsmBaseUrl?: string;
   client?: HSMClient;
-  allowLocalHdInProduction?: boolean;
 }): CustodialKeyManager {
   const mode = options.mode ?? getCustodyKeyManagerMode();
-  assertCustodyReady({ allowLocalHdInProduction: options.allowLocalHdInProduction });
-
-  if (mode === 'local-hd') {
-    if (isProduction() && !options.allowLocalHdInProduction) {
-      throw new Error('Local HD custody is disabled in production. Configure CUSTODIAL_HSM_BASE_URL or an HSM client.');
-    }
-    if (!options.masterSeed) {
-      throw new Error('masterSeed is required for local HD key management. Production should use HSM/KMS instead.');
-    }
-    return new LocalHDCustodialKeyManager(options.masterSeed);
-  }
+  assertCustodyReady();
 
   if (mode === 'http-hsm') {
     if (!options.hsmBaseUrl) {
@@ -263,12 +173,10 @@ export function createCustodialKeyManager(options: {
   return new AdapterCustodialKeyManager(options.client, 'hsm');
 }
 
-export function createCustodialKeyManagerFromEnv(options: { allowLocalHdInProduction?: boolean } = {}): CustodialKeyManager {
+export function createCustodialKeyManagerFromEnv(): CustodialKeyManager {
   return createCustodialKeyManager({
     mode: getCustodyKeyManagerMode(),
-    masterSeed: getRuntimeEnv('CUSTODIAL_MASTER_SEED'),
     hsmBaseUrl: getRuntimeEnv('CUSTODIAL_HSM_BASE_URL'),
-    ...options,
   });
 }
 

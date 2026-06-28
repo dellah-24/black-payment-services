@@ -10,7 +10,7 @@ export const CUSTODIAL_TOKEN_DECIMALS = 6 as const;
 export const CUSTODIAL_MVP_CHAINS = ['tron', 'ethereum', 'bsc'] as const satisfies readonly ChainKey[];
 export type CustodialChain = (typeof CUSTODIAL_MVP_CHAINS)[number];
 
-export type CustodyKeyManagerMode = 'local-hd' | 'hsm' | 'http-hsm';
+export type CustodyKeyManagerMode = 'hsm' | 'http-hsm';
 
 export const CUSTODIAL_CHAIN_LABELS: Record<CustodialChain, string> = {
   tron: 'TRON / TRC-20',
@@ -74,7 +74,7 @@ export function getRuntimeEnv(name: string): string | undefined {
 export function getCustodyKeyManagerMode(): CustodyKeyManagerMode {
   const configured = getRuntimeEnv('CUSTODIAL_KEY_MANAGER_MODE')?.trim().toLowerCase();
 
-  if (configured === 'local-hd' || configured === 'hsm' || configured === 'http-hsm') {
+  if (configured === 'hsm' || configured === 'http-hsm') {
     return configured;
   }
 
@@ -82,10 +82,15 @@ export function getCustodyKeyManagerMode(): CustodyKeyManagerMode {
     return 'http-hsm';
   }
 
-  return isProduction() ? 'hsm' : 'local-hd';
+  // Production requires HSM - local HD is not allowed
+  if (isProduction()) {
+    return 'http-hsm';
+  }
+
+  return 'http-hsm';
 }
 
-export function assertCustodyReady(options: { allowLocalHdInProduction?: boolean; requireSupabaseServiceRole?: boolean } = {}): CustodyReadiness {
+export function assertCustodyReady(options: { requireSupabaseServiceRole?: boolean } = {}): CustodyReadiness {
   const mode = getCustodyKeyManagerMode();
   const checks: CustodyReadinessCheck[] = [];
 
@@ -98,12 +103,7 @@ export function assertCustodyReady(options: { allowLocalHdInProduction?: boolean
 
   const production = isProduction();
 
-  if (production && mode === 'local-hd' && !options.allowLocalHdInProduction) {
-    addCheck('production custody mode', false, 'Local HD custody is disabled in production. Configure CUSTODIAL_HSM_BASE_URL or an HSM client.');
-  } else {
-    addCheck('production custody mode', true, mode === 'local-hd' ? 'Local HD custody is allowed by configuration.' : 'Production custody mode is configured.');
-  }
-
+  // Production requires HSM/http-hsm mode
   if (mode === 'http-hsm') {
     const hsmBaseUrl = getRuntimeEnv('CUSTODIAL_HSM_BASE_URL');
     if (!hsmBaseUrl) {
@@ -117,15 +117,6 @@ export function assertCustodyReady(options: { allowLocalHdInProduction?: boolean
       addCheck('HTTP HSM token', false, 'CUSTODIAL_HSM_TOKEN is required for production HTTP HSM custody.');
     } else {
       addCheck('HTTP HSM token', true, 'HTTP HSM token is configured.');
-    }
-  }
-
-  if (production && mode === 'hsm' && !options.allowLocalHdInProduction) {
-    const hsmToken = getRuntimeEnv('CUSTODIAL_HSM_TOKEN');
-    if (isPlaceholder(hsmToken)) {
-      addCheck('HSM adapter token', false, 'Production hsm mode requires a configured CUSTODIAL_HSM_TOKEN or an injected HSM client.');
-    } else {
-      addCheck('HSM adapter token', true, 'HSM adapter token is configured.');
     }
   }
 

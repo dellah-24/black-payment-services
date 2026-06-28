@@ -8,7 +8,7 @@
  * Supabase-style error until the production variables are configured.
  */
 
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { createClient, SupabaseClient, type Session } from '@supabase/supabase-js';
 import { getEnv, isProduction } from './env';
 import { logger } from './logger';
 
@@ -41,8 +41,22 @@ const missingSupabaseError = {
   status: 500,
 };
 
+type AuthSessionResult = Awaited<ReturnType<SupabaseClient['auth']['getSession']>>;
+
 function missingResult<T = null>(): Promise<{ data: T; error: typeof missingSupabaseError }> {
   return Promise.resolve({ data: null as T, error: missingSupabaseError });
+}
+
+function missingAuthSessionResult(): Promise<AuthSessionResult> {
+  return Promise.resolve({
+    data: { session: null, user: null },
+    error: missingSupabaseError,
+  } as unknown as AuthSessionResult);
+}
+
+export async function getAuthSession(): Promise<Session | null> {
+  const { data } = await supabase.auth.getSession();
+  return data?.session ?? null;
 }
 
 function createFallbackQuery() {
@@ -73,7 +87,7 @@ function createFallbackQuery() {
 
 function createFallbackSupabaseClient(): SupabaseClient {
   const auth = {
-    getSession: () => missingResult<{ session: null }>(),
+    getSession: () => missingAuthSessionResult(),
     getUser: () => missingResult<null>(),
     signUp: () => missingResult<null>(),
     signInWithPassword: () => missingResult<null>(),

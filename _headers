@@ -1,7 +1,27 @@
-# Cloudflare Pages Headers
-# Enable Node.js compatibility
+# Production security headers for BlackPayments Wallet
+# Place this file in the public/ directory for Next.js static export
 
 /*
-  X-CF-CACHE-Status: REPLAY
-  X-NODEJS-COMPAT: true
-  compatibility_flags: nodejs_compat
+  X-Frame-Options: DENY
+  X-Content-Type-Options: nosniff
+  X-XSS-Protection: 1; mode=block
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=()
+  Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https://*.supabase.co https://*.alchemy.com https://*.infura.io https://*.cloudflare-eth.com wss://*.supabase.co; frame-ancestors 'none';
+
+# Cache static assets
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# Cache API responses
+/api/*
+  Cache-Control: no-store, no-cache, must-revalidate, proxy-revalidate
+  Pragma: no-cache
+  Expires: 0
+
+# Cache HTML pages
+/*
+  Cache-Control: no-store, no-cache, must-revalidate, proxy-revalidate
+  Pragma: no-cache
+  Expires: 0

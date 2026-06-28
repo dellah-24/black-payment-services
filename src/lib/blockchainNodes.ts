@@ -1,6 +1,6 @@
 import { ethers, JsonRpcProvider, Wallet } from 'ethers';
 import { TronWeb } from 'tronweb';
-import { CHAINS, ChainKey, getActiveChainConfig } from '@/config/chains';
+import { CHAINS, ChainKey, getChainConfig } from '@/config/chains';
 import { getEnv, isLocalhostUrl, isProduction } from '@/lib/env';
 import { logger } from '@/lib/logger';
 import { WalletChain } from '@/wallet/types';
@@ -69,7 +69,7 @@ export function toWalletChain(chain: ChainKey | WalletChain): WalletChain {
 }
 
 export function getRuntimeEnv(name: string): string | undefined {
- return typeof process !== 'undefined' ? getEnv(name) : undefined;
+  return typeof process !== 'undefined' ? getEnv(name) : undefined;
 }
 
 function assertProductionRpcUrl(name: string, value: string | undefined): void {
@@ -106,7 +106,7 @@ export function getEVMProvider(chain: ChainKey | WalletChain, customRpcUrl?: str
     if (isProduction()) {
       throw new Error(`${envName} or ${publicEnvName} is required in production.`);
     }
-    return new JsonRpcProvider(getActiveChainConfig(chainKey).rpcUrls[0]);
+    return new JsonRpcProvider(getChainConfig(chainKey).rpcUrls[0]);
   }
   return new JsonRpcProvider(rpcUrl);
 }
@@ -116,7 +116,7 @@ export function getEVMWallet(chain: ChainKey | WalletChain, privateKey: string, 
 }
 
 export function getTronEnvUrls(): TronNodeUrls {
-  const fallback = getActiveChainConfig('tron').rpcUrls[0];
+  const fallback = getChainConfig('tron').rpcUrls[0];
   const fullNodeValue = getRuntimeEnv('TRON_FULL_NODE') || getRuntimeEnv('TRON_RPC_URL') || getRuntimeEnv('NEXT_PUBLIC_TRON_RPC');
   assertProductionRpcUrl('TRON_FULL_NODE', fullNodeValue);
   const fullNode = normalizeTronNodeUrl(fullNodeValue || fallback);
@@ -164,7 +164,7 @@ export async function readEVMBlockNumber(chain: ChainKey | WalletChain, customRp
 
 export async function readEVMUSDTBalance(chain: ChainKey | WalletChain, address: string): Promise<bigint> {
   const chainKey = getEVMChainKey(chain);
-  const config = getActiveChainConfig(chainKey);
+  const config = getChainConfig(chainKey);
   const provider = getEVMProvider(chainKey);
   const contract = new ethers.Contract(config.usdtAddress, EVM_USDT_ABI, provider);
   return BigInt(await contract.balanceOf(address));
@@ -179,7 +179,7 @@ export async function writeEVMUSDTTransfer(params: {
 }): Promise<string> {
   const wallet = getEVMWallet(params.chain, params.privateKey, params.customRpcUrl);
   const chainKey = getEVMChainKey(params.chain);
-  const config = getActiveChainConfig(chainKey);
+  const config = getChainConfig(chainKey);
   const contract = new ethers.Contract(config.usdtAddress, EVM_USDT_ABI, wallet);
   const tx = await contract.transfer(params.to, params.amount);
   const receipt = await tx.wait();

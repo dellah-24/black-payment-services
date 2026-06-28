@@ -1,21 +1,49 @@
-# Cloudflare Workers/Pages Configuration
-name = "black-payment-services"
+# Cloudflare Workers configuration for BlackPayments Wallet
+# Production deployment configuration
+
+name = "blackpayments-wallet"
+main = "src/index.ts"
 compatibility_date = "2024-01-01"
 compatibility_flags = ["nodejs_compat"]
 
-# Pages configuration
-pages_build_output_dir = ".vercel/output/static"
+# Production environment variables
+[vars]
+NODE_ENV = "production"
+APP_NAME = "BlackPayments Wallet"
+APP_VERSION = "1.0.0"
 
-# Public/non-secret environment variables are configured in Cloudflare Pages
-# as build/runtime variables. Keeping them here can create duplicate bindings
-# when Cloudflare also defines the same NEXT_PUBLIC_* variables.
-#
-# Required public variables:
-# NEXT_PUBLIC_SUPABASE_URL
-# NEXT_PUBLIC_SUPABASE_ANON_KEY
-# NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
+# Production routes
+routes = [
+  { pattern = "blackpayments.com/api/*", zone_name = "blackpayments.com" },
+  { pattern = "api.blackpayments.com/*", zone_name = "blackpayments.com" },
+]
 
-# Secret-only variables to configure separately:
-# SUPABASE_SERVICE_ROLE_KEY
-# SUPABASE_SECRET_KEY
-# SUPABASE_DB_URL
+# Production environment
+[env.production]
+vars = { NODE_ENV = "production" }
+
+# Production secrets (set via wrangler secret)
+# wrangler secret put SUPABASE_URL
+# wrangler secret put SUPABASE_ANON_KEY
+# wrangler secret put SUPABASE_SERVICE_ROLE_KEY
+# wrangler secret put HSM_API_URL
+# wrangler secret put HSM_API_KEY
+# wrangler secret put ALCHEMY_API_KEY
+# wrangler secret put WALLET_CONNECT_PROJECT_ID
+# wrangler secret put JWT_SECRET
+# wrangler secret put WALLET_ENCRYPTION_KEY
+# wrangler secret put CSRF_SECRET
+# wrangler secret put SENTRY_DSN
+# wrangler secret put REDIS_URL
+# wrangler secret put UPSTASH_REDIS_REST_URL
+# wrangler secret put UPSTASH_REDIS_REST_TOKEN
+
+# Production limits
+[limits]
+cpu_ms = 50000
+memory_mb = 128
+
+# Production observability
+[observability]
+enabled = true
+head_sampling_rate = 1

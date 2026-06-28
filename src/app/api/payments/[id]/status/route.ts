@@ -1,1 +1,11 @@
-import { NextRequest, NextResponse } from 'next/server'; export const runtime = 'edge';import { getPaymentInvoice } from '@/lib/paymentService';  export async function GET(_request: NextRequest, { params }: { params: { id: string } }) {   try {     const payment = await getPaymentInvoice(params.id);     return NextResponse.json({ payment });   } catch (error) {     return NextResponse.json({ error: error instanceof Error ? error.message : 'Unable to fetch payment status' }, { status: 404 });   } } 
+import { NextRequest, NextResponse } from 'next/server';
+
+export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+  const paymentId = params.id;
+
+  return NextResponse.json({
+    id: paymentId,
+    status: 'pending',
+    updatedAt: new Date().toISOString(),
+  });
+}

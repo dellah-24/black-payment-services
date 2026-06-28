@@ -1,168 +1,122 @@
 /**
- * BlackPayments Wallet - Main Entry Point
- * 
- * A comprehensive multi-chain USDT wallet with P2P trading, DeFi, and more
+ * BlackPayments Wallet - Production Entry Point
+ * Cloudflare Workers / Next.js API Routes handler
  */
 
-// Wallet Core
-export { BlackPaymentsWallet } from './wallet/BlackPaymentsWallet';
-export { HotWallet } from './wallet/HotWallet';
-export { ColdWallet } from './wallet/ColdWallet';
-export { SplitCustodyManager, createSplitCustodySystem } from './wallet/SplitCustodyManager';
-
-// Wallet Factory Functions
-export { createWallet, createWalletWithExistingSeed, createWalletWithPrivateKey, validatePrivateKey, getAddressFromMnemonic, generateMnemonic, validateMnemonic } from './wallet/factory';
-export { createFullWallet } from './wallet/factory';
 import { logger } from './lib/logger';
-
-// Wallet Types
-export type { 
-  WalletChain, 
-  WalletType, 
-  ChainConfig, 
-  USDTTokenConfig,
-  TransactionResult,
-  BalanceResult,
-  GasEstimate,
-  TransferParams,
-  WalletConfig,
-  MoonPayConfig,
-  FiatRequestParams,
-  SplitCustodyConfig,
-  CustodyTransfer,
-  WhitelistEntry,
-  MultiSigRequest,
-  EscrowTerms,
-  EscrowState,
-  DisputeEvidence
-} from './wallet/types';
-
-// Security
-export { secureStorage, SecureStorage, StorageKey } from './wallet/SecureStorage';
-export type { AddressBookEntry, AppSettings } from './wallet/SecureStorage';
-export { authManager, AuthManager } from './wallet/AuthManager';
-export type { AuthState, AuthConfig, AuthEvent, AuthEventType, AuthMethod } from './wallet/AuthManager';
-export { encrypt, decrypt, sha256 } from './wallet/crypto';
-export { logger } from './lib/logger';
-
-// WalletConnect
-export { walletConnect, WalletConnectProvider } from './wallet/WalletConnectProvider';
-export type { WalletConnectSession, WalletConnectRequest, WalletConnectEvent, WalletConnectEventType } from './wallet/WalletConnectProvider';
-
-// P2P Trading
-export { p2pEngine, P2PEngine } from './p2p/Engine';
-export type { 
-  P2POrder, 
-  P2PTrade, 
-  Dispute, 
-  P2PProfile, 
-  ChatMessage, 
-  Orderbook,
-  OrderStatus,
-  TradeStatus,
-  PaymentMethod,
-  DisputeReason,
-  P2PEvent,
-  P2PEventType
-} from './p2p/Engine';
-
-// Token Swap
-export { tokenSwap, TokenSwap } from './swap/TokenSwap';
-export type { Token, SwapQuote, SwapResult, SwapChainId } from './swap/TokenSwap';
-
-// KYC Verification
-export { kycManager, KYCManager } from './kyc';
-export type { KYCProfile, KYCLevel, KYCStatus, DocumentType, DocumentUpload, KYCLivenessCheck, KYCEvent, KYCEventType } from './kyc';
-
-// DeFi
-export { defiManager, DeFiManager } from './defi';
-export type { TokenBalance, StakingPosition, LendingPosition, PoolInfo, DeFiProtocol } from './defi';
-
-// DApp Browser
-export { dAppBrowser, DAppBrowser } from './browser/DAppBrowser';
-export type { DApp, BrowserTab, Web3Connection } from './browser/DAppBrowser';
-
-// Internationalization
-export { i18n, I18nManager, t } from './i18n';
-export type { Language, Translation, Translations } from './i18n';
-
-// Chain Configurations
-export { 
-  CHAIN_CONFIGS, 
-  USDT_TOKENS, 
-  getChainConfig, 
-  getUSDTConfig,
-  getSupportedChains 
-} from './wallet/chains';
-
-// Provider System
-export {
-  providerRegistry,
-  ProviderRegistry,
-  RPCError,
-  BaseProvider,
-  EthereumProvider,
-  SolanaProvider,
-  BitcoinProvider,
-  CosmosProvider,
-  TONProvider,
-  AptosProvider,
-  Web3Provider,
-  MobileAdapter,
-  Adapter,
-  AdapterStrategy,
-  PromiseAdapter,
-  CallbackAdapter,
-} from './wallet/providers';
-export type {
-  ChainType,
-  ProviderConfig,
-  IRequestArguments,
-  IBaseProvider,
-  IAdapter,
-  ResponseCallback,
-  ErrorCallback,
-  MobileAdapterConfig,
-  Web3ProviderConfig,
-} from './wallet/providers';
-
-// Version
-export const VERSION = '1.0.0';
+import { env } from './lib/env';
 
 /**
- * Initialize the wallet SDK
+ * Production application bootstrap
  */
-export async function initialize(config?: {
-  defaultChain?: import('./wallet/types').WalletChain;
-  customRpcUrls?: Record<string, string>;
-  encryptionKey?: string;
-}): Promise<void> {
-  // Set default chain
-  if (config?.defaultChain) {
-    // Set in storage or context
-  }
+export async function bootstrap(): Promise<void> {
+  try {
+    logger.info('Starting BlackPayments Wallet', {
+      environment: env.NODE_ENV,
+      version: '1.0.0',
+      nodeVersion: process.version,
+    });
 
-  // Initialize encryption key if provided
-  if (config?.encryptionKey) {
-    const { secureStorage } = await import('./wallet/SecureStorage');
-    secureStorage.initialize(config.encryptionKey);
-  }
+    // Validate production configuration
+    if (env.NODE_ENV === 'production') {
+      validateProductionConfig();
+    }
 
-  logger.info('BlackPayments Wallet SDK initialized');
+    // Initialize services
+    await initializeServices();
+
+    logger.info('BlackPayments Wallet started successfully');
+  } catch (error) {
+    logger.error('Failed to start BlackPayments Wallet', error as Error);
+    throw error;
+  }
 }
 
 /**
- * Quick start - create a new wallet
+ * Validate production configuration
  */
-export async function quickStart(options?: {
-  chains?: import('./wallet/types').WalletChain[];
-}): Promise<import('./wallet/BlackPaymentsWallet').BlackPaymentsWallet> {
-  const { createWallet } = await import('./wallet/factory');
-  const chains = options?.chains || [
-    (await import('./wallet/types')).WalletChain.ETHEREUM,
-    (await import('./wallet/types')).WalletChain.BSC,
-    (await import('./wallet/types')).WalletChain.TRON,
+function validateProductionConfig(): void {
+  const requiredEnvVars = [
+    'NODE_ENV',
+    'SUPABASE_URL',
+    'SUPABASE_ANON_KEY',
+    'HSM_API_URL',
+    'HSM_API_KEY',
+    'JWT_SECRET',
+    'WALLET_ENCRYPTION_KEY',
   ];
-  
-  return createWallet(chains);
+
+  const missingVars = requiredEnvVars.filter((varName) => !env[varName as keyof typeof env]);
+
+  if (missingVars.length > 0) {
+    throw new Error(`Missing required environment variables: ${missingVars.join(', ')}`);
+  }
+
+  // Validate JWT secret length
+  if (env.JWT_SECRET && env.JWT_SECRET.length < 32) {
+    throw new Error('JWT_SECRET must be at least 32 characters');
+  }
+
+  // Validate encryption key length
+  if (env.WALLET_ENCRYPTION_KEY && env.WALLET_ENCRYPTION_KEY.length < 32) {
+    throw new Error('WALLET_ENCRYPTION_KEY must be at least 32 characters');
+  }
+
+  logger.info('Production configuration validated');
+}
+
+/**
+ * Initialize application services
+ */
+async function initializeServices(): Promise<void> {
+  // Initialize Sentry for error tracking
+  if (env.SENTRY_DSN) {
+    try {
+      const { initSentry } = await import('./lib/sentry');
+      initSentry();
+      logger.info('Sentry initialized');
+    } catch (error) {
+      logger.warn('Failed to initialize Sentry', error as Error);
+    }
+  }
+
+  // Initialize Redis for rate limiting
+  if (env.REDIS_URL || env.UPSTASH_REDIS_REST_URL) {
+    try {
+      const { initRedis } = await import('./lib/redis');
+      await initRedis();
+      logger.info('Redis initialized');
+    } catch (error) {
+      logger.warn('Failed to initialize Redis', error as Error);
+    }
+  }
+
+  // Initialize Supabase
+  try {
+    const { createClient } = await import('@supabase/supabase-js');
+    const supabase = createClient(env.SUPABASE_URL, env.SUPABASE_ANON_KEY);
+    logger.info('Supabase client initialized');
+  } catch (error) {
+    logger.warn('Failed to initialize Supabase client', error as Error);
+  }
+
+  logger.info('All services initialized');
+}
+
+/**
+ * Health check handler
+ */
+export async function healthCheck(): Promise<{ status: string; timestamp: string }> {
+  return {
+    status: 'healthy',
+    timestamp: new Date().toISOString(),
+  };
+}
+
+// Start the application if this is the main module
+if (require.main === module) {
+  bootstrap().catch((error) => {
+    logger.error('Application bootstrap failed', error);
+    process.exit(1);
+  });
 }

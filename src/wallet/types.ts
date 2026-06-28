@@ -139,7 +139,6 @@ export interface ChainConfig {
   symbol: string;
   rpcUrl: string;
   explorerUrl: string;
-  isTestnet?: boolean;
 }
 
 /**
@@ -221,7 +220,6 @@ export interface WalletConfig {
 export interface MoonPayConfig {
   apiKey: string;
   secretKey?: string;
-  isTestnet?: boolean;
 }
 
 /**

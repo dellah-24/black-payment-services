@@ -1,22 +1,30 @@
-import React, { createContext, useContext } from 'react';
+'use client';
 
-export type ErrorReporter = {
-  captureException: (error: Error, meta?: Record<string, unknown>) => Promise<string | undefined>;
-  addBreadcrumb?: (crumb: { message: string; data?: Record<string, unknown> }) => void;
-};
+import { createContext, useContext, ReactNode } from 'react';
+import { logger } from '@/lib/logger';
 
-const noopReporter: ErrorReporter = {
-  captureException: async () => undefined,
-  addBreadcrumb: () => undefined,
-};
+interface ErrorReportingContextValue {
+  reportError: (error: Error, context?: Record<string, any>) => void;
+}
 
-const ErrorReportingContext = createContext<ErrorReporter>(noopReporter);
+const ErrorReportingContext = createContext<ErrorReportingContextValue | null>(null);
 
-export const ErrorReportingProvider = ({ reporter, children }: { reporter?: ErrorReporter; children: React.ReactNode }) => {
-  const value = reporter || noopReporter;
-  return <ErrorReportingContext.Provider value={value}>{children}</ErrorReportingContext.Provider>;
-};
+export function ErrorReportingProvider({ children }: { children: ReactNode }) {
+  const reportError = (error: Error, context?: Record<string, any>) => {
+    logger.error('Application error reported', error, context);
+  };
 
-export const useErrorReporter = () => useContext(ErrorReportingContext);
+  return (
+    <ErrorReportingContext.Provider value={{ reportError }}>
+      {children}
+    </ErrorReportingContext.Provider>
+  );
+}
 
-export default ErrorReportingContext;
+export function useErrorReporting() {
+  const context = useContext(ErrorReportingContext);
+  if (!context) {
+    throw new Error('useErrorReporting must be used within an ErrorReportingProvider');
+  }
+  return context;
+}

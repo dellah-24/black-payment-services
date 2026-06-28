@@ -1,33 +1,32 @@
-import { NextRequest, NextResponse } from 'next/server';
-
-export const runtime = 'edge';
+import { NextResponse } from 'next/server';
 import { getAuthenticatedUserId, submitCustodialWithdrawal } from '@/lib/custodialService';
-import { custodialWithdrawalSchema } from '@/lib/custodyPolicy';
 
-export async function POST(request: NextRequest) {
+export async function POST(request: Request) {
+  const userId = await getAuthenticatedUserId(request);
+  if (!userId) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   try {
-    const userId = await getAuthenticatedUserId(request);
-    if (!userId) {
-      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
-    }
+    const body = await request.json();
+    const { chain, to, amount, idempotencyKey, memo } = body;
 
-    const body = (await request.json().catch(() => ({}))) as Record<string, unknown>;
-    const parsed = custodialWithdrawalSchema.safeParse(body);
-
-    if (!parsed.success) {
-      return NextResponse.json({ error: 'Invalid withdrawal request', details: parsed.error.flatten() }, { status: 400 });
+    if (!chain || !to || !amount || !idempotencyKey) {
+      return NextResponse.json({ error: 'Missing required fields: chain, to, amount, idempotencyKey' }, { status: 400 });
     }
 
     const withdrawal = await submitCustodialWithdrawal({
       userId,
-      ...parsed.data,
+      chain,
+      to,
+      amount,
+      idempotencyKey,
+      memo,
     });
 
     return NextResponse.json({ withdrawal }, { status: 201 });
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Unable to submit withdrawal';
-    const status = message.includes('Another withdrawal') || message.includes('Invalid') ? 409 : 503;
-    return NextResponse.json({ error: message }, { status });
+    console.error('Custodial withdrawal error:', error);
+    return NextResponse.json({ error: 'Withdrawal failed' }, { status: 500 });
   }
 }
-

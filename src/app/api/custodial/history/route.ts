@@ -1,27 +1,14 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
+import { getAuthenticatedUserId, getCustodialWithdrawals, getCustodialDeposits } from '@/lib/custodialService';
 
-export const runtime = 'edge';
-import { getAuthenticatedUserId, getCustodialDeposits, getCustodialWithdrawals } from '@/lib/custodialService';
-
-export async function GET(request: NextRequest) {
-  try {
-    const userId = await getAuthenticatedUserId(request);
-    if (!userId) {
-      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
-    }
-
-    const limit = Number(request.nextUrl.searchParams.get('limit') ?? '50');
-    const [withdrawals, deposits] = await Promise.all([
-      getCustodialWithdrawals({ userId, limit }),
-      getCustodialDeposits({ userId, limit }),
-    ]);
-
-    return NextResponse.json({ withdrawals, deposits });
-  } catch (error) {
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Unable to fetch custodial history' },
-      { status: 503 }
-    );
+export async function GET(request: Request) {
+  const userId = await getAuthenticatedUserId(request);
+  if (!userId) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
-}
 
+  const withdrawals = await getCustodialWithdrawals({ userId, limit: 50 });
+  const deposits = await getCustodialDeposits({ userId, limit: 50 });
+
+  return NextResponse.json({ withdrawals, deposits });
+}

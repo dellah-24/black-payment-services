@@ -65,7 +65,6 @@ export class BlackPaymentsWallet {
   private addresses: Map<WalletChain, string>;
   private tronWeb: TronWeb | null = null;
   private tronPrivateKey: string | null = null;
-  private isTestnet: boolean;
   private moonpayConfig: MoonPayConfig | null;
 
   /**
@@ -90,9 +89,7 @@ export class BlackPaymentsWallet {
 
     // Create wallets for each chain
     for (const chain of chains) {
-      const config = isTestnet
-        ? TESTNET_CONFIGS[chain]
-        : CHAIN_CONFIGS[chain];
+      const config = CHAIN_CONFIGS[chain];
 
       if (!config) {
         throw new Error(`Chain ${chain} not configured`);
@@ -528,9 +525,7 @@ export class BlackPaymentsWallet {
     }
 
     // Build MoonPay URL
-    const baseUrl = this.moonpayConfig.isTestnet 
-      ? 'https://buy-sandbox.moonpay.com' 
-      : 'https://buy.moonpay.com';
+    const baseUrl = 'https://buy.moonpay.com';
     
     const urlParams = new URLSearchParams({
       apiKey: this.moonpayConfig.apiKey,
@@ -571,9 +566,7 @@ export class BlackPaymentsWallet {
     }
 
     // Build MoonPay URL
-    const baseUrl = this.moonpayConfig.isTestnet 
-      ? 'https://sell-sandbox.moonpay.com' 
-      : 'https://sell.moonpay.com';
+    const baseUrl = 'https://sell.moonpay.com';
     
     const urlParams = new URLSearchParams({
       apiKey: this.moonpayConfig.apiKey,
@@ -623,7 +616,7 @@ export class BlackPaymentsWallet {
    * Get chain configuration
    */
   getChainInfo(chain: WalletChain): ChainConfig {
-    return this.isTestnet ? TESTNET_CONFIGS[chain] || CHAIN_CONFIGS[chain] : CHAIN_CONFIGS[chain];
+    return CHAIN_CONFIGS[chain];
   }
 
   /**
@@ -673,9 +666,7 @@ export class BlackPaymentsWallet {
     * Format native balance for display
     */
    private formatNativeBalance(balance: bigint, chain: WalletChain): string {
-      const chainConfig = this.isTestnet
-        ? TESTNET_CONFIGS[chain]
-        : CHAIN_CONFIGS[chain];
+     const chainConfig = CHAIN_CONFIGS[chain];
       
       if (!chainConfig) {
         return `${ethers.formatUnits(balance, 18)} unknown`;

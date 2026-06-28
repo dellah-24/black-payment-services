@@ -1,6 +1,6 @@
 import { HDNodeWallet, JsonRpcProvider, Mnemonic, Wallet } from 'ethers';
 import { TronWeb } from 'tronweb';
-import { ChainKey, CHAINS } from '@/config/chains';
+import { ChainKey, getChainConfig } from '@/config/chains';
 import { WalletChain } from '@/wallet/types';
 
 export type HDWalletChainKey = Exclude<ChainKey, 'solana'> | 'bitcoin';
@@ -126,14 +126,15 @@ export function deriveHDPrivateKey(mnemonic: string, chain: HDWalletChainKey | W
 
 export function deriveHDKey(mnemonic: string, chain: HDWalletChainKey | WalletChain, accountIndex = 0): DerivedHDKey {
   const normalizedChain = normalizeChainKey(chain);
-  const path = getBIP44Path({ chain: normalizedChain, accountIndex });
+  const path = getBIP44Path({ chain, accountIndex });
   const hdWallet = HDNodeWallet.fromPhrase(normalizeMnemonic(mnemonic), undefined, path);
 
   if (normalizedChain === 'tron') {
+    const chainConfig = getChainConfig('tron');
     const tronweb = new TronWeb({
-      fullNode: CHAINS.tron.rpcUrls[0],
-      solidityNode: CHAINS.tron.rpcUrls[0],
-      eventServer: CHAINS.tron.rpcUrls[0],
+      fullNode: chainConfig.rpcUrls[0],
+      solidityNode: chainConfig.rpcUrls[0],
+      eventServer: chainConfig.rpcUrls[0],
     });
     const tronAddress = tronweb.address.fromPrivateKey(hdWallet.privateKey);
     if (!tronAddress) {

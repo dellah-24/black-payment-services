@@ -1,203 +1,117 @@
-/**
- * Price Service - Real-time cryptocurrency prices from Alchemy Prices API
- */
-
+import { getEnv, isPlaceholder, isProduction } from '@/lib/env';
 import { logger } from '@/lib/logger';
-import { getEnv, isProduction } from '@/lib/env';
-
-function getAlchemyApiKey(): string {
-  const apiKey = getEnv('NEXT_PUBLIC_ALCHEMY_API_KEY') || getEnv('ALCHEMY_API_KEY');
-  if (!apiKey) {
-    if (isProduction()) throw new Error('ALCHEMY_API_KEY or NEXT_PUBLIC_ALCHEMY_API_KEY is required in production for price lookups.');
-    return '';
-  }
-  return apiKey;
-}
-
-const ALCHEMY_API_KEY = getAlchemyApiKey();
-const ALCHEMY_PRICES_API = ALCHEMY_API_KEY ? `https://api.g.alchemy.com/prices/v1/${ALCHEMY_API_KEY}` : '';
-
-// Cache for prices (5 minute expiry)
-const priceCache: { [key: string]: { price: number; timestamp: number } } = {};
-const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
 export interface PriceData {
-  usd: number;
-  usd_24h_change: number;
-  usd_market_cap: number;
+  symbol: string;
+  price: number;
+  change24h: number;
+  changePercent24h: number;
+  high24h: number;
+  low24h: number;
+  volume24h: number;
+  lastUpdated: string;
 }
 
-// Symbol mapping for Alchemy Prices API
-const SYMBOL_MAP: Record<string, string> = {
-  ETH: 'ETH',
-  BTC: 'BTC',
-  USDT: 'USDT',
-  BNB: 'BNB',
-  SOL: 'SOL',
-  TRX: 'TRX',
-  MATIC: 'MATIC',
-  AVAX: 'AVAX',
-  ADA: 'ADA',
-  XRP: 'XRP',
-  DOT: 'DOT',
-  DOGE: 'DOGE',
-  CELO: 'CELO',
-};
+export interface TokenPrice {
+  symbol: string;
+  price: number;
+  change24h: number;
+  changePercent24h: number;
+  high24h: number;
+  low24h: number;
+  volume24h: number;
+  lastUpdated: string;
+}
 
-/**
- * Get current USDT price from Alchemy Prices API
- */
-export async function getUSDTPrice(): Promise<PriceData> {
-  const cacheKey = 'USDT';
-  const cached = priceCache[cacheKey];
-  
-  if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
-    return {
-      usd: cached.price,
-      usd_24h_change: 0,
-      usd_market_cap: 0,
-    };
+export async function getTokenPrice(symbol: string): Promise<TokenPrice | null> {
+  const apiKey = getEnv('EXCHANGE_API_KEY');
+  const apiUrl = getEnv('EXCHANGE_API_URL');
+
+  if (isPlaceholder(apiKey) || isPlaceholder(apiUrl)) {
+    logger.warn('Exchange API not configured, returning null price');
+    return null;
   }
 
   try {
-    if (!ALCHEMY_API_KEY) return { usd: cached?.price || 1, usd_24h_change: 0, usd_market_cap: 0 };
-    const response = await fetch(
-      `${ALCHEMY_PRICES_API}/tokens/by-symbol?symbols=USDT`,
-      {
-        headers: {
-          'Authorization': `Bearer ${ALCHEMY_API_KEY}`,
-          'Content-Type': 'application/json',
-        },
-      }
-    );
-    
+    const response = await fetch(`${apiUrl}/price/${symbol}`, {
+      headers: {
+        'X-API-Key': apiKey,
+      },
+      next: { revalidate: 30 },
+    });
+
     if (!response.ok) {
-      throw new Error(`Failed to fetch price: ${response.status}`);
+      throw new Error(`Price API error: ${response.status}`);
     }
-    
-    const result = await response.json();
-    const price = parseFloat(result.data?.[0]?.prices?.[0]?.value) || 1;
-    
-    priceCache[cacheKey] = {
-      price,
-      timestamp: Date.now(),
-    };
-    
+
+    const data = await response.json();
     return {
-      usd: price,
-      usd_24h_change: 0,
-      usd_market_cap: 0,
+      symbol: data.symbol || symbol,
+      price: data.price || 0,
+      change24h: data.change24h || 0,
+      changePercent24h: data.changePercent24h || 0,
+      high24h: data.high24h || 0,
+      low24h: data.low24h || 0,
+      volume24h: data.volume24h || 0,
+      lastUpdated: new Date().toISOString(),
     };
   } catch (error) {
-    logger.error('Error fetching USDT price', error as Error);
-    return {
-      usd: cached?.price || 1,
-      usd_24h_change: 0,
-      usd_market_cap: 0,
-    };
+    logger.error('Failed to fetch token price', error as Error);
+    return null;
   }
 }
 
-/**
- * Get prices for multiple tokens from Alchemy Prices API
- */
-export async function getTokenPrices(symbols: string[]): Promise<Record<string, PriceData>> {
-  const symbolsParam = symbols.map(s => SYMBOL_MAP[s] || s).join(',');
-  
+export async function getMultipleTokenPrices(symbols: string[]): Promise<Record<string, TokenPrice>> {
+  const prices: Record<string, TokenPrice> = {};
+
+  for (const symbol of symbols) {
+    const price = await getTokenPrice(symbol);
+    if (price) {
+      prices[symbol] = price;
+    }
+  }
+
+  return prices;
+}
+
+export async function getUSDTPrice(): Promise<TokenPrice | null> {
+  return getTokenPrice('USDT');
+}
+
+export async function getMarketData(): Promise<PriceData[]> {
+  const apiKey = getEnv('EXCHANGE_API_KEY');
+  const apiUrl = getEnv('EXCHANGE_API_URL');
+
+  if (isPlaceholder(apiKey) || isPlaceholder(apiUrl)) {
+    logger.warn('Exchange API not configured, returning empty market data');
+    return [];
+  }
+
   try {
-    if (!ALCHEMY_API_KEY) return {};
-    const response = await fetch(
-      `${ALCHEMY_PRICES_API}/tokens/by-symbol?symbols=${symbolsParam}`,
-      {
-        headers: {
-          'Authorization': `Bearer ${ALCHEMY_API_KEY}`,
-          'Content-Type': 'application/json',
-        },
-      }
-    );
-    
+    const response = await fetch(`${apiUrl}/market`, {
+      headers: {
+        'X-API-Key': apiKey,
+      },
+      next: { revalidate: 60 },
+    });
+
     if (!response.ok) {
-      throw new Error(`Failed to fetch prices: ${response.status}`);
+      throw new Error(`Market API error: ${response.status}`);
     }
-    
-    const result = await response.json();
-    const priceData = result.data || [];
-    const prices: Record<string, PriceData> = {};
-    
-    for (const token of priceData) {
-      if (token.prices && token.prices.length > 0) {
-        prices[token.symbol] = {
-          usd: parseFloat(token.prices[0].value) || 0,
-          usd_24h_change: 0,
-          usd_market_cap: 0,
-        };
-      }
-    }
-    
-    return prices;
+
+    const data = await response.json();
+    return (data.data || []).map((item: any) => ({
+      symbol: item.symbol,
+      price: item.price,
+      change24h: item.change24h,
+      changePercent24h: item.changePercent24h,
+      high24h: item.high24h,
+      low24h: item.low24h,
+      volume24h: item.volume24h,
+      lastUpdated: new Date().toISOString(),
+    }));
   } catch (error) {
-    logger.error('Error fetching token prices', error as Error);
-    return {};
+    logger.error('Failed to fetch market data', error as Error);
+    return [];
   }
 }
-
-/**
- * Convert USDT amount to USD value
- */
-export async function usdtToUSD(usdtAmount: number): Promise<number> {
-  const price = await getUSDTPrice();
-  return usdtAmount * price.usd;
-}
-
-/**
- * Convert USD amount to USDT amount
- */
-export async function usdToUSDT(usdAmount: number): Promise<number> {
-  const price = await getUSDTPrice();
-  return usdAmount / price.usd;
-}
-
-/**
- * Format currency value
- */
-export function formatCurrency(value: number, decimals: number = 2): string {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    minimumFractionDigits: decimals,
-    maximumFractionDigits: decimals,
-  }).format(value);
-}
-
-/**
- * Format large numbers (e.g., market cap)
- */
-export function formatLargeNumber(value: number): string {
-  if (value >= 1e12) {
-    return `$${(value / 1e12).toFixed(2)}T`;
-  }
-  if (value >= 1e9) {
-    return `$${(value / 1e9).toFixed(2)}B`;
-  }
-  if (value >= 1e6) {
-    return `$${(value / 1e6).toFixed(2)}M`;
-  }
-  if (value >= 1e3) {
-    return `$${(value / 1e3).toFixed(2)}K`;
-  }
-  return `$${value.toFixed(2)}`;
-}
-
-// Supported tokens for price lookup
-export const SUPPORTED_TOKENS = {
-  tether: 'USDT',
-  bitcoin: 'BTC',
-  ethereum: 'ETH',
-  'binancecoin': 'BNB',
-  'solana': 'SOL',
-  'tron': 'TRX',
-  'cardano': 'ADA',
-  'ripple': 'XRP',
-  'polkadot': 'DOT',
-  'dogecoin': 'DOGE',
-};

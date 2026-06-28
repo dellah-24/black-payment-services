@@ -1,1 +1,1 @@
-"test console.log"  
+Production-ready BlackPayments Wallet

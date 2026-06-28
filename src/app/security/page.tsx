@@ -1,92 +1,183 @@
 'use client';
 
 import { useState } from 'react';
-import Link from 'next/link';
-import { ArrowLeft, Check, KeyRound, Lock, Phone, ShieldCheck, Smartphone } from 'lucide-react';
-
-const securityItems = [
-  {
-    icon: ShieldCheck,
-    title: 'Two-factor authentication',
-    description: 'Add an extra verification step for sensitive wallet and withdrawal actions.',
-    action: 'Enable 2FA',
-  },
-  {
-    icon: KeyRound,
-    title: 'Backup phrase',
-    description: 'Review wallet backup settings and recovery guidance.',
-    action: 'Open backup settings',
-  },
-  {
-    icon: Smartphone,
-    title: 'Trusted devices',
-    description: 'Track devices used to access your BlackPayments account.',
-    action: 'Manage devices',
-  },
-  {
-    icon: Phone,
-    title: 'Withdrawal alerts',
-    description: 'Receive alerts for withdrawals and custody policy changes.',
-    action: 'Configure alerts',
-  },
-];
+import { AuthGuard } from '@/components/AuthGuard';
+import { useWalletAuth } from '@/hooks/useWalletAuth';
+import { kycService } from '@/kyc';
+import { logger } from '@/lib/logger';
 
 export default function SecurityPage() {
-  const [twoFactorEnabled, setTwoFactorEnabled] = useState(false);
+  const { user } = useWalletAuth();
+  const [kycStatus, setKycStatus] = useState<'pending' | 'verified' | 'rejected' | 'not_started'>('not_started');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleKYCSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!user) return;
+
+    setIsSubmitting(true);
+    setError(null);
+
+    const formData = new FormData(e.currentTarget);
+
+    try {
+      await kycService.submitKYC(user.id, {
+        fullName: formData.get('fullName') as string,
+        dateOfBirth: formData.get('dateOfBirth') as string,
+        address: formData.get('address') as string,
+        documentType: formData.get('documentType') as string,
+        documentNumber: formData.get('documentNumber') as string,
+      });
+
+      setKycStatus('pending');
+    } catch (error) {
+      const message = (error as Error).message;
+      setError(message);
+      logger.error('KYC submission failed', error as Error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-[#070a12] text-white">
-      <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
-        <Link href="/profile" className="inline-flex items-center gap-2 text-sm font-semibold text-slate-300 transition hover:text-white">
-          <ArrowLeft className="h-4 w-4" />
-          Back to profile
-        </Link>
+    <AuthGuard>
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
+        <div className="container mx-auto px-4 py-8">
+          <header className="mb-8">
+            <h1 className="text-3xl font-bold text-white mb-2">Security</h1>
+            <p className="text-gray-400">Manage your account security and verification</p>
+          </header>
 
-        <section className="mt-8 rounded-[2rem] border border-white/10 bg-slate-950/70 p-6 shadow-2xl shadow-black/30 sm:p-10">
-          <div className="inline-flex items-center gap-2 rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-1 text-xs font-bold text-emerald-300">
-            <Lock className="h-4 w-4" />
-            Account security
-          </div>
-          <h1 className="mt-6 text-4xl font-black tracking-tight text-white sm:text-5xl">Security settings</h1>
-          <p className="mt-4 max-w-2xl text-slate-300">
-            Manage authentication and wallet safety controls for your BlackPayments account.
-          </p>
+          <div className="max-w-2xl mx-auto space-y-6">
+            <div className="bg-gray-800 rounded-2xl p-8 shadow-xl">
+              <h2 className="text-2xl font-bold text-white mb-4">KYC Verification</h2>
+              <p className="text-gray-400 mb-6">
+                Complete KYC verification to unlock all features and higher limits.
+              </p>
 
-          <div className="mt-8 grid gap-4">
-            {securityItems.map((item) => {
-              const Icon = item.icon;
-              return (
-                <div key={item.title} className="flex flex-col gap-4 rounded-3xl border border-white/10 bg-white/[0.035] p-5 sm:flex-row sm:items-center sm:justify-between">
-                  <div className="flex items-start gap-4">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-400/10 text-emerald-300">
-                      <Icon className="h-6 w-6" />
-                    </div>
-                    <div>
-                      <h2 className="text-lg font-black text-white">{item.title}</h2>
-                      <p className="mt-1 text-sm leading-6 text-slate-400">{item.description}</p>
-                    </div>
-                  </div>
-                  {item.title === 'Two-factor authentication' ? (
-                    <button
-                      onClick={() => setTwoFactorEnabled((enabled) => !enabled)}
-                      className={`inline-flex items-center gap-2 rounded-2xl px-5 py-3 font-black transition ${
-                        twoFactorEnabled ? 'bg-emerald-400 text-slate-950' : 'border border-white/10 bg-white/5 text-white hover:bg-white/10'
-                      }`}
-                    >
-                      {twoFactorEnabled ? <Check className="h-4 w-4" /> : <ShieldCheck className="h-4 w-4" />}
-                      {twoFactorEnabled ? 'Enabled' : 'Enable'}
-                    </button>
-                  ) : (
-                    <Link href="/settings" className="inline-flex items-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-5 py-3 font-black text-white transition hover:bg-white/10">
-                      {item.action}
-                    </Link>
-                  )}
+              {kycStatus === 'verified' ? (
+                <div className="bg-green-900/50 border border-green-500 rounded-lg p-4">
+                  <p className="text-green-200">✓ Your identity has been verified</p>
                 </div>
-              );
-            })}
+              ) : kycStatus === 'pending' ? (
+                <div className="bg-yellow-900/50 border border-yellow-500 rounded-lg p-4">
+                  <p className="text-yellow-200">⏳ Your verification is being processed</p>
+                </div>
+              ) : kycStatus === 'rejected' ? (
+                <div className="bg-red-900/50 border border-red-500 rounded-lg p-4">
+                  <p className="text-red-200">✗ Your verification was rejected. Please try again.</p>
+                </div>
+              ) : (
+                <form onSubmit={handleKYCSubmit} className="space-y-4">
+                  <div>
+                    <label className="block text-gray-300 mb-2">Full Name</label>
+                    <input
+                      type="text"
+                      name="fullName"
+                      required
+                      className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-blue-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-gray-300 mb-2">Date of Birth</label>
+                    <input
+                      type="date"
+                      name="dateOfBirth"
+                      required
+                      className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-blue-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-gray-300 mb-2">Address</label>
+                    <input
+                      type="text"
+                      name="address"
+                      required
+                      className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-blue-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-gray-300 mb-2">Document Type</label>
+                    <select
+                      name="documentType"
+                      required
+                      className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-blue-500"
+                    >
+                      <option value="">Select document type</option>
+                      <option value="passport">Passport</option>
+                      <option value="drivers_license">Driver's License</option>
+                      <option value="national_id">National ID</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-gray-300 mb-2">Document Number</label>
+                    <input
+                      type="text"
+                      name="documentNumber"
+                      required
+                      className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-blue-500"
+                    />
+                  </div>
+
+                  {error && (
+                    <div className="p-4 bg-red-900/50 border border-red-500 rounded-lg">
+                      <p className="text-red-200">{error}</p>
+                    </div>
+                  )}
+
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-800 text-white font-semibold py-4 px-6 rounded-xl transition-colors"
+                  >
+                    {isSubmitting ? 'Submitting...' : 'Submit Verification'}
+                  </button>
+                </form>
+              )}
+            </div>
+
+            <div className="bg-gray-800 rounded-2xl p-8 shadow-xl">
+              <h2 className="text-2xl font-bold text-white mb-4">Security Settings</h2>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between p-4 bg-gray-700 rounded-lg">
+                  <div>
+                    <h3 className="text-white font-semibold">Two-Factor Authentication</h3>
+                    <p className="text-gray-400 text-sm">Add an extra layer of security</p>
+                  </div>
+                  <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors">
+                    Enable
+                  </button>
+                </div>
+
+                <div className="flex items-center justify-between p-4 bg-gray-700 rounded-lg">
+                  <div>
+                    <h3 className="text-white font-semibold">Change Password</h3>
+                    <p className="text-gray-400 text-sm">Update your password regularly</p>
+                  </div>
+                  <button className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg transition-colors">
+                    Change
+                  </button>
+                </div>
+
+                <div className="flex items-center justify-between p-4 bg-gray-700 rounded-lg">
+                  <div>
+                    <h3 className="text-white font-semibold">Active Sessions</h3>
+                    <p className="text-gray-400 text-sm">Manage your active sessions</p>
+                  </div>
+                  <button className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg transition-colors">
+                    View
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
-        </section>
+        </div>
       </div>
-    </div>
+    </AuthGuard>
   );
 }

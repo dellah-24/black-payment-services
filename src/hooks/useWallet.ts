@@ -1,195 +1,97 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
-import { ethers } from 'ethers';
-import { walletStorage } from '@/lib/secureWalletStorage';
+import { useState, useCallback, useEffect } from 'react';
+import { WalletChain } from '@/wallet/types';
+import { getChainConfig, SUPPORTED_CHAINS } from '@/config/chains';
+import { useWalletStore } from '@/stores/walletStore';
+import { walletService } from '@/services/walletService';
 import { logger } from '@/lib/logger';
 
-/**
- * Wallet data structure
- */
-export interface WalletData {
-  address: string;
-  privateKey?: string;
-  mnemonic?: string;
-}
-
 export function useWallet() {
-  const [account, setAccount] = useState<string | null>(null);
-  const [walletData, setWalletData] = useState<WalletData | null>(null);
+  const { isConnected, address, chain, balance, usdtBalance, isLoading, error, setChain, updateBalance, setLoading, setError, reset } = useWalletStore();
   const [isConnecting, setIsConnecting] = useState(false);
 
-  // Load wallet from Supabase on mount
+  const connect = useCallback(async (selectedChain: WalletChain) => {
+    setIsConnecting(true);
+    setLoading(true);
+    setError(null);
+
+    try {
+      const chainConfig = getChainConfig(selectedChain);
+      setChain(selectedChain);
+      setLoading(false);
+      setIsConnecting(false);
+    } catch (error) {
+      const message = (error as Error).message;
+      setError(message);
+      setLoading(false);
+      setIsConnecting(false);
+      logger.error('Wallet connection failed', error as Error);
+    }
+  }, [setChain, setLoading, setError]);
+
+  const disconnect = useCallback(() => {
+    reset();
+    setIsConnecting(false);
+  }, [reset]);
+
+  const send = useCallback(async (to: string, amount: string) => {
+    if (!isConnected || !address || !chain) {
+      throw new Error('Wallet not connected');
+    }
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      const result = await walletService.transfer({
+        from: address,
+        to,
+        amount,
+        chain,
+      });
+
+      setLoading(false);
+      return result;
+    } catch (error) {
+      const message = (error as Error).message;
+      setError(message);
+      setLoading(false);
+      logger.error('Transfer failed', error as Error);
+      throw error;
+    }
+  }, [isConnected, address, chain, setLoading, setError]);
+
+  const refreshBalance = useCallback(async () => {
+    if (!isConnected || !address || !chain) return;
+
+    try {
+      const info = await walletService.getWalletInfo(address, chain);
+      updateBalance(info.balance, info.usdtBalance);
+    } catch (error) {
+      logger.error('Failed to refresh balance', error as Error);
+    }
+  }, [isConnected, address, chain, updateBalance]);
+
   useEffect(() => {
-    const restoreSession = async () => {
-      if (walletStorage.hasSession()) {
-        const savedAccount = walletStorage.getCurrentAccount();
-        if (savedAccount) {
-          // Try to retrieve wallet from Supabase
-          const data = await walletStorage.retrieveWallet(savedAccount);
-          if (data) {
-            setAccount(savedAccount);
-            setWalletData({
-              address: savedAccount,
-              privateKey: data.privateKey,
-              mnemonic: data.mnemonic,
-            });
-          } else {
-            // Session invalid, clear it
-            walletStorage.clearSession();
-          }
-        }
-      }
-    };
-    
-    restoreSession();
-  }, []);
-
-  /**
-   * Create a new wallet
-   */
-  const createWallet = useCallback(async (): Promise<WalletData | null> => {
-    setIsConnecting(true);
-    try {
-      // Generate random wallet
-      const wallet = ethers.Wallet.createRandom();
-      
-      // Get mnemonic phrase
-      const mnemonicPhrase = (wallet as any).mnemonic?.phrase || '';
-      
-      // Store encrypted in Supabase
-      const stored = await walletStorage.storeWallet(
-        wallet.address,
-        wallet.privateKey,
-        mnemonicPhrase || undefined
-      );
-      
-      if (!stored) {
-        logger.error('Failed to store wallet in Supabase');
-        return null;
-      }
-
-      const data: WalletData = {
-        address: wallet.address,
-        privateKey: wallet.privateKey,
-        mnemonic: mnemonicPhrase,
-      };
-
-      setAccount(wallet.address);
-      setWalletData(data);
-      
-      return data;
-    } catch (err) {
-      logger.error('Failed to create wallet', err as Error);
-      return null;
-    } finally {
-      setIsConnecting(false);
+    if (isConnected) {
+      refreshBalance();
     }
-  }, []);
-
-  /**
-   * Import an existing wallet from private key
-   */
-  const importWallet = useCallback(async (privateKey: string): Promise<WalletData | null> => {
-    setIsConnecting(true);
-    try {
-      const wallet = new ethers.Wallet(privateKey);
-      
-      // Store encrypted in Supabase
-      const stored = await walletStorage.storeWallet(
-        wallet.address,
-        wallet.privateKey,
-        undefined
-      );
-      
-      if (!stored) {
-        logger.error('Failed to store wallet in Supabase');
-        return null;
-      }
-
-      const data: WalletData = {
-        address: wallet.address,
-        privateKey: wallet.privateKey,
-      };
-
-      setAccount(wallet.address);
-      setWalletData(data);
-      
-      return data;
-    } catch (err) {
-      logger.error('Failed to import wallet', err as Error);
-      return null;
-    } finally {
-      setIsConnecting(false);
-    }
-  }, []);
-
-  /**
-   * Import wallet from mnemonic
-   */
-  const importFromMnemonic = useCallback(async (mnemonic: string): Promise<WalletData | null> => {
-    setIsConnecting(true);
-    try {
-      const wallet = ethers.Wallet.fromPhrase(mnemonic);
-      
-      // Store encrypted in Supabase
-      const stored = await walletStorage.storeWallet(
-        wallet.address,
-        wallet.privateKey,
-        mnemonic
-      );
-      
-      if (!stored) {
-        logger.error('Failed to store wallet in Supabase');
-        return null;
-      }
-
-      const data: WalletData = {
-        address: wallet.address,
-        privateKey: wallet.privateKey,
-        mnemonic: mnemonic,
-      };
-
-      setAccount(wallet.address);
-      setWalletData(data);
-      
-      return data;
-    } catch (err) {
-      logger.error('Failed to import wallet from mnemonic', err as Error);
-      return null;
-    } finally {
-      setIsConnecting(false);
-    }
-  }, []);
-
-  /**
-   * Get signer for transactions
-   */
-  const getSigner = useCallback((): ethers.Signer | null => {
-    if (!walletData?.privateKey) return null;
-    return new ethers.Wallet(walletData.privateKey);
-  }, [walletData]);
-
-  /**
-   * Disconnect wallet (clear from Supabase)
-   */
-  const disconnectWallet = useCallback(async () => {
-    if (account) {
-      await walletStorage.deleteWallet(account);
-    }
-    setAccount(null);
-    setWalletData(null);
-  }, [account]);
+  }, [isConnected, refreshBalance]);
 
   return {
-    account,
-    walletData,
+    isConnected,
+    address,
+    chain,
+    balance,
+    usdtBalance,
+    isLoading,
+    error,
     isConnecting,
-    createWallet,
-    importWallet,
-    importFromMnemonic,
-    getSigner,
-    disconnectWallet,
-    isConnected: !!account,
+    connect,
+    disconnect,
+    send,
+    refreshBalance,
+    supportedChains: SUPPORTED_CHAINS,
   };
 }
