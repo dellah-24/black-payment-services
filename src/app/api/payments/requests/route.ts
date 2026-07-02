@@ -4,6 +4,8 @@ import { createCustodialKeyManagerForRequest } from '@/lib/custodialService';
 import { getEnv, isPlaceholder } from '@/lib/env';
 import { logger } from '@/lib/logger';
 
+export const dynamic = 'force-dynamic';
+
 export async function POST(request: NextRequest) {
   const userId = await getAuthenticatedUserId(request);
   if (!userId) {

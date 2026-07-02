@@ -4,6 +4,8 @@ import { createClient } from '@supabase/supabase-js';
 import { getEnv, isPlaceholder } from '@/lib/env';
 import { logger } from '@/lib/logger';
 
+export const dynamic = 'force-dynamic';
+
 export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
   const userId = await getAuthenticatedUserId(request);
   if (!userId) {
