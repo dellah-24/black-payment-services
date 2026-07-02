@@ -1,4 +1,4 @@
-import { createClient } from '@supabase/supabase-js';
+import { getSupabaseClient } from '@/lib/supabaseClient';
 import { getEnv, requireEnv, isProduction } from '@/lib/env';
 import { logger } from '@/lib/logger';
 import { getChainConfig, getPrimaryRpcUrl, getUsdtAddress, ChainKey } from '@/config/chains';
@@ -22,13 +22,10 @@ export interface TransferResult {
 }
 
 export class WalletService {
-  private supabase: ReturnType<typeof createClient>;
+  private supabase: ReturnType<typeof getSupabaseClient>;
 
   constructor() {
-    this.supabase = createClient(
-      requireEnv('NEXT_PUBLIC_SUPABASE_URL', { allowLocalDev: true }), 
-      requireEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY', { allowLocalDev: true })
-    );
+    this.supabase = getSupabaseClient();
   }
 
   async getWalletInfo(address: string, chain: ChainKey): Promise<WalletInfo> {

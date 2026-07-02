@@ -1,9 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
-import { createClient } from '@supabase/supabase-js';
-import { getEnv, isPlaceholder, isProduction } from '@/lib/env';
+import { getSupabaseClient } from '@/lib/supabaseClient';
+import { getEnv } from '@/lib/env';
 import { logger } from '@/lib/logger';
 
-const supabase = createClient(getEnv('NEXT_PUBLIC_SUPABASE_URL') ?? '', getEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY') ?? '');
+const supabase = getSupabaseClient();
 
 export interface AuthState {
   user: any | null;

@@ -1,4 +1,4 @@
-import { createClient } from '@supabase/supabase-js';
+import { getSupabaseClient } from '@/lib/supabaseClient';
 import { getEnv, isPlaceholder, isProduction } from '@/lib/env';
 import { logger } from '@/lib/logger';
 import { getChainConfig, getPrimaryRpcUrl, getUsdtAddress, ChainKey } from '@/config/chains';
@@ -42,7 +42,7 @@ export async function createPaymentRequest(params: {
   const expiresInHours = params.expiresInHours || 24;
   const expiresAt = new Date(Date.now() + expiresInHours * 60 * 60 * 1000).toISOString();
 
-  const supabase = createClient(getEnv('NEXT_PUBLIC_SUPABASE_URL') ?? '', getEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY') ?? '');
+  const supabase = getSupabaseClient();
 
   const { data, error } = await supabase
     .from('payment_requests')
@@ -78,7 +78,7 @@ export async function createPaymentRequest(params: {
 }
 
 export async function getPaymentRequest(id: string): Promise<PaymentRequest | null> {
-  const supabase = createClient(getEnv('NEXT_PUBLIC_SUPABASE_URL') ?? '', getEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY') ?? '');
+  const supabase = getSupabaseClient();
 
   const { data, error } = await supabase
     .from('payment_requests')
@@ -116,7 +116,7 @@ export async function createPaymentLink(params: {
   const expiresInHours = params.expiresInHours || 168; // 7 days
   const expiresAt = new Date(Date.now() + expiresInHours * 60 * 60 * 1000).toISOString();
 
-  const supabase = createClient(getEnv('NEXT_PUBLIC_SUPABASE_URL') ?? '', getEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY') ?? '');
+  const supabase = getSupabaseClient();
 
   const { data, error } = await supabase
     .from('payment_links')
@@ -154,7 +154,7 @@ export async function createPaymentLink(params: {
 }
 
 export async function getPaymentLink(id: string): Promise<PaymentLink | null> {
-  const supabase = createClient(getEnv('NEXT_PUBLIC_SUPABASE_URL') ?? '', getEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY') ?? '');
+  const supabase = getSupabaseClient();
 
   const { data, error } = await supabase
     .from('payment_links')
@@ -183,7 +183,7 @@ export async function getPaymentLink(id: string): Promise<PaymentLink | null> {
 }
 
 export async function getUserPaymentRequests(userId: string, limit = 50): Promise<PaymentRequest[]> {
-  const supabase = createClient(getEnv('NEXT_PUBLIC_SUPABASE_URL') ?? '', getEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY') ?? '');
+  const supabase = getSupabaseClient();
 
   const { data, error } = await supabase
     .from('payment_requests')
@@ -212,7 +212,7 @@ export async function getUserPaymentRequests(userId: string, limit = 50): Promis
 }
 
 export async function getUserPaymentLinks(userId: string, limit = 50): Promise<PaymentLink[]> {
-  const supabase = createClient(getEnv('NEXT_PUBLIC_SUPABASE_URL') ?? '', getEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY') ?? '');
+  const supabase = getSupabaseClient();
 
   const { data, error } = await supabase
     .from('payment_links')
@@ -241,7 +241,7 @@ export async function getUserPaymentLinks(userId: string, limit = 50): Promise<P
 }
 
 export async function getTransactionHistory(userId: string, chain?: ChainKey): Promise<any[]> {
-  const supabase = createClient(getEnv('NEXT_PUBLIC_SUPABASE_URL') ?? '', getEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY') ?? '');
+  const supabase = getSupabaseClient();
 
   let query = supabase
     .from('transactions')
@@ -269,7 +269,7 @@ export async function payRequest(paymentId: string, userId: string, chain: Chain
   // 1. Verify the payment request exists and is valid
   // 2. Process the blockchain transaction
   // 3. Update the payment status
-  const supabase = createClient(getEnv('NEXT_PUBLIC_SUPABASE_URL') ?? '', getEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY') ?? '');
+  const supabase = getSupabaseClient();
 
   const { error } = await supabase
     .from('payment_requests')
