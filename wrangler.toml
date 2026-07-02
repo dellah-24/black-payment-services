@@ -1,22 +1,18 @@
-# Cloudflare Workers configuration for BlackPayments Wallet
+# Cloudflare Pages configuration for BlackPayments Wallet
 # Production deployment configuration
 
 name = "blackpayments-wallet"
-main = "src/index.ts"
 compatibility_date = "2024-01-01"
 compatibility_flags = ["nodejs_compat"]
+
+# Cloudflare Pages build output directory
+pages_build_output_dir = ".next"
 
 # Production environment variables
 [vars]
 NODE_ENV = "production"
 APP_NAME = "BlackPayments Wallet"
 APP_VERSION = "1.0.0"
-
-# Production routes
-routes = [
-  { pattern = "blackpayments.com/api/*", zone_name = "blackpayments.com" },
-  { pattern = "api.blackpayments.com/*", zone_name = "blackpayments.com" },
-]
 
 # Production environment
 [env.production]
