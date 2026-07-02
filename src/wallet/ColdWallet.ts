@@ -19,7 +19,6 @@ import {
 } from './types';
 import {
   CHAIN_CONFIGS,
-  TESTNET_CONFIGS,
   USDT_TOKENS,
 } from './chains';
 
@@ -32,7 +31,10 @@ const USDT_ABI = [
   'function decimals() view returns (uint8)',
   'function symbol() view returns (string)',
   'event Transfer(address indexed from, address indexed to, uint256 value)',
-];
+] as const;
+
+// Create Interface for USDT contract
+const USDT_INTERFACE = new ethers.Interface(USDT_ABI);
 
 /**
  * Cold Wallet Configuration
@@ -182,11 +184,14 @@ export class ColdWallet {
     const nativeBalance = await provider.getBalance(wallet.address);
     
     // Get USDT balance
-    const usdtContract = new ethers.Contract(usdtConfig.tokenAddress, USDT_ABI, wallet);
-    const usdtBalance = await usdtContract.balanceOf(wallet.address);
+    const usdtBalance = await provider.call({
+      to: usdtConfig.tokenAddress,
+      data: USDT_INTERFACE.encodeFunctionData('balanceOf', [wallet.address])
+    });
+    const decodedBalance = USDT_INTERFACE.decodeFunctionResult('balanceOf', usdtBalance);
 
     const nativeBalanceBigInt = BigInt(nativeBalance.toString());
-    const usdtBalanceBigInt = BigInt(usdtBalance.toString());
+    const usdtBalanceBigInt = BigInt(decodedBalance[0].toString());
 
     return {
       nativeBalance: nativeBalanceBigInt,
@@ -207,9 +212,14 @@ export class ColdWallet {
     }
 
     const usdtConfig = USDT_TOKENS[chain];
-    const usdtContract = new ethers.Contract(usdtConfig.tokenAddress, USDT_ABI, wallet);
-    const balance = await usdtContract.balanceOf(wallet.address);
-    return BigInt(balance.toString());
+    const provider = this.providers.get(chain);
+    if (!provider) throw new Error(`Chain ${chain} not supported`);
+    const usdtBalance = await provider.call({
+      to: usdtConfig.tokenAddress,
+      data: USDT_INTERFACE.encodeFunctionData('balanceOf', [wallet.address])
+    });
+    const decodedBalance = USDT_INTERFACE.decodeFunctionResult('balanceOf', usdtBalance);
+    return BigInt(decodedBalance[0].toString());
   }
 
   /**
@@ -365,12 +375,15 @@ export class ColdWallet {
     }
 
     const usdtConfig = USDT_TOKENS[chain];
+    const provider = this.providers.get(chain);
+    if (!provider) throw new Error(`Chain ${chain} not supported`);
 
-    // Create USDT contract instance
-    const usdtContract = new ethers.Contract(usdtConfig.tokenAddress, USDT_ABI, wallet);
-
-    // Build transaction
-    const tx = await usdtContract.transfer.populateTransaction(to, amount);
+    // Build transaction using Interface
+    const tx: ethers.TransactionRequest = {
+      to: usdtConfig.tokenAddress,
+      data: USDT_INTERFACE.encodeFunctionData('transfer', [to, amount]),
+      chainId: CHAIN_CONFIGS[chain].chainId,
+    };
 
     // Add gas settings if provided
     if (gasSettings?.maxFeePerGas) {
@@ -461,10 +474,13 @@ export class ColdWallet {
     }
 
     const usdtConfig = USDT_TOKENS[chain];
-    const usdtContract = new ethers.Contract(usdtConfig.tokenAddress, USDT_ABI, wallet);
 
     // Estimate gas
-    const gasLimit = await usdtContract.transfer.estimateGas(to, amount);
+    const gasLimit = await provider.estimateGas({
+      to: usdtConfig.tokenAddress,
+      data: USDT_INTERFACE.encodeFunctionData('transfer', [to, amount]),
+      from: wallet.address,
+    });
     
     // Get fee data
     const feeData = await provider.getFeeData();

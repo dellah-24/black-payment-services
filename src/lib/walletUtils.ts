@@ -5,7 +5,7 @@
 
 import { logger } from '@/lib/logger';
 import { ethers } from 'ethers';
-import QRCodeLib from 'qrcode';
+import { toDataURL } from 'qrcode';
 import {
   getTronExplorerTxUrl,
   getTronTransactionStatus,
@@ -26,7 +26,7 @@ import { ChainKey } from '@/config/chains';
 export async function generateQRCode(address: string, size: number = 200): Promise<string> {
   try {
     // Generate QR code as data URL
-    const dataUrl = await QRCodeLib.toDataURL(address, {
+    const dataUrl = await toDataURL(address, {
       width: size,
       margin: 2,
       color: {
@@ -227,7 +227,18 @@ export async function simulateTransaction(
     ];
     
     const chainConfig = getChainConfig(chain as ChainKey);
-    const usdtContract = new ethers.Contract(chainConfig.usdtAddress, USDT_ABI, provider);
+    
+    if (!chainConfig.usdtAddress) {
+      return {
+        success: false,
+        message: 'USDT not supported on this chain',
+      };
+    }
+    
+    const usdtContract = new ethers.Contract(chainConfig.usdtAddress, USDT_ABI, provider) as unknown as {
+      balanceOf: (address: string) => Promise<bigint>;
+      decimals: () => Promise<number>;
+    };
     
     const [usdtBalance, decimals] = await Promise.all([
       usdtContract.balanceOf(senderAddress),
@@ -419,11 +430,14 @@ export async function fetchUSDTBalance(chain: string, address: string): Promise<
     'function decimals() view returns (uint8)',
   ];
   const chainConfig = getChainConfig(chain as ChainKey);
-  const usdtContract = new ethers.Contract(chainConfig.usdtAddress, USDT_ABI, provider);
-  const [balance, decimals] = await Promise.all([
-    usdtContract.balanceOf(address),
-    usdtContract.decimals(),
-  ]);
+   const usdtContract = new ethers.Contract(chainConfig.usdtAddress, USDT_ABI, provider) as unknown as {
+     balanceOf: (address: string) => Promise<bigint>;
+     decimals: () => Promise<number>;
+   };
+   const [balance, decimals] = await Promise.all([
+     usdtContract.balanceOf(address),
+     usdtContract.decimals(),
+   ]);
 
   return ethers.formatUnits(balance, Number(decimals));
 }
@@ -464,7 +478,7 @@ export function getExplorerTxUrl(chain: string, hash: string): string {
     linea: 'https://lineascan.build',
     base: 'https://basescan.org',
   };
-  const explorerUrl = explorerUrls[chain] || explorerUrls.ethereum;
+  const explorerUrl = explorerUrls[chain] || explorerUrls['ethereum'];
   return `${explorerUrl}/tx/${hash}`;
 }
 
@@ -594,7 +608,7 @@ export function validateAmount(
   
   // Check decimal places
   const parts = amount.split('.');
-  if (parts.length > 1 && parts[1].length > maxDecimals) {
+  if (parts.length > 1 && parts[1] && parts[1].length > maxDecimals) {
     return { isValid: false, error: `Maximum ${maxDecimals} decimal places allowed` };
   }
   

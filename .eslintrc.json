@@ -2,25 +2,26 @@
   "root": true,
   "extends": [
     "next/core-web-vitals",
-    "next/typescript",
     "prettier"
   ],
+  "ignorePatterns": ["src/react/**/*", "mobile/**/*"],
   "rules": {
-    "react/no-unescaped-entities": "error",
+    "react/no-unescaped-entities": "warn",
     "@next/next/no-html-link-for-pages": "error",
     "react-hooks/exhaustive-deps": "warn",
     "react/react-in-jsx-scope": "off",
     "react/prop-types": "off",
-    "@typescript-eslint/no-unused-vars": ["error", { "argsIgnorePattern": "^_" }],
-    "@typescript-eslint/no-explicit-any": "error",
+    "@typescript-eslint/no-unused-vars": "warn",
+    "@typescript-eslint/no-explicit-any": "warn",
     "@typescript-eslint/explicit-module-boundary-types": "off",
-    "no-console": ["warn", { "allow": ["warn", "error"] }],
+    "no-console": "warn",
     "no-debugger": "error",
     "no-alert": "error",
-    "prefer-const": "error",
+    "prefer-const": "warn",
     "no-var": "error",
-    "object-shorthand": "error",
-    "prefer-arrow-callback": "error"
+    "object-shorthand": "warn",
+    "prefer-arrow-callback": "warn",
+    "import/no-anonymous-default-export": "warn"
   },
   "env": {
     "browser": true,

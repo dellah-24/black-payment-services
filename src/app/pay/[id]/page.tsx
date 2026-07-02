@@ -5,42 +5,36 @@ import { useParams } from 'next/navigation';
 import { AuthGuard } from '@/components/AuthGuard';
 import { WalletBalance } from '@/components/WalletBalance';
 import { useWalletAuth } from '@/hooks/useWalletAuth';
-import { WalletChain } from '@/wallet/types';
-import { getChainConfig, SUPPORTED_CHAINS } from '@/config/chains';
-import { paymentService } from '@/lib/paymentService';
+import { ChainKey, getChainConfig, SUPPORTED_CHAINS } from '@/config/chains';
+import { paymentService, PaymentRequest } from '@/lib/paymentService';
 import { logger } from '@/lib/logger';
 
-interface PaymentRequest {
-  id: string;
-  amount: string;
-  currency: string;
-  description?: string;
-  status: 'pending' | 'paid' | 'expired';
-  expiresAt: string;
-  merchant: {
+interface PaymentRequestWithMerchant extends PaymentRequest {
+  merchant?: {
     id: string;
     name: string;
   };
-  chain: WalletChain;
 }
 
 export default function PayPage() {
   const params = useParams();
   const { user } = useWalletAuth();
-  const [payment, setPayment] = useState<PaymentRequest | null>(null);
+  const [payment, setPayment] = useState<PaymentRequestWithMerchant | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isPaying, setIsPaying] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [selectedChain, setSelectedChain] = useState<WalletChain>(SUPPORTED_CHAINS[0]);
+  const [selectedChain, setSelectedChain] = useState<ChainKey>(SUPPORTED_CHAINS[0] as ChainKey);
 
   useEffect(() => {
     const loadPayment = async () => {
-      if (!params.id) return;
+      if (!params['id']) return;
 
       try {
-        const paymentData = await paymentService.getPaymentRequest(params.id as string);
+        const paymentData = await paymentService.getPaymentRequest(params['id'] as string);
         setPayment(paymentData);
-        setSelectedChain(paymentData.chain);
+        if (paymentData) {
+          setSelectedChain(paymentData.chain as ChainKey);
+        }
       } catch (error) {
         logger.error('Failed to load payment request', error as Error);
         setError('Payment request not found');
@@ -50,7 +44,7 @@ export default function PayPage() {
     };
 
     loadPayment();
-  }, [params.id]);
+   }, [params['id']]);
 
   const handlePay = async () => {
     if (!user || !payment) return;
@@ -132,7 +126,7 @@ export default function PayPage() {
             <div className="bg-gray-800 rounded-2xl p-8 shadow-xl">
               <div className="text-center mb-8">
                 <h1 className="text-3xl font-bold text-white mb-2">Payment Request</h1>
-                <p className="text-gray-400">From {payment.merchant.name}</p>
+                <p className="text-gray-400">From {payment.merchant?.name || 'Unknown Merchant'}</p>
               </div>
 
               {payment.description && (
@@ -148,18 +142,18 @@ export default function PayPage() {
                     {payment.amount} {payment.currency}
                   </p>
                   <p className="text-gray-400 text-sm">
-                    Network: {getChainConfig(payment.chain).name}
-                  </p>
+                     Network: {getChainConfig(payment.chain as ChainKey).name}
+                   </p>
                 </div>
               </div>
 
               <div className="mb-6">
                 <label className="block text-gray-300 mb-2">Pay with Network</label>
                 <select
-                  value={selectedChain}
-                  onChange={(e) => setSelectedChain(e.target.value as WalletChain)}
-                  className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500"
-                >
+                   value={selectedChain}
+                   onChange={(e) => setSelectedChain(e.target.value as ChainKey)}
+                   className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500"
+                 >
                   {SUPPORTED_CHAINS.map((chain) => (
                     <option key={chain} value={chain}>
                       {getChainConfig(chain).name}

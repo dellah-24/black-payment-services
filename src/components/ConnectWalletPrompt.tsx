@@ -1,10 +1,10 @@
 'use client';
 
-import { WalletChain } from '@/wallet/types';
+import { ChainKey } from '@/config/chains';
 import { getChainConfig, SUPPORTED_CHAINS } from '@/config/chains';
 
 interface ConnectWalletPromptProps {
-  onConnect: (chain: WalletChain) => void;
+  onConnect: (chain: ChainKey) => void;
   isConnecting: boolean;
 }
 

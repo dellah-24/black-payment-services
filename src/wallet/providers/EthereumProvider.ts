@@ -83,12 +83,12 @@ export class EthereumProvider extends BaseProvider {
     return json.result;
   }
 
-  setAddress(address: string): void {
+  override setAddress(address: string): void {
     this.address = address;
     this.emit('accountsChanged', [address]);
   }
 
-  setChainId(chainId: string): void {
+  override setChainId(chainId: string): void {
     this.chainId = chainId;
     this.emit('chainChanged', chainId);
   }

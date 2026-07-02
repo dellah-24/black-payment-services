@@ -11,7 +11,7 @@ const ErrorReportingContext = createContext<ErrorReportingContextValue | null>(n
 
 export function ErrorReportingProvider({ children }: { children: ReactNode }) {
   const reportError = (error: Error, context?: Record<string, any>) => {
-    logger.error('Application error reported', error, context);
+    logger.error('Application error reported', { error, context });
   };
 
   return (

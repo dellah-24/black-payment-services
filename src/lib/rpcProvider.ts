@@ -153,10 +153,13 @@ export class RpcProviderManager {
       .map(([url]) => url);
 
     if (workingUrls.length > 0) {
-      this.currentUrl = workingUrls[0];
-      const info = this.providers.get(this.currentUrl);
-      if (info) {
-        return await operation(info.provider);
+      const nextUrl = workingUrls[0];
+      if (nextUrl) {
+        this.currentUrl = nextUrl;
+        const info = this.providers.get(nextUrl);
+        if (info) {
+          return await operation(info.provider);
+        }
       }
     }
 

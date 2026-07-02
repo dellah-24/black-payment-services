@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { AuthGuard } from '@/components/AuthGuard';
 import { TransactionStatus } from '@/components/TransactionStatus';
 import { useWalletAuth } from '@/hooks/useWalletAuth';
-import { WalletChain } from '@/wallet/types';
+import { ChainKey } from '@/config/chains';
 import { getChainConfig, SUPPORTED_CHAINS } from '@/config/chains';
 import { paymentService } from '@/lib/paymentService';
 import { logger } from '@/lib/logger';
@@ -18,7 +18,7 @@ interface Transaction {
   timestamp: string;
   from?: string;
   to?: string;
-  chain: WalletChain;
+  chain: ChainKey;
   txHash?: string;
 }
 
@@ -26,7 +26,7 @@ export default function HistoryPage() {
   const { user } = useWalletAuth();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [selectedChain, setSelectedChain] = useState<WalletChain>(SUPPORTED_CHAINS[0]);
+  const [selectedChain, setSelectedChain] = useState<ChainKey>(SUPPORTED_CHAINS[0] as ChainKey);
 
   useEffect(() => {
     const loadHistory = async () => {
@@ -45,7 +45,7 @@ export default function HistoryPage() {
     loadHistory();
   }, [user, selectedChain]);
 
-  const handleChainChange = (chain: WalletChain) => {
+  const handleChainChange = (chain: ChainKey) => {
     setSelectedChain(chain);
     setIsLoading(true);
   };
@@ -63,7 +63,7 @@ export default function HistoryPage() {
             <label className="block text-gray-300 mb-2">Filter by Network</label>
             <select
               value={selectedChain}
-              onChange={(e) => handleChainChange(e.target.value as WalletChain)}
+              onChange={(e) => handleChainChange(e.target.value as ChainKey)}
               className="bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500"
             >
               {SUPPORTED_CHAINS.map((chain) => (
@@ -92,18 +92,13 @@ export default function HistoryPage() {
               {transactions.map((tx) => (
                 <TransactionStatus
                   key={tx.id}
-                  transaction={{
-                    id: tx.id,
-                    type: tx.type,
-                    amount: tx.amount,
-                    currency: tx.currency,
-                    status: tx.status,
-                    timestamp: tx.timestamp,
-                    from: tx.from,
-                    to: tx.to,
-                    chain: tx.chain,
-                    txHash: tx.txHash,
-                  }}
+                  status={tx.status === 'completed' ? 'confirmed' : tx.status}
+                  hash={tx.txHash}
+                  chain={tx.chain}
+                  amount={tx.amount}
+                  to={tx.to}
+                  from={tx.from}
+                  timestamp={tx.timestamp}
                 />
               ))}
             </div>

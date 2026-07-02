@@ -26,7 +26,12 @@ export interface NotificationPreferences {
 }
 
 export async function getNotifications(userId: string, limit = 50, offset = 0): Promise<Notification[]> {
-  const supabase = createClient(getEnv('NEXT_PUBLIC_SUPABASE_URL'), getEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY'));
+  const supabaseUrl = getEnv('NEXT_PUBLIC_SUPABASE_URL');
+  const supabaseAnonKey = getEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY');
+  if (!supabaseUrl || !supabaseAnonKey) {
+    throw new Error('Supabase configuration is required');
+  }
+  const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
   const { data, error } = await supabase
     .from('notifications')
@@ -54,7 +59,12 @@ export async function getNotifications(userId: string, limit = 50, offset = 0): 
 }
 
 export async function getUnreadNotificationsCount(userId: string): Promise<number> {
-  const supabase = createClient(getEnv('NEXT_PUBLIC_SUPABASE_URL'), getEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY'));
+  const supabaseUrl = getEnv('NEXT_PUBLIC_SUPABASE_URL');
+  const supabaseAnonKey = getEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY');
+  if (!supabaseUrl || !supabaseAnonKey) {
+    throw new Error('Supabase configuration is required');
+  }
+  const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
   const { count, error } = await supabase
     .from('notifications')
@@ -71,7 +81,12 @@ export async function getUnreadNotificationsCount(userId: string): Promise<numbe
 }
 
 export async function markNotificationAsRead(notificationId: string, userId: string): Promise<void> {
-  const supabase = createClient(getEnv('NEXT_PUBLIC_SUPABASE_URL'), getEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY'));
+  const supabaseUrl = getEnv('NEXT_PUBLIC_SUPABASE_URL');
+  const supabaseAnonKey = getEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY');
+  if (!supabaseUrl || !supabaseAnonKey) {
+    throw new Error('Supabase configuration is required');
+  }
+  const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
   const { error } = await supabase
     .from('notifications')
@@ -86,7 +101,12 @@ export async function markNotificationAsRead(notificationId: string, userId: str
 }
 
 export async function markAllNotificationsAsRead(userId: string): Promise<void> {
-  const supabase = createClient(getEnv('NEXT_PUBLIC_SUPABASE_URL'), getEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY'));
+  const supabaseUrl = getEnv('NEXT_PUBLIC_SUPABASE_URL');
+  const supabaseAnonKey = getEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY');
+  if (!supabaseUrl || !supabaseAnonKey) {
+    throw new Error('Supabase configuration is required');
+  }
+  const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
   const { error } = await supabase
     .from('notifications')
@@ -101,7 +121,12 @@ export async function markAllNotificationsAsRead(userId: string): Promise<void> 
 }
 
 export async function deleteNotification(notificationId: string, userId: string): Promise<void> {
-  const supabase = createClient(getEnv('NEXT_PUBLIC_SUPABASE_URL'), getEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY'));
+  const supabaseUrl = getEnv('NEXT_PUBLIC_SUPABASE_URL');
+  const supabaseAnonKey = getEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY');
+  if (!supabaseUrl || !supabaseAnonKey) {
+    throw new Error('Supabase configuration is required');
+  }
+  const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
   const { error } = await supabase
     .from('notifications')
@@ -116,7 +141,12 @@ export async function deleteNotification(notificationId: string, userId: string)
 }
 
 export async function getNotificationPreferences(userId: string): Promise<NotificationPreferences | null> {
-  const supabase = createClient(getEnv('NEXT_PUBLIC_SUPABASE_URL'), getEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY'));
+  const supabaseUrl = getEnv('NEXT_PUBLIC_SUPABASE_URL');
+  const supabaseAnonKey = getEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY');
+  if (!supabaseUrl || !supabaseAnonKey) {
+    throw new Error('Supabase configuration is required');
+  }
+  const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
   const { data, error } = await supabase
     .from('notification_preferences')
@@ -144,7 +174,12 @@ export async function updateNotificationPreferences(
   userId: string,
   preferences: Partial<NotificationPreferences>
 ): Promise<NotificationPreferences> {
-  const supabase = createClient(getEnv('NEXT_PUBLIC_SUPABASE_URL'), getEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY'));
+  const supabaseUrl = getEnv('NEXT_PUBLIC_SUPABASE_URL');
+  const supabaseAnonKey = getEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY');
+  if (!supabaseUrl || !supabaseAnonKey) {
+    throw new Error('Supabase configuration is required');
+  }
+  const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
   const { data, error } = await supabase
     .from('notification_preferences')

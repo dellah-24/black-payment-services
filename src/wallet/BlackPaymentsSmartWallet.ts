@@ -27,10 +27,7 @@ import {
 } from './types';
 import {
   CHAIN_CONFIGS,
-  TESTNET_CONFIGS,
   USDT_TOKENS,
-  getChainConfig,
-  getUSDTConfig,
 } from './chains';
 import {
   AlchemyAccountAbstractionService,
@@ -51,7 +48,10 @@ const USDT_ABI = [
   'function decimals() view returns (uint8)',
   'function symbol() view returns (string)',
   'event Transfer(address indexed from, address indexed to, uint256 value)',
-];
+] as const;
+
+// Create Interface for USDT contract
+const USDT_INTERFACE = new ethers.Interface(USDT_ABI);
 
 /**
  * Wallet mode - traditional EOA or Smart Account (AA)
@@ -220,8 +220,8 @@ export class BlackPaymentsSmartWallet {
   }
 
   /**
-   * Check native and USDT balance for a specific chain
-   */
+    * Check native and USDT balance for a specific chain
+    */
   async getBalance(chain: WalletChain): Promise<BalanceResult> {
     const wallet = this.wallets.get(chain);
     const provider = this.providers.get(chain);
@@ -233,7 +233,10 @@ export class BlackPaymentsSmartWallet {
     const usdtConfig = USDT_TOKENS[chain];
     const nativeBalance = await provider.getBalance(wallet.address);
     
-    const usdtContract = new ethers.Contract(usdtConfig.tokenAddress, USDT_ABI, wallet);
+    // Use Interface for type-safe contract calls
+    const usdtContract = new ethers.Contract(usdtConfig.tokenAddress, USDT_INTERFACE) as unknown as {
+      balanceOf: (owner: string) => Promise<bigint>;
+    };
     const usdtBalance = await usdtContract.balanceOf(wallet.address);
 
     const nativeBalanceBigInt = BigInt(nativeBalance.toString());
@@ -249,8 +252,8 @@ export class BlackPaymentsSmartWallet {
   }
 
   /**
-   * Check USDT balance for a specific chain
-   */
+    * Check USDT balance for a specific chain
+    */
   async getUSDTBalance(chain: WalletChain): Promise<bigint> {
     const wallet = this.wallets.get(chain);
     if (!wallet) {
@@ -258,7 +261,9 @@ export class BlackPaymentsSmartWallet {
     }
 
     const usdtConfig = USDT_TOKENS[chain];
-    const usdtContract = new ethers.Contract(usdtConfig.tokenAddress, USDT_ABI, wallet);
+    const usdtContract = new ethers.Contract(usdtConfig.tokenAddress, USDT_INTERFACE) as unknown as {
+      balanceOf: (owner: string) => Promise<bigint>;
+    };
     const balance = await usdtContract.balanceOf(wallet.address);
     return BigInt(balance.toString());
   }
@@ -283,8 +288,8 @@ export class BlackPaymentsSmartWallet {
   }
 
   /**
-   * Send USDT using traditional EOA
-   */
+    * Send USDT using traditional EOA
+    */
   async sendUSDT(params: TransferParams): Promise<TransactionResult> {
     const { to, amount, chain, gasSettings } = params;
     
@@ -294,10 +299,16 @@ export class BlackPaymentsSmartWallet {
     }
 
     const usdtConfig = USDT_TOKENS[chain];
-    const usdtContract = new ethers.Contract(usdtConfig.tokenAddress, USDT_ABI, wallet);
+    const usdtContract = new ethers.Contract(usdtConfig.tokenAddress, USDT_INTERFACE, wallet) as unknown as {
+      transfer: (to: string, amount: bigint) => Promise<ethers.ContractTransactionResponse>;
+      populateTransaction: (to: string, amount: bigint) => Promise<ethers.TransactionLike<string>>;
+      estimateGas: {
+        transfer: (to: string, amount: bigint) => Promise<bigint>;
+      };
+    };
 
     // Build transaction
-    const tx = await usdtContract.transfer.populateTransaction(to, amount);
+    const tx = await usdtContract.populateTransaction(to, amount);
 
     if (gasSettings?.maxFeePerGas) {
       tx.maxFeePerGas = gasSettings.maxFeePerGas;
@@ -310,7 +321,7 @@ export class BlackPaymentsSmartWallet {
       tx.gasLimit = gasSettings.gasLimit;
     } else {
       try {
-        const estimatedGas = await usdtContract.transfer.estimateGas(to, amount);
+        const estimatedGas = await usdtContract.estimateGas.transfer(to, amount);
         tx.gasLimit = (estimatedGas * this.GAS_BUFFER_MULTIPLIER) / 100n;
       } catch {
         tx.gasLimit = this.DEFAULT_GAS_LIMIT;
@@ -373,8 +384,8 @@ export class BlackPaymentsSmartWallet {
   }
 
   /**
-   * Quote USDT transfer (estimate fees)
-   */
+    * Quote USDT transfer (estimate fees)
+    */
   async quoteUSDTTransfer(
     to: string,
     amount: bigint,
@@ -388,11 +399,15 @@ export class BlackPaymentsSmartWallet {
     }
 
     const usdtConfig = USDT_TOKENS[chain];
-    const usdtContract = new ethers.Contract(usdtConfig.tokenAddress, USDT_ABI, wallet);
+    const usdtContract = new ethers.Contract(usdtConfig.tokenAddress, USDT_INTERFACE, wallet) as unknown as {
+      estimateGas: {
+        transfer: (to: string, amount: bigint) => Promise<bigint>;
+      };
+    };
 
     let gasLimit: bigint;
     try {
-      const estimated = await usdtContract.transfer.estimateGas(to, amount);
+      const estimated = await usdtContract.estimateGas.transfer(to, amount);
       gasLimit = (estimated * this.GAS_BUFFER_MULTIPLIER) / 100n;
     } catch {
       gasLimit = this.DEFAULT_GAS_LIMIT;

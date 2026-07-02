@@ -16,7 +16,7 @@ export async function GET() {
   try {
     const response = await fetch(`${apiUrl}/courses`, {
       headers: {
-        'X-API-Key': apiKey,
+        'X-API-Key': apiKey ?? '',
       },
       next: { revalidate: 60 },
     });

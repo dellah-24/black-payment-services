@@ -6,6 +6,7 @@ export interface UserProfile {
   id: string;
   userId: string;
   username: string;
+  name: string;
   email: string;
   avatarUrl: string | null;
   bio: string;
@@ -15,7 +16,12 @@ export interface UserProfile {
 }
 
 export async function getProfile(userId: string): Promise<UserProfile | null> {
-  const supabase = createClient(getEnv('NEXT_PUBLIC_SUPABASE_URL'), getEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY'));
+  const supabaseUrl = getEnv('NEXT_PUBLIC_SUPABASE_URL');
+  const supabaseAnonKey = getEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY');
+  if (!supabaseUrl || !supabaseAnonKey) {
+    throw new Error('Supabase configuration is required');
+  }
+  const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
   const { data, error } = await supabase
     .from('profiles')
@@ -31,6 +37,7 @@ export async function getProfile(userId: string): Promise<UserProfile | null> {
     id: data.id,
     userId: data.user_id,
     username: data.username,
+    name: data.username,
     email: data.email,
     avatarUrl: data.avatar_url,
     bio: data.bio,
@@ -41,7 +48,12 @@ export async function getProfile(userId: string): Promise<UserProfile | null> {
 }
 
 export async function updateProfile(userId: string, updates: Partial<UserProfile>): Promise<UserProfile> {
-  const supabase = createClient(getEnv('NEXT_PUBLIC_SUPABASE_URL'), getEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY'));
+  const supabaseUrl = getEnv('NEXT_PUBLIC_SUPABASE_URL');
+  const supabaseAnonKey = getEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY');
+  if (!supabaseUrl || !supabaseAnonKey) {
+    throw new Error('Supabase configuration is required');
+  }
+  const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
   const { data, error } = await supabase
     .from('profiles')
@@ -64,6 +76,7 @@ export async function updateProfile(userId: string, updates: Partial<UserProfile
     id: data.id,
     userId: data.user_id,
     username: data.username,
+    name: data.username,
     email: data.email,
     avatarUrl: data.avatar_url,
     bio: data.bio,
@@ -74,7 +87,12 @@ export async function updateProfile(userId: string, updates: Partial<UserProfile
 }
 
 export async function getPublicProfile(userId: string): Promise<UserProfile | null> {
-  const supabase = createClient(getEnv('NEXT_PUBLIC_SUPABASE_URL'), getEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY'));
+  const supabaseUrl = getEnv('NEXT_PUBLIC_SUPABASE_URL');
+  const supabaseAnonKey = getEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY');
+  if (!supabaseUrl || !supabaseAnonKey) {
+    throw new Error('Supabase configuration is required');
+  }
+  const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
   const { data, error } = await supabase
     .from('profiles')
@@ -90,6 +108,7 @@ export async function getPublicProfile(userId: string): Promise<UserProfile | nu
     id: data.id,
     userId: data.user_id,
     username: data.username,
+    name: data.username,
     email: '',
     avatarUrl: data.avatar_url,
     bio: data.bio,
@@ -98,3 +117,34 @@ export async function getPublicProfile(userId: string): Promise<UserProfile | nu
     updatedAt: data.created_at,
   };
 }
+
+export async function updateSettings(userId: string, settings: { notifications?: any }): Promise<void> {
+  // Placeholder for settings update logic
+  const supabaseUrl = getEnv('NEXT_PUBLIC_SUPABASE_URL');
+  const supabaseAnonKey = getEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY');
+  if (!supabaseUrl || !supabaseAnonKey) {
+    throw new Error('Supabase configuration is required');
+  }
+  const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
+  const { error } = await supabase
+    .from('user_settings')
+    .upsert({
+      user_id: userId,
+      notifications: settings.notifications,
+      updated_at: new Date().toISOString(),
+    });
+
+  if (error) {
+    logger.error('Failed to update settings', error);
+    throw new Error('Failed to update settings');
+  }
+}
+
+// Export all functions as a service object for convenience
+export const profileApi = {
+  getProfile,
+  updateProfile,
+  getPublicProfile,
+  updateSettings,
+};

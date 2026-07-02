@@ -80,7 +80,7 @@ export function createTronWeb(privateKey?: string, rpcUrl?: string, chainKey: Ch
     throw new Error('createTronWeb only supports the tron chain');
   }
 
-  return getTronWeb(privateKey, { rpcUrl });
+  return getTronWeb(privateKey, rpcUrl ? { rpcUrl } : undefined);
 }
 
 export function getTronAddressFromPrivateKey(privateKey: string): string {
@@ -119,7 +119,7 @@ export async function getTronUSDTBalance(address: string, rpcUrl?: string): Prom
   try {
     const tronweb = createTronWeb(undefined, rpcUrl);
     const contract = tronweb.contract(TRON_USDT_ABI, TRON_USDT_ADDRESS);
-    const raw = await contract.balanceOf(address).call();
+    const raw = await contract['balanceOf'](address).call();
     const rawString = raw?.toString?.() ?? String(raw);
 
     return {
@@ -165,7 +165,7 @@ export async function sendTronUSDT(params: TronSendUSDTParams): Promise<TronTran
     const feeLimit = params.feeLimit ?? DEFAULT_TRON_USDT_FEE_LIMIT;
     const contract = tronweb.contract(TRON_USDT_ABI, TRON_USDT_ADDRESS);
 
-    const hash = await contract.transfer(params.to, value.toString()).send(
+    const hash = await contract['transfer'](params.to, value.toString()).send(
       {
         from,
         feeLimit,

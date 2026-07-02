@@ -35,7 +35,7 @@ export async function getTokenPrice(symbol: string): Promise<TokenPrice | null> 
   try {
     const response = await fetch(`${apiUrl}/price/${symbol}`, {
       headers: {
-        'X-API-Key': apiKey,
+        'X-API-Key': apiKey ?? '',
       },
       next: { revalidate: 30 },
     });
@@ -90,7 +90,7 @@ export async function getMarketData(): Promise<PriceData[]> {
   try {
     const response = await fetch(`${apiUrl}/market`, {
       headers: {
-        'X-API-Key': apiKey,
+        'X-API-Key': apiKey ?? '',
       },
       next: { revalidate: 60 },
     });
@@ -114,4 +114,23 @@ export async function getMarketData(): Promise<PriceData[]> {
     logger.error('Failed to fetch market data', error as Error);
     return [];
   }
+}
+
+/**
+ * Format a number as currency string
+ */
+export function formatCurrency(amount: number, currency: string = 'USD'): string {
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency,
+  }).format(amount);
+}
+
+/**
+ * Convert USDT amount to USD value
+ */
+export async function usdtToUSD(usdtAmount: number): Promise<number> {
+  const price = await getUSDTPrice();
+  if (!price) return 0;
+  return usdtAmount * price.price;
 }

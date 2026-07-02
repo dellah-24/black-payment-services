@@ -36,7 +36,12 @@ export async function logAuditEvent(params: {
   userAgent?: string | null;
   status?: AuditLog['status'];
 }): Promise<void> {
-  const supabase = createClient(getEnv('NEXT_PUBLIC_SUPABASE_URL'), getEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY'));
+  const supabaseUrl = getEnv('NEXT_PUBLIC_SUPABASE_URL');
+  const supabaseKey = getEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY');
+  if (!supabaseUrl || !supabaseKey) {
+    return;
+  }
+  const supabase = createClient(supabaseUrl, supabaseKey);
 
   const { error } = await supabase
     .from('audit_logs')
@@ -58,7 +63,12 @@ export async function logAuditEvent(params: {
 }
 
 export async function getAuditLogs(filter: AuditLogFilter = {}): Promise<AuditLog[]> {
-  const supabase = createClient(getEnv('NEXT_PUBLIC_SUPABASE_URL'), getEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY'));
+  const supabaseUrl = getEnv('NEXT_PUBLIC_SUPABASE_URL');
+  const supabaseKey = getEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY');
+  if (!supabaseUrl || !supabaseKey) {
+    return [];
+  }
+  const supabase = createClient(supabaseUrl, supabaseKey);
 
   let query = supabase
     .from('audit_logs')

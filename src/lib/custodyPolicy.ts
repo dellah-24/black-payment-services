@@ -208,5 +208,7 @@ export function toWalletChain(chain: CustodialChain): WalletChain {
       return WalletChain.ETHEREUM;
     case 'bsc':
       return WalletChain.BSC;
+    default:
+      return WalletChain.ETHEREUM;
   }
 }

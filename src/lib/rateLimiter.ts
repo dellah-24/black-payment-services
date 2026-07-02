@@ -14,6 +14,13 @@ export interface RateLimitResult {
   resetAt: Date;
 }
 
+interface RateLimitRow {
+  key: string;
+  count: number;
+  window_start: string;
+  window_end: string;
+}
+
 const defaultConfig: RateLimitConfig = {
   windowMs: 60 * 1000, // 1 minute
   maxRequests: 100,
@@ -22,11 +29,13 @@ const defaultConfig: RateLimitConfig = {
 
 export class RateLimiter {
   private config: RateLimitConfig;
-  private supabase: ReturnType<typeof createClient>;
+  private supabase: any;
 
   constructor(config: Partial<RateLimitConfig> = {}) {
     this.config = { ...defaultConfig, ...config };
-    this.supabase = createClient(getEnv('NEXT_PUBLIC_SUPABASE_URL'), getEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY'));
+    const supabaseUrl = getEnv('NEXT_PUBLIC_SUPABASE_URL');
+    const supabaseAnonKey = getEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY');
+    this.supabase = createClient(supabaseUrl ?? '', supabaseAnonKey ?? '');
   }
 
   async checkLimit(identifier: string): Promise<RateLimitResult> {
@@ -63,10 +72,11 @@ export class RateLimiter {
         };
       }
 
-      const remaining = this.config.maxRequests - data.count;
-      const resetAt = new Date(data.window_end);
+      const rateData = data as RateLimitRow;
+      const remaining = this.config.maxRequests - rateData.count;
+      const resetAt = new Date(rateData.window_end);
 
-      if (data.count >= this.config.maxRequests) {
+      if (rateData.count >= this.config.maxRequests) {
         return {
           allowed: false,
           remaining: 0,
@@ -76,7 +86,7 @@ export class RateLimiter {
 
       const { error: updateError } = await this.supabase
         .from('rate_limits')
-        .update({ count: data.count + 1 })
+        .update({ count: rateData.count + 1 })
         .eq('key', key);
 
       if (updateError) {

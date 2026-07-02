@@ -74,9 +74,13 @@ export class RedisRestClient {
     }
 
     const url = `${this.baseUrl}/${command}${args.length ? `/${args.map(encodeURIComponent).join('/')}` : ''}`;
+    const headers: Record<string, string> = {};
+    if (this.token) {
+      headers['Authorization'] = `Bearer ${this.token}`;
+    }
     const response = await fetch(url, {
       method: 'POST',
-      headers: this.token ? { Authorization: `Bearer ${this.token}` } : undefined,
+      headers,
       body: JSON.stringify(args),
     });
 

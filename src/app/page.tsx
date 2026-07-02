@@ -5,13 +5,12 @@ import { WalletBalance } from '@/components/WalletBalance';
 import { WalletActions } from '@/components/WalletActions';
 import { ChainSelector } from '@/components/ChainSelector';
 import { useWallet } from '@/hooks/useWallet';
-import { WalletChain } from '@/wallet/types';
-import { getChainConfig, SUPPORTED_CHAINS } from '@/config/chains';
+import { ChainKey, getChainConfig, SUPPORTED_CHAINS } from '@/config/chains';
 import { logger } from '@/lib/logger';
 
 export default function Home() {
   const { isConnected, address, chain, balance, usdtBalance, isLoading, error, connect, disconnect, supportedChains } = useWallet();
-  const [selectedChain, setSelectedChain] = useState<WalletChain>(SUPPORTED_CHAINS[0]);
+  const [selectedChain, setSelectedChain] = useState<ChainKey>(SUPPORTED_CHAINS[0] as ChainKey);
 
   const handleConnect = async () => {
     try {
@@ -25,7 +24,7 @@ export default function Home() {
     disconnect();
   };
 
-  const handleChainChange = (chain: WalletChain) => {
+  const handleChainChange = (chain: ChainKey) => {
     setSelectedChain(chain);
   };
 
@@ -99,10 +98,9 @@ export default function Home() {
               </div>
 
               <WalletActions
-                address={address}
-                chain={chain}
-                balance={balance}
-                usdtBalance={usdtBalance}
+                onSend={() => {}}
+                onReceive={() => {}}
+                onSwap={() => {}}
               />
             </div>
           )}

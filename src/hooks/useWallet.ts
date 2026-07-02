@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback, useEffect } from 'react';
-import { WalletChain } from '@/wallet/types';
+import { ChainKey } from '@/config/chains';
 import { getChainConfig, SUPPORTED_CHAINS } from '@/config/chains';
 import { useWalletStore } from '@/stores/walletStore';
 import { walletService } from '@/services/walletService';
@@ -11,7 +11,7 @@ export function useWallet() {
   const { isConnected, address, chain, balance, usdtBalance, isLoading, error, setChain, updateBalance, setLoading, setError, reset } = useWalletStore();
   const [isConnecting, setIsConnecting] = useState(false);
 
-  const connect = useCallback(async (selectedChain: WalletChain) => {
+  const connect = useCallback(async (selectedChain: ChainKey) => {
     setIsConnecting(true);
     setLoading(true);
     setError(null);

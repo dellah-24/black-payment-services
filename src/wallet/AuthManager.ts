@@ -101,7 +101,7 @@ export class AuthManager {
    * Emit auth event
    */
   private emit(type: AuthEventType, data?: Record<string, unknown>): void {
-    const event: AuthEvent = { type, timestamp: Date.now(), data };
+    const event: AuthEvent = { type, timestamp: Date.now(), ...(data && { data }) };
     this.eventListeners.forEach(listener => listener(event));
   }
 

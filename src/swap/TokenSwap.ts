@@ -6,6 +6,7 @@
 
 import { ethers } from 'ethers';
 import { getPrimaryRpcUrl } from '@/config/chains';
+import { logger } from '@/lib/logger';
 
 export type SwapChainId = 
   | 1    // Ethereum
@@ -245,11 +246,18 @@ export class TokenSwap {
 
     // Approve token if not native
     if (fromToken.address !== ethers.ZeroAddress) {
+      const erc20Abi = [
+        'function approve(address spender, uint256 amount) returns (bool)',
+        'function allowance(address owner, address spender) returns (uint256)',
+      ];
       const tokenContract = new ethers.Contract(
         fromToken.address,
-        ['function approve(address spender, uint256 amount) returns (bool)'],
+        erc20Abi,
         wallet
-      );
+      ) as ethers.Contract & {
+        allowance: (owner: string, spender: string) => Promise<bigint>;
+        approve: (spender: string, amount: bigint) => Promise<ethers.TransactionResponse>;
+      };
       
       const allowance = await tokenContract.allowance(wallet.address, '0x1111111254eeb25477b68fb85ed929f73a960582');
       if (allowance < params.amount) {
@@ -261,9 +269,24 @@ export class TokenSwap {
     // Execute swap via 1inch router
     const routerABI = [
       'function swap(address executor, (address srcToken, address dstToken, address srcReceiver, address dstReceiver, uint256 amount, uint256 minReturnAmount, uint256 flags, bytes permit) swapData) returns (uint256 returnAmount)'
-    ];
+    ] as const;
 
-    const router = new ethers.Contract('0x1111111254eeb25477b68fb85ed929f73a960582', routerABI, wallet);
+    const router = new ethers.Contract(
+      '0x1111111254eeb25477b68fb85ed929f73a960582', 
+      routerABI, 
+      wallet
+    ) as ethers.Contract & {
+      swap: (executor: string, swapData: {
+        srcToken: string;
+        dstToken: string;
+        srcReceiver: string;
+        dstReceiver: string;
+        amount: bigint;
+        minReturnAmount: bigint;
+        flags: number;
+        permit: string;
+      }) => Promise<ethers.TransactionResponse>;
+    };
     
     const minReturn = quote.toAmountMin * BigInt(Math.floor((params.slippage || 1) * 100)) / 100n;
     

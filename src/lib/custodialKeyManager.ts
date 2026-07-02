@@ -1,5 +1,5 @@
 import { TronWeb } from 'tronweb';
-import { isProduction } from '@/lib/env';
+import { isProduction, isLocalhostUrl } from '@/lib/env';
 import { logger } from '@/lib/logger';
 import { WalletChain } from '@/wallet/types';
 import { deriveHDKey, getBIP44Path, normalizeMnemonic, validateMnemonic } from '@/lib/hdWallet';
@@ -54,6 +54,11 @@ export interface HSMClient {
   signAndBroadcastTronTransaction?(params: SignTronParams): Promise<string>;
 }
 
+export interface DerivedDepositAddress {
+  chain: string;
+  address: string;
+}
+
 export interface CustodialKeyManager {
   readonly source: 'hsm' | 'http-hsm';
   deriveKey(params: CustodialDeriveParams): Promise<DerivedCustodialKey>;
@@ -61,6 +66,7 @@ export interface CustodialKeyManager {
   signTronTransaction(params: SignTronParams): Promise<string>;
   signAndBroadcastEVMTransaction(params: SignEVMParams): Promise<string>;
   signAndBroadcastTronTransaction(params: SignTronParams): Promise<string>;
+  deriveDepositAddresses(userId: string): Promise<DerivedDepositAddress[]>;
 }
 
 export class HttpHSMCustodialKeyManager implements CustodialKeyManager {
@@ -95,11 +101,15 @@ export class HttpHSMCustodialKeyManager implements CustodialKeyManager {
       .then((result) => result.txHash || result.hash || result.transactionHash || result.tx_hash || result.signature || '');
   }
 
+  async deriveDepositAddresses(userId: string): Promise<DerivedDepositAddress[]> {
+    return this.request<DerivedDepositAddress[]>('/derive-deposit-addresses', { userId });
+  }
+
   private async request<T>(path: string, body: unknown): Promise<T> {
     const headers: Record<string, string> = { 'Content-Type': 'application/json' };
     const token = getRuntimeEnv('CUSTODIAL_HSM_TOKEN');
     if (token) {
-      headers.Authorization = `Bearer ${token}`;
+      headers['Authorization'] = `Bearer ${token}`;
     }
 
     const response = await fetch(`${this.baseUrl}${path}`, {
@@ -146,6 +156,10 @@ export class AdapterCustodialKeyManager implements CustodialKeyManager {
     }
     return this.client.signAndBroadcastTronTransaction(params);
   }
+
+  async deriveDepositAddresses(userId: string): Promise<DerivedDepositAddress[]> {
+    throw new Error('Configured HSM client does not implement deriveDepositAddresses');
+  }
 }
 
 export function createCustodialKeyManager(options: {
@@ -174,9 +188,10 @@ export function createCustodialKeyManager(options: {
 }
 
 export function createCustodialKeyManagerFromEnv(): CustodialKeyManager {
+  const hsmBaseUrl = getRuntimeEnv('CUSTODIAL_HSM_BASE_URL');
   return createCustodialKeyManager({
     mode: getCustodyKeyManagerMode(),
-    hsmBaseUrl: getRuntimeEnv('CUSTODIAL_HSM_BASE_URL'),
+    ...(hsmBaseUrl ? { hsmBaseUrl } : {}),
   });
 }
 

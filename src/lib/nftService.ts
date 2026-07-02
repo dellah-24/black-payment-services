@@ -27,7 +27,12 @@ export interface NFTCollection {
 }
 
 export async function getNFTs(userId: string, chain?: string): Promise<NFT[]> {
-  const supabase = createClient(getEnv('NEXT_PUBLIC_SUPABASE_URL'), getEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY'));
+  const supabaseUrl = getEnv('NEXT_PUBLIC_SUPABASE_URL');
+  const supabaseAnonKey = getEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY');
+  if (!supabaseUrl || !supabaseAnonKey) {
+    throw new Error('Supabase configuration is required');
+  }
+  const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
   let query = supabase
     .from('nfts')
@@ -61,7 +66,12 @@ export async function getNFTs(userId: string, chain?: string): Promise<NFT[]> {
 }
 
 export async function getNFTCollections(userId: string): Promise<NFTCollection[]> {
-  const supabase = createClient(getEnv('NEXT_PUBLIC_SUPABASE_URL'), getEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY'));
+  const supabaseUrl = getEnv('NEXT_PUBLIC_SUPABASE_URL');
+  const supabaseAnonKey = getEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY');
+  if (!supabaseUrl || !supabaseAnonKey) {
+    throw new Error('Supabase configuration is required');
+  }
+  const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
   const { data, error } = await supabase
     .from('nft_collections')
@@ -96,7 +106,12 @@ export async function addNFT(params: {
   imageUrl: string;
   metadata?: Record<string, any>;
 }): Promise<NFT> {
-  const supabase = createClient(getEnv('NEXT_PUBLIC_SUPABASE_URL'), getEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY'));
+  const supabaseUrl = getEnv('NEXT_PUBLIC_SUPABASE_URL');
+  const supabaseAnonKey = getEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY');
+  if (!supabaseUrl || !supabaseAnonKey) {
+    throw new Error('Supabase configuration is required');
+  }
+  const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
   const { data, error } = await supabase
     .from('nfts')
@@ -133,7 +148,12 @@ export async function addNFT(params: {
 }
 
 export async function removeNFT(nftId: string, userId: string): Promise<void> {
-  const supabase = createClient(getEnv('NEXT_PUBLIC_SUPABASE_URL'), getEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY'));
+  const supabaseUrl = getEnv('NEXT_PUBLIC_SUPABASE_URL');
+  const supabaseAnonKey = getEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY');
+  if (!supabaseUrl || !supabaseAnonKey) {
+    throw new Error('Supabase configuration is required');
+  }
+  const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
   const { error } = await supabase
     .from('nfts')

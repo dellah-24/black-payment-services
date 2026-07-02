@@ -14,6 +14,7 @@ import {
   validateCustodialAddress,
 } from '@/lib/custodyPolicy';
 import { createCustodialKeyManagerFromEnv, type CustodialKeyManager } from '@/lib/custodialKeyManager';
+import { getCustodialSupabaseClient } from '@/lib/adminSupabaseClient';
 import { getEnv, isPlaceholder, isProduction } from '@/lib/env';
 import { logger } from '@/lib/logger';
 import { IdempotencyStore, WithdrawalLock } from '@/lib/redis';
@@ -112,7 +113,7 @@ export async function getAuthenticatedUserId(request: NextRequest): Promise<stri
 
 function getAccessTokenFromSupabaseCookie(cookieHeader: string): string | null {
   const match = cookieHeader.match(/(?:^|; )(sb-[a-z0-9-]+-auth-token)=([^;]+)/);
-  if (!match) {
+  if (!match || !match[2]) {
     return null;
   }
 
@@ -407,3 +408,16 @@ export function getCustodialReadiness() {
     production: isProduction(),
   };
 }
+
+// Export all functions as a service object for convenience
+export const custodialService = {
+  getAuthenticatedUserId,
+  createCustodialKeyManagerForRequest,
+  ensureCustodialAddress,
+  getCustodialAddresses,
+  getCustodialBalances,
+  submitCustodialWithdrawal,
+  getCustodialWithdrawals,
+  getCustodialDeposits,
+  getCustodialReadiness,
+};

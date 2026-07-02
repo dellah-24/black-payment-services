@@ -1,21 +1,21 @@
 'use client';
 
-import { WalletChain } from '@/wallet/types';
-import { getChainConfig, SUPPORTED_CHAINS } from '@/config/chains';
+import { ChainKey, getChainConfig, SUPPORTED_CHAINS } from '@/config/chains';
 
 interface ChainSelectorProps {
-  selectedChain: WalletChain;
-  onChainChange: (chain: WalletChain) => void;
+  selectedChain: ChainKey;
+  onChainChange: (chain: ChainKey) => void;
+  supportedChains?: ChainKey[];
 }
 
-export function ChainSelector({ selectedChain, onChainChange }: ChainSelectorProps) {
+export function ChainSelector({ selectedChain, onChainChange, supportedChains = SUPPORTED_CHAINS }: ChainSelectorProps) {
   return (
     <div className="chain-selector">
       <label htmlFor="chain-select">Select Chain:</label>
       <select
         id="chain-select"
         value={selectedChain}
-        onChange={(e) => onChainChange(e.target.value as WalletChain)}
+        onChange={(e) => onChainChange(e.target.value as ChainKey)}
       >
         {SUPPORTED_CHAINS.map((chain) => (
           <option key={chain} value={chain}>

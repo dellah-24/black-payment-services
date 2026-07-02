@@ -168,8 +168,8 @@ class LidoService {
       protocol: 'lido',
       stakedToken: 'ETH',
       rewardToken: 'stETH',
-      stakedAmount: 0n,
-      pendingRewards: 0n,
+      stakedAmount: BigInt(0),
+      pendingRewards: BigInt(0),
       apy: 4.2,
       unbondingPeriod: 0,
     };
@@ -260,7 +260,7 @@ export class DeFiManager {
 
     // Get Lido position
     const lidoPosition = await this.lido.getStakingPosition(userAddress);
-    if (lidoPosition && lidoPosition.stakedAmount > 0n) {
+    if (lidoPosition && lidoPosition.stakedAmount > BigInt(0)) {
       positions.push(lidoPosition);
     }
 
@@ -334,7 +334,7 @@ export class DeFiManager {
         protocol: 'aave_v3',
         token0: 'USDT',
         token1: 'USDC',
-        tvl: 1000000000n,
+        tvl: BigInt(1000000000),
         apy: 4.5,
         rewardAPY: 0.5,
       },
@@ -342,12 +342,12 @@ export class DeFiManager {
   }
 
   /**
-   * Calculate potential yields
-   */
+    * Calculate potential yields
+    */
   calculatePotentialYield(protocol: DeFiProtocol, amount: bigint, apy: number): { daily: bigint; monthly: bigint; yearly: bigint } {
-    const daily = (amount * BigInt(Math.floor(apy * 100))) / 36500n / 100n;
-    const monthly = daily * 30n;
-    const yearly = daily * 365n;
+    const daily = (amount * BigInt(Math.floor(apy * 100))) / BigInt(36500) / BigInt(100);
+    const monthly = daily * BigInt(30);
+    const yearly = daily * BigInt(365);
     return { daily, monthly, yearly };
   }
 

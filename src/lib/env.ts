@@ -6,7 +6,7 @@
  */
 
 export function isProduction(): boolean {
-  return process.env.NODE_ENV === 'production' || process.env.NEXT_PUBLIC_VERCEL_ENV === 'production';
+  return process.env['NODE_ENV'] === 'production' || process.env['NEXT_PUBLIC_VERCEL_ENV'] === 'production';
 }
 
 const PLACEHOLDER_VALUES = new Set([
@@ -170,3 +170,15 @@ export function getAppBaseUrl(): string {
   if (!isProduction()) return 'http://localhost:3000';
   throw new Error('NEXT_PUBLIC_APP_URL is required in production for payment links and callbacks.');
 }
+
+// Environment object for convenient access
+export const env = {
+  NODE_ENV: process.env.NODE_ENV,
+  SENTRY_DSN: getEnv('SENTRY_DSN'),
+  REDIS_URL: getEnv('REDIS_URL'),
+  UPSTASH_REDIS_REST_URL: getEnv('UPSTASH_REDIS_REST_URL'),
+  SUPABASE_URL: getEnv('SUPABASE_URL'),
+  SUPABASE_ANON_KEY: getEnv('SUPABASE_ANON_KEY'),
+  JWT_SECRET: getEnv('JWT_SECRET'),
+  WALLET_ENCRYPTION_KEY: getEnv('WALLET_ENCRYPTION_KEY'),
+} as const;

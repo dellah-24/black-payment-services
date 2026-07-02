@@ -59,12 +59,9 @@ function notify(type: 'success' | 'error' | 'info', message: string) {
  */
 export function useWalletBalance() {
   const {
-    account,
-    selectedChain,
-    setBalance,
-    setUsdtBalance,
-    setUsdValue,
-    setPriceChange,
+    address,
+    chain,
+    updateBalance,
   } = useWalletStore();
 
   const pollingRef = useRef<number | null>(null);
@@ -77,16 +74,14 @@ export function useWalletBalance() {
         getTronTRXBalance(address),
       ]);
 
-      setUsdtBalance(usdtBalance.formatted);
-      setBalance(nativeBalance.formatted);
+      updateBalance(nativeBalance.formatted, usdtBalance.formatted);
       const key = `${address.toLowerCase()}:${chainKey}`;
       LastKnownBalances.set(key, { usdt: usdtBalance.formatted, native: nativeBalance.formatted, ts: Date.now() });
       return;
     }
 
     if (chainKey === 'solana') {
-      setBalance('0');
-      setUsdtBalance('0');
+      updateBalance('0', '0');
       const key = `${address.toLowerCase()}:${chainKey}`;
       LastKnownBalances.set(key, { usdt: '0', native: '0', ts: Date.now() });
       return;
@@ -103,39 +98,28 @@ export function useWalletBalance() {
       ], provider);
 
       // Parallelize balance and decimals with caching
-      const decimalsKey = `${chainKey}:${chain.usdtAddress}`;
-      const decimalsPromise = decimalsCache.has(decimalsKey)
-        ? Promise.resolve(decimalsCache.get(decimalsKey)!)
-        : withRetry(() => usdtContract.decimals(), 2, 200).then((d: any) => {
-            const num = Number(d);
-            decimalsCache.set(decimalsKey, num);
-            return num;
-          });
+       const decimalsKey = `${chainKey}:${chain.usdtAddress}`;
+       const decimalsPromise = decimalsCache.has(decimalsKey)
+         ? Promise.resolve(decimalsCache.get(decimalsKey)!)
+         : withRetry(() => (usdtContract as any)['decimals'](), 2, 200).then((d: any) => {
+             const num = Number(d);
+             decimalsCache.set(decimalsKey, num);
+             return num;
+           });
 
-      const [usdtBal, decimals] = await Promise.all([
-        withRetry(() => usdtContract.balanceOf(address), 2, 200),
-        decimalsPromise,
-      ]);
+       const [usdtBal, decimals] = await Promise.all([
+         withRetry(() => (usdtContract as any)['balanceOf'](address), 2, 200),
+         decimalsPromise,
+       ]);
 
-      const formattedUsdt = ethers.formatUnits(usdtBal, decimals);
-      setUsdtBalance(formattedUsdt);
-
-      // Fetch USD value
-      try {
-        const usdValue = await usdtToUSD(parseFloat(formattedUsdt));
-        setUsdValue(formatCurrency(usdValue));
-
-        const priceData = await getUSDTPrice();
-        setPriceChange(priceData.usd_24h_change);
-      } catch (e) {
-        setUsdValue(formatCurrency(parseFloat(formattedUsdt)));
-      }
+       const formattedUsdt = ethers.formatUnits(usdtBal as any, decimals);
+      updateBalance(formattedNative, formattedUsdt);
 
       // Get native balance
       try {
         const native = await provider.getBalance(address);
         formattedNative = ethers.formatUnits(native, 18);
-        setBalance(formattedNative);
+        updateBalance(formattedNative, formattedUsdt);
       } catch (e) {
         logger.warn('Failed to fetch native balance', e as Error);
       }
@@ -146,11 +130,10 @@ export function useWalletBalance() {
 
     } catch (err) {
       logger.error('Error fetching balances', err as Error);
-      setUsdtBalance('0');
-      setBalance('0');
+      updateBalance('0', '0');
       notify('error', 'Unable to fetch balances');
     }
-  }, [setBalance, setUsdtBalance, setUsdValue, setPriceChange]);
+  }, [updateBalance]);
 
   // Polling logic: refresh balances periodically while tab visible
   useEffect(() => {
@@ -158,16 +141,17 @@ export function useWalletBalance() {
     const startPolling = () => {
       if (pollingRef.current) return;
       pollingRef.current = window.setInterval(async () => {
-        if (!account) return;
+        if (!address) return;
+        if (!chain) return;
         try {
-          await fetchBalances(account, selectedChain);
+          await fetchBalances(address, chain);
           pollDelayRef.current = 15000;
         } catch (e) {
           pollDelayRef.current = Math.min(120000, pollDelayRef.current * 2);
           if (pollingRef.current) {
             clearInterval(pollingRef.current);
             pollingRef.current = window.setInterval(async () => {
-              if (account) await fetchBalances(account, selectedChain);
+              if (address && chain) await fetchBalances(address, chain);
             }, pollDelayRef.current);
           }
         }
@@ -181,12 +165,12 @@ export function useWalletBalance() {
       }
     };
 
-    if (account) startPolling();
+    if (address) startPolling();
 
     if (typeof document !== 'undefined') {
       visibilityHandler = () => {
         if (document.hidden) stopPolling();
-        else if (account) startPolling();
+        else if (address) startPolling();
       };
       document.addEventListener('visibilitychange', visibilityHandler);
     }
@@ -197,14 +181,14 @@ export function useWalletBalance() {
         document.removeEventListener('visibilitychange', visibilityHandler);
       }
     };
-  }, [account, selectedChain, fetchBalances]);
+  }, [address, chain, fetchBalances]);
 
-  // Fetch balances when account or selectedChain changes
+  // Fetch balances when address or chain changes
   useEffect(() => {
-    if (account) {
-      fetchBalances(account, selectedChain);
+    if (address && chain) {
+      fetchBalances(address, chain);
     }
-  }, [account, selectedChain, fetchBalances]);
+  }, [address, chain, fetchBalances]);
 
   return { fetchBalances };
 }

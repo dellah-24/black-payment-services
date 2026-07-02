@@ -88,7 +88,7 @@ async function exampleSendUSDT(wallet: BlackPaymentsWallet) {
   const recipient = '0x742d35Cc6634C0532925a3b8D4C9db96C4b4d8b6';
   
   // Amount: 10 USDT (6 decimals for most chains)
-  const amount = 10_000_000n; // 10 USDT
+  const amount = BigInt(10_000_000); // 10 USDT
 
   // First, quote the transfer to see fees
   const quote = await wallet.quoteUSDTTransfer(
@@ -128,7 +128,7 @@ async function exampleMoonPay(wallet: BlackPaymentsWallet) {
   const buyUrl = await wallet.getMoonPayBuyUrl({
     cryptoAsset: 'usdt',
     fiatCurrency: 'usd',
-    fiatAmount: 10000n, // $100.00 in cents
+    fiatAmount: BigInt(10000), // $100.00 in cents
     config: {
       theme: 'dark',
       redirectURL: 'https://yourapp.com/payment-complete',

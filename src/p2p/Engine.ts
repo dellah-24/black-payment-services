@@ -3,8 +3,9 @@
  * Handles order matching, escrow, and dispute resolution
  */
 
-import { WalletChain } from '../wallet/types';
+import { ChainKey } from '../config/chains';
 import { sha256 } from '../wallet/crypto';
+import { WalletChain } from '../wallet/types';
 
 export type OrderStatus = 
   | 'pending' 
@@ -49,7 +50,7 @@ export interface P2POrder {
   userId: string;
   type: 'buy' | 'sell';
   token: string; // USDT, USDC, etc.
-  chain: WalletChain;
+  chain: ChainKey;
   amount: bigint;
   filledAmount: bigint;
   price: bigint; // Price in fiat (cents)
@@ -75,7 +76,7 @@ export interface P2PTrade {
   takerId: string;
   type: 'buy' | 'sell';
   token: string;
-  chain: WalletChain;
+  chain: ChainKey;
   amount: bigint;
   price: bigint;
   fiatAmount: bigint;
@@ -175,6 +176,26 @@ export interface Orderbook {
 }
 
 /**
+ * P2P Offer (for display)
+ */
+export interface P2POffer {
+  id: string;
+  type: 'buy' | 'sell';
+  amount: string;
+  price: string;
+  currency: string;
+  paymentMethod: PaymentMethod;
+  limits: { min: string; max: string };
+  user: {
+    id: string;
+    name: string;
+    rating: number;
+    completedTrades: number;
+  };
+  chain: ChainKey;
+}
+
+/**
  * P2P Engine
  */
 export class P2PEngine {
@@ -238,7 +259,7 @@ export class P2PEngine {
   async createOrder(params: {
     type: 'buy' | 'sell';
     token: string;
-    chain: WalletChain;
+    chain: ChainKey;
     amount: bigint;
     price: bigint;
     fiatCurrency: string;
@@ -317,9 +338,10 @@ export class P2PEngine {
   }
 
   /**
-   * Get orderbook for a trading pair
-   */
-  getOrderbook(token: string, fiatCurrency: string, chain: WalletChain): Orderbook {
+    * Get orderbook for a trading pair
+    */
+  getOrderbook(token: string, fiatCurrency: string, chain: ChainKey): Orderbook {
+
     const allOrders = Array.from(this.orders.values())
       .filter(o => 
         o.token === token && 
@@ -339,15 +361,65 @@ export class P2PEngine {
       return a.price < b.price ? 1 : a.price > b.price ? -1 : 0;
     });
 
-    const spread = asks.length > 0 && bids.length > 0 
+    const spread = asks.length > 0 && bids.length > 0 && asks[0] && bids[0]
       ? asks[0].price - bids[0].price 
       : 0n;
     
-    const midPrice = bids.length > 0 && asks.length > 0 
+    const midPrice = bids.length > 0 && asks.length > 0 && bids[0] && asks[0]
       ? (bids[0].price + asks[0].price) / 2n 
       : 0n;
 
     return { bids, asks, spread, midPrice };
+  }
+
+  /**
+   * Get offers for display in P2P page
+   */
+  getOffers(chain: ChainKey, filter: 'all' | 'buy' | 'sell'): P2POffer[] {
+    const allOrders = Array.from(this.orders.values())
+      .filter(o => 
+        o.chain === chain &&
+        o.status === 'active' &&
+        o.userId !== this.userId
+      );
+
+    if (filter === 'all') {
+      return allOrders.map(o => ({
+        id: o.id,
+        type: o.type,
+        amount: o.amount.toString(),
+        price: (o.price / 100n).toString(),
+        currency: o.fiatCurrency,
+        paymentMethod: o.paymentMethods[0] || 'bank_transfer',
+        limits: { min: o.minAmount.toString(), max: o.maxAmount.toString() },
+        user: {
+          id: o.userId,
+          name: 'User',
+          rating: 5.0,
+          completedTrades: 100,
+        },
+        chain: o.chain,
+      }));
+    }
+
+    return allOrders
+      .filter(o => o.type === filter)
+      .map(o => ({
+        id: o.id,
+        type: o.type,
+        amount: o.amount.toString(),
+        price: (o.price / 100n).toString(),
+        currency: o.fiatCurrency,
+        paymentMethod: o.paymentMethods[0] || 'bank_transfer',
+        limits: { min: o.minAmount.toString(), max: o.maxAmount.toString() },
+        user: {
+          id: o.userId,
+          name: 'User',
+          rating: 5.0,
+          completedTrades: 100,
+        },
+        chain: o.chain,
+      }));
   }
 
   /**

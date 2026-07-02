@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { WalletChain } from '@/wallet/types';
+import { ChainKey } from '@/config/chains';
 import { getChainConfig, SUPPORTED_CHAINS } from '@/config/chains';
 import { validateEthereumAddress, validateTronAddress, ValidationResult } from '@/lib/validation';
 
@@ -9,7 +9,7 @@ export interface AddressBookEntry {
   id: string;
   name: string;
   address: string;
-  chain: WalletChain;
+  chain: ChainKey;
   createdAt: string;
 }
 
@@ -23,7 +23,7 @@ interface AddressBookProps {
 export function AddressBook({ entries, onAddEntry, onDeleteEntry, onSelectEntry }: AddressBookProps) {
   const [name, setName] = useState('');
   const [address, setAddress] = useState('');
-  const [chain, setChain] = useState<WalletChain>('ethereum');
+  const [chain, setChain] = useState<ChainKey>('ethereum');
   const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -38,7 +38,7 @@ export function AddressBook({ entries, onAddEntry, onDeleteEntry, onSelectEntry 
     }
 
     if (!validation.isValid) {
-      setError(validation.errors[0]);
+      setError(validation.errors[0] ?? 'Validation failed');
       return;
     }
 
@@ -50,7 +50,7 @@ export function AddressBook({ entries, onAddEntry, onDeleteEntry, onSelectEntry 
 
     setName('');
     setAddress('');
-    setChain('ethereum');
+    setChain('ethereum' as ChainKey);
   };
 
   return (
@@ -72,7 +72,7 @@ export function AddressBook({ entries, onAddEntry, onDeleteEntry, onSelectEntry 
           onChange={(e) => setAddress(e.target.value)}
           required
         />
-        <select value={chain} onChange={(e) => setChain(e.target.value as WalletChain)}>
+        <select value={chain} onChange={(e) => setChain(e.target.value as ChainKey)}>
           {SUPPORTED_CHAINS.map((c) => (
             <option key={c} value={c}>
               {getChainConfig(c).name}

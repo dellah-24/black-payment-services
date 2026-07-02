@@ -1,0 +1,30 @@
+npm warn config optional Use `--omit=optional` to exclude optional dependencies, or
+npm warn config `--include=optional` to include them.
+npm warn config
+npm warn config       Default value does install optional deps unless otherwise omitted.
+
+> blackpayments-wallet@1.0.0 build
+> next build
+
+   ▲ Next.js 14.1.0
+   - Environments: .env.local
+   - Experiments (use at your own risk):
+     · optimizeCss
+
+   Creating an optimized production build ...
+Compiler server unexpectedly exited with code: null and signal: SIGTERM
+Compiler edge-server unexpectedly exited with code: null and signal: SIGTERM
+ ✓ Compiled successfully
+   Linting and checking validity of types ...
+Failed to compile.
+
+./src/lib/walletUtils.ts:611:27
+Type error: Object is possibly 'undefined'.
+
+[0m [90m 609 |[39m   [90m// Check decimal places[39m[0m
+[0m [90m 610 |[39m   [36mconst[39m parts [33m=[39m amount[33m.[39msplit([32m'.'[39m)[33m;[39m[0m
+[0m[31m[1m>[22m[39m[90m 611 |[39m   [36mif[39m (parts[33m.[39mlength [33m>[39m [35m1[39m [33m&&[39m parts[[35m1[39m][33m.[39mlength [33m>[39m maxDecimals) {[0m
+[0m [90m     |[39m                           [31m[1m^[22m[39m[0m
+[0m [90m 612 |[39m     [36mreturn[39m { isValid[33m:[39m [36mfalse[39m[33m,[39m error[33m:[39m [32m`Maximum ${maxDecimals} decimal places allowed`[39m }[33m;[39m[0m
+[0m [90m 613 |[39m   }[0m
+[0m [90m 614 |[39m   [0m

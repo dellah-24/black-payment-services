@@ -71,7 +71,7 @@ export async function checkRateLimit(ip: string): Promise<{
 
     if (fetchError && fetchError.code !== 'PGRST116') {
       // PGRST116 = not found, which is expected for new IPs
-      logger.error('Rate limit fetch error', fetchError as Error, { ip });
+      logger.error('Rate limit fetch error', { error: fetchError, ip });
       // Allow on error but log
       return { allowed: true, remaining: MAX_REQUESTS, resetAt: now + WINDOW_MS };
     }
@@ -121,7 +121,7 @@ export async function checkRateLimit(ip: string): Promise<{
 
     return { allowed, remaining, resetAt };
   } catch (error) {
-    logger.error('Rate limit check failed', error as Error, { ip });
+    logger.error('Rate limit check failed', { error, ip });
     // Fail open - allow request if rate limiting fails
     return { allowed: true, remaining: MAX_REQUESTS, resetAt: Date.now() + WINDOW_MS };
   }
@@ -172,7 +172,7 @@ export async function getRateLimitStatus(ip: string): Promise<{
       resetAt: windowStart + WINDOW_MS,
     };
   } catch (error) {
-    logger.error('Rate limit status fetch failed', error as Error, { ip });
+    logger.error('Rate limit status fetch failed', { error, ip });
     return {
       count: 0,
       windowStart: Date.now(),
@@ -193,13 +193,13 @@ export async function resetRateLimit(ip: string): Promise<boolean> {
       .eq('ip', ip);
 
     if (error) {
-      logger.error('Rate limit reset failed', error as Error, { ip });
+      logger.error('Rate limit reset failed', { error, ip });
       return false;
     }
 
     return true;
   } catch (error) {
-    logger.error('Rate limit reset exception', error as Error, { ip });
+    logger.error('Rate limit reset exception', { error, ip });
     return false;
   }
 }

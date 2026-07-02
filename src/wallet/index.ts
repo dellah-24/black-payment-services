@@ -36,7 +36,6 @@ export type { ChainType, ProviderConfig, IRequestArguments, IBaseProvider, IAdap
 // Alchemy Account Abstraction exports
 export {
   AlchemyAccountAbstractionService,
-  aaService,
   createAASmartAccount,
   initAAWithSigner,
   type AAChain,

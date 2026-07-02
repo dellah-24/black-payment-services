@@ -1,12 +1,11 @@
 'use client';
 
-import { WalletChain } from '@/wallet/types';
-import { getChainConfig } from '@/config/chains';
+import { ChainKey, getChainConfig } from '@/config/chains';
 
 interface WalletBalanceProps {
   balance: string;
   usdtBalance: string;
-  chain: WalletChain | null;
+  chain: ChainKey | null;
   isLoading?: boolean;
 }
 

@@ -1,8 +1,5 @@
 'use client';
 
-import { WalletChain } from '@/wallet/types';
-import { getChainConfig, SUPPORTED_CHAINS } from '@/config/chains';
-
 interface WalletActionsProps {
   onSend: () => void;
   onReceive: () => void;

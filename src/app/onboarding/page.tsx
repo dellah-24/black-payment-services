@@ -4,8 +4,8 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { AuthGuard } from '@/components/AuthGuard';
 import { useWalletAuth } from '@/hooks/useWalletAuth';
-import { WalletChain } from '@/wallet/types';
-import { getChainConfig, SUPPORTED_CHAINS } from '@/config/chains';
+import { CustodialChain, CUSTODIAL_MVP_CHAINS } from '@/lib/custodyPolicy';
+import { getChainConfig } from '@/config/chains';
 import { custodialService } from '@/lib/custodialService';
 import { logger } from '@/lib/logger';
 
@@ -13,11 +13,11 @@ export default function OnboardingPage() {
   const router = useRouter();
   const { user } = useWalletAuth();
   const [step, setStep] = useState(1);
-  const [selectedChain, setSelectedChain] = useState<WalletChain>(SUPPORTED_CHAINS[0]);
+  const [selectedChain, setSelectedChain] = useState<CustodialChain>(CUSTODIAL_MVP_CHAINS[0]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const handleChainSelect = (chain: WalletChain) => {
+  const handleChainSelect = (chain: CustodialChain) => {
     setSelectedChain(chain);
   };
 
@@ -29,7 +29,7 @@ export default function OnboardingPage() {
 
     try {
       const chainConfig = getChainConfig(selectedChain);
-      const wallet = await custodialService.createCustodialWallet(user.id, selectedChain);
+      const wallet = await custodialService.ensureCustodialAddress({ userId: user.id, chain: selectedChain });
 
       setStep(2);
     } catch (error) {
@@ -59,7 +59,7 @@ export default function OnboardingPage() {
               </p>
 
               <div className="space-y-3 mb-8">
-                {SUPPORTED_CHAINS.map((chain) => {
+                {CUSTODIAL_MVP_CHAINS.map((chain) => {
                   const config = getChainConfig(chain);
                   return (
                     <button

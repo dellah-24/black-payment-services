@@ -3,8 +3,7 @@
 import { useState, useEffect } from 'react';
 import { AuthGuard } from '@/components/AuthGuard';
 import { useWalletAuth } from '@/hooks/useWalletAuth';
-import { WalletChain } from '@/wallet/types';
-import { getChainConfig, SUPPORTED_CHAINS } from '@/config/chains';
+import { ChainKey, SUPPORTED_CHAINS, getChainConfig } from '@/config/chains';
 import { p2pEngine } from '@/p2p/Engine';
 import { logger } from '@/lib/logger';
 
@@ -22,14 +21,14 @@ interface P2POffer {
     rating: number;
     completedTrades: number;
   };
-  chain: WalletChain;
+  chain: ChainKey;
 }
 
 export default function P2PPage() {
   const { user } = useWalletAuth();
   const [offers, setOffers] = useState<P2POffer[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [selectedChain, setSelectedChain] = useState<WalletChain>(SUPPORTED_CHAINS[0]);
+  const [selectedChain, setSelectedChain] = useState<ChainKey>(SUPPORTED_CHAINS[0] as ChainKey);
   const [filter, setFilter] = useState<'all' | 'buy' | 'sell'>('all');
 
   useEffect(() => {
@@ -51,15 +50,16 @@ export default function P2PPage() {
     if (!user) return;
 
     try {
-      await p2pEngine.createOffer({
-        userId: user.id,
+      await p2pEngine.createOrder({
         type,
+        token: 'USDT',
         chain: selectedChain,
-        amount: '1000',
-        price: '1.00',
-        currency: 'USDT',
-        paymentMethod: 'bank_transfer',
-        limits: { min: '100', max: '10000' },
+        amount: BigInt(1000),
+        price: BigInt(100), // $1.00 in cents
+        fiatCurrency: 'USD',
+        paymentMethods: ['bank_transfer'],
+        minAmount: BigInt(100),
+        maxAmount: BigInt(10000),
       });
     } catch (error) {
       logger.error('Failed to create offer', error as Error);
@@ -80,7 +80,7 @@ export default function P2PPage() {
               <label className="block text-gray-300 mb-2">Network</label>
               <select
                 value={selectedChain}
-                onChange={(e) => setSelectedChain(e.target.value as WalletChain)}
+                onChange={(e) => setSelectedChain(e.target.value as ChainKey)}
                 className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500"
               >
                 {SUPPORTED_CHAINS.map((chain) => (

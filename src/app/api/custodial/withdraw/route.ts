@@ -1,7 +1,7 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { getAuthenticatedUserId, submitCustodialWithdrawal } from '@/lib/custodialService';
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   const userId = await getAuthenticatedUserId(request);
   if (!userId) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });

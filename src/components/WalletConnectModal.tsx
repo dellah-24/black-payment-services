@@ -1,13 +1,13 @@
 'use client';
 
-import { WalletChain } from '@/wallet/types';
+import { ChainKey } from '@/config/chains';
 import { getChainConfig, SUPPORTED_CHAINS } from '@/config/chains';
 import { ConnectWalletPrompt } from './ConnectWalletPrompt';
 
 interface WalletConnectModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onConnect: (chain: WalletChain) => void;
+  onConnect: (chain: ChainKey) => void;
   isConnecting: boolean;
 }
 

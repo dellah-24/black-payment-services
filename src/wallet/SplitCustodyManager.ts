@@ -109,14 +109,14 @@ export class SplitCustodyManager {
     );
 
     // Initialize cold wallet
-    const coldConfig: ColdWalletConfig = {
-      multiSigRequired: config.coldWalletConfig.multiSigRequired || false,
-      requiredSignatures: config.coldWalletConfig.signers?.length || 2,
-      signerAddresses: config.coldWalletConfig.signers,
-      whitelistEnabled: true,
-      withdrawalCooldown: 24 * 60 * 60 * 1000, // 24 hour cooldown
-      maxWithdrawalAmount: config.hotWalletConfig.maxDailyVolume * BigInt(5), // 5x daily volume max
-    };
+     const coldConfig: ColdWalletConfig = {
+       multiSigRequired: config.coldWalletConfig.multiSigRequired || false,
+       requiredSignatures: config.coldWalletConfig.signers?.length || 2,
+       ...(config.coldWalletConfig.signers && { signerAddresses: config.coldWalletConfig.signers }),
+       whitelistEnabled: true,
+       withdrawalCooldown: 24 * 60 * 60 * 1000, // 24 hour cooldown
+       maxWithdrawalAmount: config.hotWalletConfig.maxDailyVolume * BigInt(5), // 5x daily volume max
+     };
 
     this.coldWallet = new ColdWallet(
       coldWalletPrivateKey,
@@ -372,7 +372,7 @@ export class SplitCustodyManager {
     const pendingTransfers = Array.from(this.pendingTransfers.values())
       .filter(t => t.status === 'pending' || t.status === 'processing');
 
-    return {
+    const result: CustodyStatus = {
       hotWalletBalances: [hotBalance],
       coldWalletBalances: [coldBalance],
       totalUSDT,
@@ -380,8 +380,13 @@ export class SplitCustodyManager {
       coldWalletPercentage: coldPercentage,
       pendingTransfers,
       needsReplenishment: hotBalance.usdtBalance < this.config.hotWalletConfig.replenishmentThreshold,
-      lastRebalanced: this.lastRebalanced,
     };
+
+    if (this.lastRebalanced) {
+      result.lastRebalanced = this.lastRebalanced;
+    }
+
+    return result;
   }
 
   /**

@@ -49,16 +49,16 @@ async function main() {
   const signers = await createSignersFromEnv();
 
   // Basic config from env
-  const chains = (process.env.HOT_WALLET_CHAINS || 'ethereum').split(',').map((s) => s.trim()) as WalletChain[];
-  const config = {
-    maxDailyVolume: BigInt(process.env.HOT_MAX_DAILY_VOLUME || '1000000000'),
-    replenishmentThreshold: BigInt(process.env.HOT_REPLENISH_THRESHOLD || '100000000'),
-    whitelistEnabled: process.env.HOT_WHITELIST_ENABLED === 'true',
-  } as any;
+   const chains = (process.env['HOT_WALLET_CHAINS'] || 'ethereum').split(',').map((s) => s.trim()) as WalletChain[];
+   const config = {
+     maxDailyVolume: BigInt(process.env['HOT_MAX_DAILY_VOLUME'] || '1000000000'),
+     replenishmentThreshold: BigInt(process.env['HOT_REPLENISH_THRESHOLD'] || '100000000'),
+     whitelistEnabled: process.env['HOT_WHITELIST_ENABLED'] === 'true',
+   } as any;
 
-  const hot = new HotWallet(signers, chains, config, process.env.NODE_ENV !== 'production');
+   const hot = new HotWallet(signers, chains, config);
 
-  const POLL_INTERVAL = Number(process.env.WORKER_POLL_INTERVAL_MS || 5000);
+   const POLL_INTERVAL = Number(process.env['WORKER_POLL_INTERVAL_MS'] || 5000);
 
   while (true) {
     try {

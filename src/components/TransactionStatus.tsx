@@ -1,18 +1,18 @@
 'use client';
 
-import { WalletChain } from '@/wallet/types';
-import { getChainConfig, getCustodialExplorerTxUrl } from '@/lib/custodyPolicy';
+import { ChainKey } from '@/config/chains';
+import { getChainConfig } from '@/config/chains';
 
 export type TransactionStatusType = 'pending' | 'confirmed' | 'failed' | 'cancelled';
 
 interface TransactionStatusProps {
   status: TransactionStatusType;
-  hash?: string;
-  chain?: WalletChain;
-  amount?: string;
-  to?: string;
-  from?: string;
-  timestamp?: string;
+  hash?: string | undefined;
+  chain?: ChainKey | undefined;
+  amount?: string | undefined;
+  to?: string | undefined;
+  from?: string | undefined;
+  timestamp?: string | undefined;
 }
 
 export function TransactionStatus({
@@ -51,7 +51,7 @@ export function TransactionStatus({
     }
   };
 
-  const explorerUrl = hash && chain ? getCustodialExplorerTxUrl(chain, hash) : null;
+  const explorerUrl = hash && chain ? `${getChainConfig(chain).explorerUrl}/tx/${hash}` : null;
 
   return (
     <div className={`transaction-status transaction-status-${status}`}>

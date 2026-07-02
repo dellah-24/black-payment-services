@@ -1,12 +1,12 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { WalletChain } from '@/wallet/types';
+import { ChainKey } from '@/config/chains';
 import { getChainConfig } from '@/config/chains';
 
 export interface WalletState {
   isConnected: boolean;
   address: string | null;
-  chain: WalletChain | null;
+  chain: ChainKey | null;
   balance: string;
   usdtBalance: string;
   isLoading: boolean;
@@ -16,7 +16,7 @@ export interface WalletState {
 export interface WalletActions {
   connect: () => Promise<void>;
   disconnect: () => void;
-  setChain: (chain: WalletChain) => void;
+  setChain: (chain: ChainKey) => void;
   updateBalance: (balance: string, usdtBalance: string) => void;
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
@@ -55,10 +55,10 @@ export const useWalletStore = create<WalletStore>()(
         set(initialState);
       },
 
-      setChain: (chain: WalletChain) => {
-        const chainConfig = getChainConfig(chain);
-        set({ chain, balance: '0', usdtBalance: '0' });
-      },
+      setChain: (chain: ChainKey) => {
+         const chainConfig = getChainConfig(chain);
+         set({ chain, balance: '0', usdtBalance: '0' });
+       },
 
       updateBalance: (balance: string, usdtBalance: string) => {
         set({ balance, usdtBalance });

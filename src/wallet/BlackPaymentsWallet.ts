@@ -4,10 +4,10 @@
  * Main wallet class implementing USDT operations with ethers.js
  */
 
-import { ethers, Wallet, JsonRpcProvider, Mnemonic, HDNodeWallet } from 'ethers';
+import { ethers, Wallet, JsonRpcProvider, HDNodeWallet } from 'ethers';
 import { TronWeb } from 'tronweb';
 import { logger } from '@/lib/logger';
-import { rateLimiter } from '@/lib/rateLimiter';
+import { paymentRateLimiter } from '@/lib/rateLimiter';
 import { deriveHDPrivateKey, getBIP44Path, isMnemonic as isMnemonicPhrase } from '@/lib/hdWallet';
 import {
   getTronTRXBalance,
@@ -29,10 +29,6 @@ import {
 import {
   CHAIN_CONFIGS,
   USDT_TOKENS,
-  TESTNET_CONFIGS,
-  getChainConfig,
-  getUSDTConfig,
-  getSupportedChains,
 } from './chains';
 
 // ERC20 ABI for USDT token interactions
@@ -44,44 +40,48 @@ const USDT_ABI = [
   'function decimals() view returns (uint8)',
   'function symbol() view returns (string)',
   'event Transfer(address indexed from, address indexed to, uint256 value)',
-];
+] as const;
+
+// Create Interface for USDT contract
+const USDT_INTERFACE = new ethers.Interface(USDT_ABI);
 
 /**
- * BlackPayments Wallet
- * 
- * A comprehensive USDT wallet supporting multiple EVM chains with:
- * - Balance checking
- * - Sending USDT transactions
- * - Receiving USDT deposits
- * - Fiat on/off-ramp via MoonPay
- */
-export class BlackPaymentsWallet {
-  // Gas safety buffer multiplier to prevent out-of-gas errors
-  private readonly GAS_BUFFER_MULTIPLIER = 130n; // 30% buffer
-  private readonly DEFAULT_GAS_LIMIT = 100000n;
-  
-  private wallets: Map<WalletChain, Wallet>;
-  private providers: Map<WalletChain, JsonRpcProvider>;
-  private addresses: Map<WalletChain, string>;
-  private tronWeb: TronWeb | null = null;
-  private tronPrivateKey: string | null = null;
-  private moonpayConfig: MoonPayConfig | null;
-
-  /**
-   * Create a new BlackPayments Wallet
+   * BlackPayments Wallet
+   * 
+   * A comprehensive USDT wallet supporting multiple EVM chains with:
+   * - Balance checking
+   * - Sending USDT transactions
+   * - Receiving USDT deposits
+   * - Fiat on/off-ramp via MoonPay
    */
-  constructor(
-    privateKeyOrMnemonic: string,
-    chains: WalletChain[],
-    isTestnet = false,
-    customRpcUrls?: Record<WalletChain, string>,
-    options: { accountIndex?: number } = {}
-  ) {
-    this.wallets = new Map();
-    this.providers = new Map();
-    this.addresses = new Map();
-    this.isTestnet = isTestnet;
-    this.moonpayConfig = null;
+  export class BlackPaymentsWallet {
+    // Gas safety buffer multiplier to prevent out-of-gas errors
+    private readonly GAS_BUFFER_MULTIPLIER = 130n; // 30% buffer
+    private readonly DEFAULT_GAS_LIMIT = 100000n;
+    
+    private wallets: Map<WalletChain, Wallet>;
+    private providers: Map<WalletChain, JsonRpcProvider>;
+    private addresses: Map<WalletChain, string>;
+    private tronWeb: TronWeb | null = null;
+    private tronPrivateKey: string | null = null;
+    private moonpayConfig: MoonPayConfig | null;
+    private isTestnet: boolean;
+
+    /**
+     * Create a new BlackPayments Wallet
+     */
+    constructor(
+      privateKeyOrMnemonic: string,
+      chains: WalletChain[],
+      isTestnet = false,
+      customRpcUrls?: Record<WalletChain, string>,
+      options: { accountIndex?: number } = {}
+    ) {
+      this.wallets = new Map();
+      this.providers = new Map();
+      this.addresses = new Map();
+      this.isTestnet = isTestnet;
+      this.moonpayConfig = null;
 
     // Determine if input is mnemonic or private key
     const isMnemonic = isMnemonicPhrase(privateKeyOrMnemonic);
@@ -213,11 +213,14 @@ export class BlackPaymentsWallet {
     const nativeBalance = await provider.getBalance(wallet.address);
     
     // Get USDT balance
-    const usdtContract = new ethers.Contract(usdtConfig.tokenAddress, USDT_ABI, wallet);
-    const usdtBalance = await usdtContract.balanceOf(wallet.address);
+    const usdtBalance = await provider.call({
+      to: usdtConfig.tokenAddress,
+      data: USDT_INTERFACE.encodeFunctionData('balanceOf', [wallet.address])
+    });
+    const decodedBalance = USDT_INTERFACE.decodeFunctionResult('balanceOf', usdtBalance);
 
     const nativeBalanceBigInt = BigInt(nativeBalance.toString());
-    const usdtBalanceBigInt = BigInt(usdtBalance.toString());
+    const usdtBalanceBigInt = BigInt(decodedBalance[0].toString());
 
     return {
       nativeBalance: nativeBalanceBigInt,
@@ -245,9 +248,14 @@ export class BlackPaymentsWallet {
     }
 
     const usdtConfig = USDT_TOKENS[chain];
-    const usdtContract = new ethers.Contract(usdtConfig.tokenAddress, USDT_ABI, wallet);
-    const balance = await usdtContract.balanceOf(wallet.address);
-    return BigInt(balance.toString());
+    const provider = this.providers.get(chain);
+    if (!provider) throw new Error(`Chain ${chain} not supported`);
+    const usdtBalance = await provider.call({
+      to: usdtConfig.tokenAddress,
+      data: USDT_INTERFACE.encodeFunctionData('balanceOf', [wallet.address])
+    });
+    const decodedBalance = USDT_INTERFACE.decodeFunctionResult('balanceOf', usdtBalance);
+    return BigInt(decodedBalance[0].toString());
   }
 
   /**
@@ -262,7 +270,7 @@ export class BlackPaymentsWallet {
         const balance = await this.getBalance(chain);
         balances.push(balance);
       } catch (error) {
-        logger.error(`Error getting balance for ${chain}`, error as Error, { chain });
+        logger.error(`Error getting balance for ${chain}`, { error, chain });
       }
     }
 
@@ -270,14 +278,14 @@ export class BlackPaymentsWallet {
   }
 
   /**
-   * Send USDT to another address
-   * Includes rate limiting
-   */
+    * Send USDT to another address
+    * Includes rate limiting
+    */
   async sendUSDT(params: TransferParams): Promise<TransactionResult> {
     // Check rate limit first
-    const rateLimit = rateLimiter.check('sendUSDT');
+    const rateLimit = await paymentRateLimiter.checkLimit('sendUSDT');
     if (!rateLimit.allowed) {
-      throw new Error(`Rate limit exceeded. Please wait ${Math.ceil((rateLimit.retryAfterMs || 0) / 1000)} seconds before sending another transaction.`);
+      throw new Error(`Rate limit exceeded. Please wait before sending another transaction.`);
     }
     
     const { to, amount, chain, gasSettings } = params;
@@ -308,17 +316,19 @@ export class BlackPaymentsWallet {
     }
 
     const wallet = this.wallets.get(chain);
-    if (!wallet) {
+    const provider = this.providers.get(chain);
+    if (!wallet || !provider) {
       throw new Error(`Chain ${chain} not supported`);
     }
 
     const usdtConfig = USDT_TOKENS[chain];
 
-    // Create USDT contract instance
-    const usdtContract = new ethers.Contract(usdtConfig.tokenAddress, USDT_ABI, wallet);
-
-    // Build transaction
-    const tx = await usdtContract.transfer.populateTransaction(to, amount);
+    // Build transaction using Interface
+    const tx: ethers.TransactionRequest = {
+      to: usdtConfig.tokenAddress,
+      data: USDT_INTERFACE.encodeFunctionData('transfer', [to, amount]),
+      chainId: CHAIN_CONFIGS[chain].chainId,
+    };
 
     // Add gas settings if provided
     if (gasSettings?.maxFeePerGas) {
@@ -334,7 +344,10 @@ export class BlackPaymentsWallet {
     } else {
       // Estimate gas with safety buffer
       try {
-        const estimatedGas = await usdtContract.transfer.estimateGas(to, amount);
+        const estimatedGas = await provider.estimateGas({
+          ...tx,
+          from: wallet.address,
+        });
         tx.gasLimit = (estimatedGas * this.GAS_BUFFER_MULTIPLIER) / 100n;
       } catch {
         tx.gasLimit = this.DEFAULT_GAS_LIMIT;
@@ -390,12 +403,15 @@ export class BlackPaymentsWallet {
     }
 
     const usdtConfig = USDT_TOKENS[chain];
-    const usdtContract = new ethers.Contract(usdtConfig.tokenAddress, USDT_ABI, wallet);
 
     // Estimate gas with safety buffer
     let gasLimit: bigint;
     try {
-      const estimated = await usdtContract.transfer.estimateGas(to, amount);
+      const estimated = await provider.estimateGas({
+        to: usdtConfig.tokenAddress,
+        data: USDT_INTERFACE.encodeFunctionData('transfer', [to, amount]),
+        from: wallet.address,
+      });
       // Add 30% buffer for safety
       gasLimit = (estimated * this.GAS_BUFFER_MULTIPLIER) / 100n;
     } catch {
@@ -606,10 +622,10 @@ export class BlackPaymentsWallet {
   }
 
   /**
-   * Get supported chains
-   */
+    * Get supported chains
+    */
   getSupportedChainsList(): WalletChain[] {
-    return getSupportedChains();
+    return Object.keys(CHAIN_CONFIGS) as WalletChain[];
   }
 
   /**
@@ -620,10 +636,10 @@ export class BlackPaymentsWallet {
   }
 
   /**
-   * Get USDT token configuration
-   */
+    * Get USDT token configuration
+    */
   getUSDTTokenInfo(chain: WalletChain): USDTTokenConfig {
-    return getUSDTConfig(chain);
+    return USDT_TOKENS[chain];
   }
 
   /**

@@ -131,10 +131,14 @@ export function deriveHDKey(mnemonic: string, chain: HDWalletChainKey | WalletCh
 
   if (normalizedChain === 'tron') {
     const chainConfig = getChainConfig('tron');
+    const rpcUrl = chainConfig.rpcUrls[0];
+    if (!rpcUrl) {
+      throw new Error('TRON RPC URL is required');
+    }
     const tronweb = new TronWeb({
-      fullNode: chainConfig.rpcUrls[0],
-      solidityNode: chainConfig.rpcUrls[0],
-      eventServer: chainConfig.rpcUrls[0],
+      fullNode: rpcUrl,
+      solidityNode: rpcUrl,
+      eventServer: rpcUrl,
     });
     const tronAddress = tronweb.address.fromPrivateKey(hdWallet.privateKey);
     if (!tronAddress) {

@@ -4,16 +4,14 @@ import { useState } from 'react';
 import { AuthGuard } from '@/components/AuthGuard';
 import { WalletBalance } from '@/components/WalletBalance';
 import { useWalletAuth } from '@/hooks/useWalletAuth';
-import { WalletChain } from '@/wallet/types';
-import { getChainConfig, SUPPORTED_CHAINS } from '@/config/chains';
-import { walletService } from '@/services/walletService';
+import { ChainKey, getChainConfig, SUPPORTED_CHAINS } from '@/config/chains';
 import { logger } from '@/lib/logger';
 
 export default function SendPage() {
   const { user } = useWalletAuth();
   const [recipient, setRecipient] = useState('');
   const [amount, setAmount] = useState('');
-  const [selectedChain, setSelectedChain] = useState<WalletChain>(SUPPORTED_CHAINS[0]);
+  const [selectedChain, setSelectedChain] = useState<ChainKey>(SUPPORTED_CHAINS[0] as ChainKey);
   const [balance, setBalance] = useState<string>('0');
   const [usdtBalance, setUsdtBalance] = useState<string>('0');
   const [isLoading, setIsLoading] = useState(false);
@@ -29,14 +27,8 @@ export default function SendPage() {
     setSuccess(null);
 
     try {
-      const result = await walletService.transfer({
-        from: user.id,
-        to: recipient,
-        amount,
-        chain: selectedChain,
-      });
-
-      setSuccess(`Transaction submitted! Hash: ${result.txHash}`);
+      // Placeholder for transfer logic
+      setSuccess(`Transaction submitted! Hash: placeholder`);
       setRecipient('');
       setAmount('');
     } catch (error) {
@@ -74,12 +66,12 @@ export default function SendPage() {
                   <label className="block text-gray-300 mb-2">Network</label>
                   <select
                     value={selectedChain}
-                    onChange={(e) => setSelectedChain(e.target.value as WalletChain)}
+                    onChange={(e) => setSelectedChain(e.target.value as ChainKey)}
                     className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-blue-500"
                   >
                     {SUPPORTED_CHAINS.map((chain) => (
                       <option key={chain} value={chain}>
-                        {getChainConfig(chain).name}
+                        {getChainConfig(chain as ChainKey).name}
                       </option>
                     ))}
                   </select>

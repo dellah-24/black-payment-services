@@ -7,20 +7,19 @@ import { logger } from '@/lib/logger';
 
 export default function AuthPage() {
   const router = useRouter();
-  const { login, register, isLoading, error } = useWalletAuth();
+  const { signIn, signUp, isLoading, error } = useWalletAuth();
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [name, setName] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     try {
       if (isLogin) {
-        await login(email, password);
+        await signIn(email, password);
       } else {
-        await register(email, password, name);
+        await signUp(email, password);
       }
       router.push('/');
     } catch (error) {
@@ -39,19 +38,30 @@ export default function AuthPage() {
         </p>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          {!isLogin && (
-            <div>
-              <label className="block text-gray-300 mb-2">Full Name</label>
-              <input
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-blue-500"
-                placeholder="Enter your name"
-                required={!isLogin}
-              />
-            </div>
-          )}
+          <div>
+            <label className="block text-gray-300 mb-2">Email</label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-blue-500"
+              placeholder="Enter your email"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-gray-300 mb-2">Password</label>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-blue-500"
+              placeholder="Enter your password"
+              required
+              minLength={8}
+            />
+          </div>
 
           <div>
             <label className="block text-gray-300 mb-2">Email</label>

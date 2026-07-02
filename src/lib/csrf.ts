@@ -45,3 +45,43 @@ export function verifyCsrfToken(request: Request): boolean {
   const token = getCsrfTokenFromRequest(request);
   return validateCsrfToken(token);
 }
+
+// In-memory store for CSRF tokens (for cleanup functionality)
+const csrfTokenStore = new Map<string, { token: string; expiresAt: number }>();
+
+/**
+ * Store a CSRF token for a session
+ */
+export function storeCsrfToken(sessionId: string, token: string, expiresInMs = 3600000): void {
+  csrfTokenStore.set(sessionId, {
+    token,
+    expiresAt: Date.now() + expiresInMs,
+  });
+}
+
+/**
+ * Validate CSRF token against stored token for a session
+ */
+export function validateCSRFToken(sessionId: string, token: string): boolean {
+  const stored = csrfTokenStore.get(sessionId);
+  if (!stored) {
+    return false;
+  }
+  if (Date.now() > stored.expiresAt) {
+    csrfTokenStore.delete(sessionId);
+    return false;
+  }
+  return stored.token === token;
+}
+
+/**
+ * Clean up expired CSRF tokens
+ */
+export function cleanupCSRFTokens(): void {
+  const now = Date.now();
+  for (const [sessionId, data] of csrfTokenStore.entries()) {
+    if (now > data.expiresAt) {
+      csrfTokenStore.delete(sessionId);
+    }
+  }
+}

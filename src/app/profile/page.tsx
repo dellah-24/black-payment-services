@@ -29,8 +29,10 @@ export default function ProfilePage() {
 
       try {
         const data = await profileApi.getProfile(user.id);
-        setProfile(data);
-        setName(data.name);
+        if (data) {
+          setProfile(data);
+          setName(data.name);
+        }
       } catch (error) {
         logger.error('Failed to load profile', error as Error);
       } finally {

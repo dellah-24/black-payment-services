@@ -110,7 +110,7 @@ export class DAppBrowser {
       request.respondedAt = new Date().toISOString();
 
       if (approved && result) {
-        request.params.result = result;
+        request.params['result'] = result;
       }
 
       this.pendingRequests.delete(requestId);

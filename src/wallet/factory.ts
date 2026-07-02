@@ -7,7 +7,7 @@
 import { ethers, Wallet, Mnemonic, HDNodeWallet } from 'ethers';
 import { BlackPaymentsWallet } from './BlackPaymentsWallet';
 import { WalletChain } from './types';
-import { getSupportedChains } from './chains';
+import { CHAIN_CONFIGS } from './chains';
 import { getBIP44Path } from '@/lib/hdWallet';
 
 /**
@@ -71,7 +71,7 @@ export async function createWallet(
     chains,
     false,
     rpcUrls,
-    { accountIndex }
+    accountIndex !== undefined ? { accountIndex } : {}
   );
 
   // Initialize and get addresses
@@ -107,7 +107,7 @@ export async function createWalletWithExistingSeed(
     chains,
     false,
     rpcUrls,
-    { accountIndex }
+    accountIndex !== undefined ? { accountIndex } : {}
   );
 
   // Initialize and get addresses
@@ -158,7 +158,7 @@ export async function createFullWallet(
     customRpcUrls?: Partial<Record<WalletChain, string>>;
   } = {}
 ): Promise<BlackPaymentsWallet> {
-  const chains = getSupportedChains();
+  const chains = Object.keys(CHAIN_CONFIGS) as WalletChain[];
   return createWallet(chains, options);
 }
 

@@ -3,7 +3,7 @@ import { createClient } from '@supabase/supabase-js';
 import { getEnv, isPlaceholder, isProduction } from '@/lib/env';
 import { logger } from '@/lib/logger';
 
-const supabase = createClient(getEnv('NEXT_PUBLIC_SUPABASE_URL'), getEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY'));
+const supabase = createClient(getEnv('NEXT_PUBLIC_SUPABASE_URL') ?? '', getEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY') ?? '');
 
 export interface AuthState {
   user: any | null;
@@ -114,7 +114,7 @@ export function useWalletAuth(): UseWalletAuthReturn {
     setError(null);
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${getEnv('NEXT_PUBLIC_APP_URL')}/auth/reset-password`,
+        redirectTo: `${getEnv('NEXT_PUBLIC_APP_URL') ?? ''}/auth/reset-password`,
       });
       if (error) throw error;
     } catch (err) {

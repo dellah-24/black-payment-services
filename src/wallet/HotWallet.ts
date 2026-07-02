@@ -12,7 +12,6 @@ import {
 } from './types';
 import {
   CHAIN_CONFIGS,
-  TESTNET_CONFIGS,
   USDT_TOKENS,
 } from './chains';
 import { SignerAdapter, LocalSigner } from './signer';

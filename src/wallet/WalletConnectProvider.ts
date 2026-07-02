@@ -211,10 +211,11 @@ export class WalletConnectProvider {
     }
 
     const signer = await this.provider.getSigner();
+    // Build transaction with spread to handle exactOptionalPropertyTypes
     const tx = await signer.sendTransaction({
       to: params.to,
-      value: params.value ? ethers.toBigInt(params.value) : undefined,
-      data: params.data,
+      ...(params.value !== undefined && { value: ethers.toBigInt(params.value) }),
+      ...(params.data !== undefined && { data: params.data }),
     });
 
     return tx.hash;
@@ -288,7 +289,7 @@ export class WalletConnectProvider {
    */
   static parseChainId(chainId: string): number {
     const parts = chainId.split(':');
-    return parseInt(parts[parts.length - 1], 10);
+    return parseInt(parts[parts.length - 1] ?? '0', 10);
   }
 
   /**

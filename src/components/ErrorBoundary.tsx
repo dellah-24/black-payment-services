@@ -23,11 +23,11 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
     return { hasError: true, error };
   }
 
-  componentDidCatch(error: Error, errorInfo: any) {
-    logger.error('ErrorBoundary caught an error', error, errorInfo);
+  override componentDidCatch(error: Error, errorInfo: any) {
+    logger.error('ErrorBoundary caught an error', { error, errorInfo });
   }
 
-  render() {
+  override render() {
     if (this.state.hasError) {
       if (this.props.fallback) {
         return this.props.fallback;

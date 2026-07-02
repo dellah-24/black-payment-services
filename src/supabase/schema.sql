@@ -1,643 +1,243 @@
 -- BlackPayments Wallet - Supabase Database Schema
--- Run this SQL in your Supabase SQL Editor
+-- Run this in Supabase SQL editor or via migration
 
 -- Enable UUID extension
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
--- =============================================
--- USER PROFILES
--- =============================================
+-- Profiles table
 CREATE TABLE IF NOT EXISTS profiles (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  wallet_address TEXT UNIQUE NOT NULL,
-  username TEXT,
-  avatar_url TEXT,
-  
-  -- Personal Information
-  first_name TEXT,
-  last_name TEXT,
-  email TEXT,
-  phone TEXT,
-  date_of_birth DATE,
-  
-  -- Location
-  country TEXT,
-  nationality TEXT,
-  state TEXT,
-  city TEXT,
-  address_line1 TEXT,
-  address_line2 TEXT,
-  postal_code TEXT,
-  
-  -- Verification Status
-  kyc_level INTEGER DEFAULT 0,
-  kyc_status TEXT DEFAULT 'none' CHECK (kyc_status IN ('none', 'pending', 'approved', 'rejected')),
-  email_verified BOOLEAN DEFAULT FALSE,
-  phone_verified BOOLEAN DEFAULT FALSE,
-  
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    wallet_address TEXT UNIQUE NOT NULL,
+    username TEXT UNIQUE,
+    avatar_url TEXT,
+    first_name TEXT,
+    last_name TEXT,
+    email TEXT,
+    phone TEXT,
+    date_of_birth DATE,
+    country TEXT,
+    nationality TEXT,
+    state TEXT,
+    city TEXT,
+    address_line1 TEXT,
+    address_line2 TEXT,
+    postal_code TEXT,
+    kyc_status TEXT DEFAULT 'pending' CHECK (kyc_status IN ('pending', 'verified', 'rejected')),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Index for wallet address lookup
-CREATE INDEX idx_profiles_wallet ON profiles(wallet_address);
-
--- =============================================
--- P2P ORDERS
--- =============================================
-CREATE TABLE IF NOT EXISTS p2p_orders (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  user_id UUID REFERENCES profiles(id) ON DELETE CASCADE,
-  type TEXT NOT NULL CHECK (type IN ('buy', 'sell')),
-  token TEXT NOT NULL DEFAULT 'USDT',
-  chain TEXT NOT NULL DEFAULT 'tron',
-  amount TEXT NOT NULL, -- Stored as string for bigint precision
-  filled_amount TEXT DEFAULT '0',
-  price TEXT NOT NULL, -- Price in fiat cents
-  fiat_currency TEXT NOT NULL DEFAULT 'USD',
-  payment_methods TEXT[] DEFAULT ARRAY['bank_transfer'],
-  min_amount TEXT,
-  max_amount TEXT,
-  time_limit INTEGER DEFAULT 30, -- minutes
-  status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'active', 'partially_filled', 'filled', 'cancelled', 'expired')),
-  terms TEXT DEFAULT '',
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  expires_at TIMESTAMP WITH TIME ZONE
+-- Encrypted wallets table
+CREATE TABLE IF NOT EXISTS encrypted_wallets (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    wallet_address TEXT UNIQUE NOT NULL,
+    encrypted_private_key TEXT NOT NULL,
+    encrypted_mnemonic TEXT,
+    encryption_iv TEXT NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Indexes for order filtering
-CREATE INDEX idx_orders_user ON p2p_orders(user_id);
-CREATE INDEX idx_orders_status ON p2p_orders(status);
-CREATE INDEX idx_orders_type ON p2p_orders(type);
-CREATE INDEX idx_orders_fiat_currency ON p2p_orders(fiat_currency);
-CREATE INDEX idx_orders_chain ON p2p_orders(chain);
-
--- =============================================
--- P2P TRADES
--- =============================================
-CREATE TABLE IF NOT EXISTS p2p_trades (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  order_id UUID REFERENCES p2p_orders(id) ON DELETE CASCADE,
-  maker_id UUID REFERENCES profiles(id) ON DELETE CASCADE,
-  taker_id UUID REFERENCES profiles(id) ON DELETE SET NULL,
-  type TEXT NOT NULL CHECK (type IN ('buy', 'sell')),
-  token TEXT NOT NULL DEFAULT 'USDT',
-  chain TEXT NOT NULL DEFAULT 'tron',
-  amount TEXT NOT NULL,
-  price TEXT NOT NULL,
-  fiat_amount TEXT NOT NULL,
-  fiat_currency TEXT NOT NULL DEFAULT 'USD',
-  payment_method TEXT NOT NULL DEFAULT 'bank_transfer',
-  status TEXT DEFAULT 'created' CHECK (status IN ('created', 'waiting_payment', 'paid', 'released', 'refunded', 'disputed')),
-  maker_payment_details TEXT,
-  taker_payment_details TEXT,
-  maker_confirmed_at TIMESTAMP WITH TIME ZONE,
-  taker_confirmed_at TIMESTAMP WITH TIME ZONE,
-  released_at TIMESTAMP WITH TIME ZONE,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  expires_at TIMESTAMP WITH TIME ZONE
-);
-
-CREATE INDEX idx_trades_order ON p2p_trades(order_id);
-CREATE INDEX idx_trades_maker ON p2p_trades(maker_id);
-CREATE INDEX idx_trades_taker ON p2p_trades(taker_id);
-CREATE INDEX idx_trades_status ON p2p_trades(status);
-
--- =============================================
--- DISPUTES
--- =============================================
-CREATE TABLE IF NOT EXISTS disputes (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  trade_id UUID REFERENCES p2p_trades(id) ON DELETE CASCADE,
-  opened_by UUID REFERENCES profiles(id) ON DELETE CASCADE,
-  reason TEXT NOT NULL,
-  description TEXT NOT NULL,
-  evidence TEXT[] DEFAULT ARRAY[]::TEXT[],
-  status TEXT DEFAULT 'open' CHECK (status IN ('open', 'under_review', 'maker_wins', 'taker_wins', 'cancelled')),
-  resolution TEXT,
-  resolved_at TIMESTAMP WITH TIME ZONE,
-  resolved_by UUID REFERENCES profiles(id) ON DELETE SET NULL,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
-
-CREATE INDEX idx_disputes_trade ON disputes(trade_id);
-CREATE INDEX idx_disputes_status ON disputes(status);
-
--- =============================================
--- USER REPUTATION
--- =============================================
-CREATE TABLE IF NOT EXISTS user_reputation (
-  user_id UUID PRIMARY KEY REFERENCES profiles(id) ON DELETE CASCADE,
-  trade_count INTEGER DEFAULT 0,
-  total_volume TEXT DEFAULT '0',
-  completion_rate DECIMAL(5,2) DEFAULT 100.00,
-  avg_release_time INTEGER DEFAULT 0, -- minutes
-  rating DECIMAL(3,2) DEFAULT 5.00,
-  review_count INTEGER DEFAULT 0,
-  positive_reviews INTEGER DEFAULT 0,
-  negative_reviews INTEGER DEFAULT 0,
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
-
--- =============================================
--- TRANSACTIONS
--- =============================================
-CREATE TABLE IF NOT EXISTS transactions (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  user_id UUID REFERENCES profiles(id) ON DELETE CASCADE,
-  type TEXT NOT NULL CHECK (type IN ('send', 'receive', 'p2p_buy', 'p2p_sell', 'swap', 'stake', 'unstake')),
-  token TEXT NOT NULL DEFAULT 'USDT',
-  chain TEXT NOT NULL,
-  amount TEXT NOT NULL,
-  fee TEXT DEFAULT '0',
-  hash TEXT NOT NULL,
-  status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'confirmed', 'failed')),
-  to_address TEXT,
-  from_address TEXT,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
-
-CREATE INDEX idx_transactions_user ON transactions(user_id);
-CREATE INDEX idx_transactions_hash ON transactions(hash);
-CREATE INDEX idx_transactions_status ON transactions(status);
-CREATE INDEX idx_transactions_created ON transactions(created_at DESC);
-
--- =============================================
--- MERCHANT PAYMENT GATEWAY
--- =============================================
-CREATE TABLE IF NOT EXISTS payment_requests (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  user_id UUID REFERENCES profiles(id) ON DELETE SET NULL,
-  order_id TEXT,
-  amount TEXT NOT NULL,
-  currency TEXT NOT NULL,
-  network TEXT NOT NULL,
-  to_currency TEXT,
-  description TEXT,
-  status TEXT NOT NULL DEFAULT 'NEW' CHECK (status IN ('NEW', 'WAIT', 'PAID', 'FAIL', 'EXPIRED', 'CANCEL')),
-  url TEXT NOT NULL,
-  success_url TEXT,
-  cancel_url TEXT,
-  callback_url TEXT,
-  payer_hash TEXT,
-  is_fee_paid_by_user BOOLEAN DEFAULT FALSE,
-  is_payment_multiple BOOLEAN DEFAULT FALSE,
-  is_html_notification BOOLEAN DEFAULT FALSE,
-  tx_hash TEXT,
-  expires_at TIMESTAMP WITH TIME ZONE NOT NULL,
-  paid_at TIMESTAMP WITH TIME ZONE,
-  metadata JSONB DEFAULT '{}'::jsonb,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
-
-CREATE INDEX idx_payment_requests_user ON payment_requests(user_id);
-CREATE INDEX idx_payment_requests_status ON payment_requests(status);
-CREATE INDEX idx_payment_requests_order ON payment_requests(order_id);
-CREATE INDEX idx_payment_requests_created ON payment_requests(created_at DESC);
-
-CREATE TABLE IF NOT EXISTS payment_events (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  payment_id UUID REFERENCES payment_requests(id) ON DELETE CASCADE,
-  user_id UUID REFERENCES profiles(id) ON DELETE SET NULL,
-  event TEXT NOT NULL,
-  payload JSONB NOT NULL DEFAULT '{}'::jsonb,
-  delivered BOOLEAN DEFAULT FALSE,
-  delivered_at TIMESTAMP WITH TIME ZONE,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
-
-CREATE INDEX idx_payment_events_payment ON payment_events(payment_id);
-CREATE INDEX idx_payment_events_user ON payment_events(user_id);
-CREATE INDEX idx_payment_events_event ON payment_events(event);
-
-CREATE TABLE IF NOT EXISTS payment_webhooks (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
-  url TEXT NOT NULL,
-  events TEXT[] NOT NULL DEFAULT ARRAY['payment.created', 'payment.wait', 'payment.paid', 'payment.expired', 'payment.fail', 'payment.cancel'],
-  secret TEXT NOT NULL,
-  status TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'inactive')),
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
-
-CREATE INDEX idx_payment_webhooks_user ON payment_webhooks(user_id);
-CREATE INDEX idx_payment_webhooks_status ON payment_webhooks(status);
-
-CREATE TABLE IF NOT EXISTS payment_refunds (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  payment_id UUID REFERENCES payment_requests(id) ON DELETE CASCADE,
-  user_id UUID REFERENCES profiles(id) ON DELETE SET NULL,
-  amount TEXT NOT NULL,
-  currency TEXT NOT NULL,
-  reason TEXT,
-  status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'completed', 'failed')),
-  tx_hash TEXT,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
-
-CREATE INDEX idx_payment_refunds_payment ON payment_refunds(payment_id);
-CREATE INDEX idx_payment_refunds_user ON payment_refunds(user_id);
-CREATE INDEX idx_payment_refunds_status ON payment_refunds(status);
-
-CREATE TABLE IF NOT EXISTS merchant_api_keys (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
-  name TEXT NOT NULL,
-  public_key TEXT UNIQUE NOT NULL,
-  secret_hash TEXT NOT NULL,
-  permissions TEXT[] NOT NULL DEFAULT ARRAY['read', 'write'],
-  status TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'revoked')),
-  last_used_at TIMESTAMP WITH TIME ZONE,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
-
-CREATE INDEX idx_merchant_api_keys_user ON merchant_api_keys(user_id);
-CREATE INDEX idx_merchant_api_keys_status ON merchant_api_keys(status);
-
--- =============================================
--- CUSTODIAL WALLET LEDGER
--- =============================================
+-- Custody addresses (custodial wallet addresses)
 CREATE TABLE IF NOT EXISTS custody_addresses (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
-  chain TEXT NOT NULL CHECK (chain IN ('tron', 'ethereum', 'bsc')),
-  address TEXT NOT NULL,
-  derivation_path TEXT NOT NULL,
-  account_index INTEGER NOT NULL DEFAULT 0,
-  purpose TEXT NOT NULL CHECK (purpose IN ('deposit', 'withdrawal', 'hot', 'cold')),
-  status TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'inactive', 'revoked')),
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  UNIQUE(user_id, chain, address),
-  UNIQUE(user_id, chain, purpose, account_index)
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID NOT NULL REFERENCES profiles(id),
+    chain TEXT NOT NULL CHECK (chain IN ('tron', 'ethereum', 'bsc')),
+    address TEXT NOT NULL,
+    derivation_path TEXT NOT NULL,
+    account_index INTEGER NOT NULL DEFAULT 0,
+    purpose TEXT NOT NULL CHECK (purpose IN ('deposit', 'withdrawal', 'hot', 'cold')),
+    status TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'inactive', 'revoked')),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    UNIQUE(user_id, chain, purpose, account_index)
 );
 
-CREATE INDEX idx_custody_addresses_user ON custody_addresses(user_id);
-CREATE INDEX idx_custody_addresses_chain ON custody_addresses(chain);
-CREATE INDEX idx_custody_addresses_status ON custody_addresses(status);
-CREATE INDEX idx_custody_addresses_purpose ON custody_addresses(purpose);
-
+-- Custodial withdrawals
 CREATE TABLE IF NOT EXISTS custodial_withdrawals (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
-  chain TEXT NOT NULL CHECK (chain IN ('tron', 'ethereum', 'bsc')),
-  token TEXT NOT NULL DEFAULT 'USDT',
-  amount TEXT NOT NULL,
-  amount_base TEXT NOT NULL,
-  to_address TEXT NOT NULL,
-  from_address TEXT,
-  tx_hash TEXT UNIQUE,
-  status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'processing', 'confirmed', 'failed', 'cancelled')),
-  fee TEXT DEFAULT '0',
-  fee_limit TEXT,
-  idempotency_key TEXT NOT NULL,
-  metadata JSONB DEFAULT '{}'::jsonb,
-  explorer_url TEXT,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  confirmed_at TIMESTAMP WITH TIME ZONE,
-  failed_at TIMESTAMP WITH TIME ZONE,
-  UNIQUE(user_id, idempotency_key)
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID NOT NULL REFERENCES profiles(id),
+    chain TEXT NOT NULL CHECK (chain IN ('tron', 'ethereum', 'bsc')),
+    token TEXT NOT NULL DEFAULT 'USDT',
+    amount TEXT NOT NULL,
+    amount_base TEXT NOT NULL,
+    to_address TEXT NOT NULL,
+    from_address TEXT,
+    tx_hash TEXT,
+    status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'processing', 'confirmed', 'failed', 'cancelled')),
+    fee TEXT NOT NULL DEFAULT '0',
+    idempotency_key TEXT NOT NULL,
+    explorer_url TEXT,
+    metadata JSONB,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    UNIQUE(idempotency_key)
 );
 
-CREATE INDEX idx_withdrawals_user_created ON custodial_withdrawals(user_id, created_at DESC);
-CREATE INDEX idx_withdrawals_status ON custodial_withdrawals(status);
-CREATE INDEX idx_withdrawals_chain ON custodial_withdrawals(chain);
-CREATE INDEX idx_withdrawals_idempotency ON custodial_withdrawals(idempotency_key);
-
+-- Custodial deposits
 CREATE TABLE IF NOT EXISTS custodial_deposits (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
-  custody_address_id UUID REFERENCES custody_addresses(id) ON DELETE SET NULL,
-  chain TEXT NOT NULL CHECK (chain IN ('tron', 'ethereum', 'bsc')),
-  token TEXT NOT NULL DEFAULT 'USDT',
-  amount TEXT NOT NULL,
-  amount_base TEXT NOT NULL,
-  tx_hash TEXT NOT NULL UNIQUE,
-  from_address TEXT,
-  to_address TEXT NOT NULL,
-  block_number BIGINT,
-  status TEXT NOT NULL DEFAULT 'detected' CHECK (status IN ('detected', 'confirmed', 'failed')),
-  metadata JSONB DEFAULT '{}'::jsonb,
-  detected_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  confirmed_at TIMESTAMP WITH TIME ZONE
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID NOT NULL REFERENCES profiles(id),
+    custody_address_id UUID REFERENCES custody_addresses(id),
+    chain TEXT NOT NULL CHECK (chain IN ('tron', 'ethereum', 'bsc')),
+    token TEXT NOT NULL DEFAULT 'USDT',
+    amount TEXT NOT NULL,
+    amount_base TEXT NOT NULL,
+    tx_hash TEXT NOT NULL,
+    from_address TEXT,
+    to_address TEXT NOT NULL,
+    block_number INTEGER,
+    status TEXT NOT NULL DEFAULT 'detected' CHECK (status IN ('detected', 'confirmed', 'failed')),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
-CREATE INDEX idx_deposits_user_created ON custodial_deposits(user_id, detected_at DESC);
-CREATE INDEX idx_deposits_status ON custodial_deposits(status);
-CREATE INDEX idx_deposits_chain ON custodial_deposits(chain);
-CREATE INDEX idx_deposits_tx_hash ON custodial_deposits(tx_hash);
-
-CREATE TABLE IF NOT EXISTS custody_balances (
-  user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
-  chain TEXT NOT NULL CHECK (chain IN ('tron', 'ethereum', 'bsc')),
-  token TEXT NOT NULL,
-  available_balance TEXT NOT NULL DEFAULT '0',
-  locked_balance TEXT NOT NULL DEFAULT '0',
-  raw_balance TEXT NOT NULL DEFAULT '0',
-  decimals INTEGER NOT NULL DEFAULT 6,
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  PRIMARY KEY(user_id, chain, token)
+-- Transactions table
+CREATE TABLE IF NOT EXISTS transactions (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID NOT NULL REFERENCES profiles(id),
+    type TEXT NOT NULL CHECK (type IN ('send', 'receive', 'deposit', 'withdrawal')),
+    token TEXT NOT NULL,
+    chain TEXT NOT NULL,
+    amount TEXT NOT NULL,
+    fee TEXT,
+    hash TEXT NOT NULL,
+    to_address TEXT,
+    from_address TEXT,
+    status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'confirmed', 'failed')),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
-CREATE INDEX idx_custody_balances_chain ON custody_balances(chain);
+-- Payment requests
+CREATE TABLE IF NOT EXISTS payment_requests (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID NOT NULL REFERENCES profiles(id),
+    amount TEXT NOT NULL,
+    currency TEXT NOT NULL,
+    chain TEXT NOT NULL,
+    deposit_address TEXT,
+    description TEXT,
+    status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'paid', 'expired', 'cancelled')),
+    expires_at TIMESTAMP WITH TIME ZONE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
 
--- Enable real-time for custodial ledger updates
-ALTER PUBLICATION supabase_realtime ADD TABLE custodial_withdrawals;
-ALTER PUBLICATION supabase_realtime ADD TABLE custodial_deposits;
-ALTER PUBLICATION supabase_realtime ADD TABLE custody_addresses;
+-- Payment links
+CREATE TABLE IF NOT EXISTS payment_links (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID NOT NULL REFERENCES profiles(id),
+    amount TEXT NOT NULL,
+    currency TEXT NOT NULL,
+    description TEXT,
+    chain TEXT NOT NULL,
+    status TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'used', 'expired', 'cancelled')),
+    expires_at TIMESTAMP WITH TIME ZONE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
 
--- Enable RLS for custodial ledger
+-- P2P orders
+CREATE TABLE IF NOT EXISTS p2p_orders (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID NOT NULL REFERENCES profiles(id),
+    type TEXT NOT NULL CHECK (type IN ('buy', 'sell')),
+    token TEXT NOT NULL DEFAULT 'USDT',
+    chain TEXT NOT NULL DEFAULT 'tron',
+    amount TEXT NOT NULL,
+    price TEXT NOT NULL,
+    fiat_currency TEXT NOT NULL DEFAULT 'USD',
+    payment_methods TEXT[] NOT NULL,
+    min_amount TEXT,
+    max_amount TEXT,
+    time_limit INTEGER NOT NULL DEFAULT 30,
+    status TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'filled', 'cancelled', 'expired', 'partially_filled')),
+    terms TEXT,
+    expires_at TIMESTAMP WITH TIME ZONE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- P2P trades
+CREATE TABLE IF NOT EXISTS p2p_trades (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    order_id UUID NOT NULL REFERENCES p2p_orders(id),
+    maker_id UUID NOT NULL REFERENCES profiles(id),
+    taker_id UUID NOT NULL REFERENCES profiles(id),
+    type TEXT NOT NULL CHECK (type IN ('buy', 'sell')),
+    token TEXT NOT NULL DEFAULT 'USDT',
+    chain TEXT NOT NULL DEFAULT 'tron',
+    amount TEXT NOT NULL,
+    price TEXT NOT NULL,
+    fiat_amount TEXT NOT NULL,
+    fiat_currency TEXT NOT NULL,
+    payment_method TEXT NOT NULL,
+    status TEXT NOT NULL DEFAULT 'waiting_payment' CHECK (status IN ('waiting_payment', 'paid', 'released', 'disputed', 'cancelled', 'completed')),
+    expires_at TIMESTAMP WITH TIME ZONE,
+    taker_confirmed_at TIMESTAMP WITH TIME ZONE,
+    released_at TIMESTAMP WITH TIME ZONE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- User reputation
+CREATE TABLE IF NOT EXISTS user_reputation (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID NOT NULL REFERENCES profiles(id),
+    rating INTEGER DEFAULT 0,
+    total_trades INTEGER DEFAULT 0,
+    completed_trades INTEGER DEFAULT 0,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Enable Row Level Security
+ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
+ALTER TABLE encrypted_wallets ENABLE ROW LEVEL SECURITY;
 ALTER TABLE custody_addresses ENABLE ROW LEVEL SECURITY;
 ALTER TABLE custodial_withdrawals ENABLE ROW LEVEL SECURITY;
 ALTER TABLE custodial_deposits ENABLE ROW LEVEL SECURITY;
-ALTER TABLE custody_balances ENABLE ROW LEVEL SECURITY;
-
-CREATE POLICY "Users can view own custody addresses"
-  ON custody_addresses FOR SELECT USING (auth.uid() = user_id);
-
-CREATE POLICY "Users can view own withdrawals"
-  ON custodial_withdrawals FOR SELECT USING (auth.uid() = user_id);
-
-CREATE POLICY "Users can view own deposits"
-  ON custodial_deposits FOR SELECT USING (auth.uid() = user_id);
-
-CREATE POLICY "Users can view own custody balances"
-  ON custody_balances FOR SELECT USING (auth.uid() = user_id);
-
--- =============================================
--- CHAT MESSAGES
--- =============================================
-CREATE TABLE IF NOT EXISTS chat_messages (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  trade_id UUID REFERENCES p2p_trades(id) ON DELETE CASCADE,
-  sender_id UUID REFERENCES profiles(id) ON DELETE CASCADE,
-  content TEXT NOT NULL,
-  type TEXT DEFAULT 'text' CHECK (type IN ('text', 'image', 'system')),
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
-
-CREATE INDEX idx_messages_trade ON chat_messages(trade_id);
-CREATE INDEX idx_messages_created ON chat_messages(created_at);
-
--- =============================================
--- REVIEWS
--- =============================================
-CREATE TABLE IF NOT EXISTS reviews (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  trade_id UUID REFERENCES p2p_trades(id) ON DELETE CASCADE,
-  reviewer_id UUID REFERENCES profiles(id) ON DELETE CASCADE,
-  reviewed_user_id UUID REFERENCES profiles(id) ON DELETE CASCADE,
-  rating INTEGER NOT NULL CHECK (rating BETWEEN 1 AND 5),
-  comment TEXT,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  UNIQUE(trade_id, reviewer_id) -- One review per trade per reviewer
-);
-
-CREATE INDEX idx_reviews_user ON reviews(reviewed_user_id);
-
--- =============================================
--- REAL-TIME SUBSCRIPTIONS
--- =============================================
--- Enable real-time for chat messages
-ALTER PUBLICATION supabase_realtime ADD TABLE chat_messages;
-
--- Enable real-time for trades
-ALTER PUBLICATION supabase_realtime ADD TABLE p2p_trades;
-
--- Enable real-time for orders
-ALTER PUBLICATION supabase_realtime ADD TABLE p2p_orders;
-
--- =============================================
--- ROW LEVEL SECURITY (RLS)
--- =============================================
-ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
+ALTER TABLE transactions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE payment_requests ENABLE ROW LEVEL SECURITY;
+ALTER TABLE payment_links ENABLE ROW LEVEL SECURITY;
 ALTER TABLE p2p_orders ENABLE ROW LEVEL SECURITY;
 ALTER TABLE p2p_trades ENABLE ROW LEVEL SECURITY;
-ALTER TABLE disputes ENABLE ROW LEVEL SECURITY;
 ALTER TABLE user_reputation ENABLE ROW LEVEL SECURITY;
-ALTER TABLE transactions ENABLE ROW LEVEL SECURITY;
-ALTER TABLE chat_messages ENABLE ROW LEVEL SECURITY;
-ALTER TABLE reviews ENABLE ROW LEVEL SECURITY;
 
--- Profile policies
-CREATE POLICY "Public profiles are viewable by everyone" 
-  ON profiles FOR SELECT USING (true);
+-- RLS Policies
+CREATE POLICY "Users can view own profile" ON profiles FOR SELECT USING (auth.uid() = id);
+CREATE POLICY "Users can update own profile" ON profiles FOR UPDATE USING (auth.uid() = id);
 
-CREATE POLICY "Users can insert their own profile" 
-  ON profiles FOR INSERT WITH CHECK (auth.uid() = id);
+CREATE POLICY "Users can view own encrypted wallet" ON encrypted_wallets FOR SELECT USING (
+    EXISTS (SELECT 1 FROM profiles WHERE profiles.wallet_address = encrypted_wallets.wallet_address AND profiles.id = auth.uid())
+);
 
-CREATE POLICY "Users can update own profile" 
-  ON profiles FOR UPDATE USING (auth.uid() = id);
+CREATE POLICY "Users can view own custody addresses" ON custody_addresses FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Service can manage custody addresses" ON custody_addresses FOR ALL USING (true);
 
--- Order policies
-CREATE POLICY "Anyone can view orders" 
-  ON p2p_orders FOR SELECT USING (status IN ('active', 'partially_filled'));
+CREATE POLICY "Users can view own withdrawals" ON custodial_withdrawals FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Service can manage withdrawals" ON custodial_withdrawals FOR ALL USING (true);
 
-CREATE POLICY "Users can insert orders" 
-  ON p2p_orders FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Users can view own deposits" ON custodial_deposits FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Service can manage deposits" ON custodial_deposits FOR ALL USING (true);
 
-CREATE POLICY "Users can update own orders" 
-  ON p2p_orders FOR UPDATE USING (auth.uid() = user_id);
+CREATE POLICY "Users can view own transactions" ON transactions FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Service can manage transactions" ON transactions FOR ALL USING (true);
 
--- Trade policies
-CREATE POLICY "Parties can view trades" 
-  ON p2p_trades FOR SELECT USING (
-    auth.uid() = maker_id OR 
-    auth.uid() = taker_id OR 
-    EXISTS (SELECT 1 FROM p2p_orders WHERE id = order_id AND user_id = auth.uid())
-  );
+CREATE POLICY "Users can view own payment requests" ON payment_requests FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Service can manage payment requests" ON payment_requests FOR ALL USING (true);
 
-CREATE POLICY "Users can create trades" 
-  ON p2p_trades FOR INSERT WITH CHECK (
+CREATE POLICY "Users can view own payment links" ON payment_links FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Service can manage payment links" ON payment_links FOR ALL USING (true);
+
+CREATE POLICY "Users can view own p2p orders" ON p2p_orders FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Service can manage p2p orders" ON p2p_orders FOR ALL USING (true);
+
+CREATE POLICY "Users can view own p2p trades" ON p2p_trades FOR SELECT USING (
     auth.uid() = maker_id OR auth.uid() = taker_id
-  );
-
-CREATE POLICY "Parties can update trades" 
-  ON p2p_trades FOR UPDATE USING (
-    auth.uid() = maker_id OR auth.uid() = taker_id
-  );
-
--- Message policies
-CREATE POLICY "Parties can view messages" 
-  ON chat_messages FOR SELECT USING (
-    EXISTS (
-      SELECT 1 FROM p2p_trades 
-      WHERE id = trade_id AND (maker_id = auth.uid() OR taker_id = auth.uid())
-    )
-  );
-
-CREATE POLICY "Parties can send messages" 
-  ON chat_messages FOR INSERT WITH CHECK (auth.uid() = sender_id);
-
--- =============================================
--- FUNCTIONS
--- =============================================
-
--- Function to update order status automatically
-CREATE OR REPLACE FUNCTION update_order_status()
-RETURNS TRIGGER AS $$
-BEGIN
-  NEW.updated_at = NOW();
-  
-  -- Auto-expire orders
-  IF NEW.expires_at IS NOT NULL AND NEW.expires_at < NOW() AND NEW.status = 'active' THEN
-    NEW.status = 'expired';
-  END IF;
-  
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
--- Trigger for order updates
-CREATE TRIGGER order_status_update
-  BEFORE UPDATE ON p2p_orders
-  FOR EACH ROW
-  EXECUTE FUNCTION update_order_status();
-
--- Trigger for trade updates
-CREATE TRIGGER trade_status_update
-  BEFORE UPDATE ON p2p_trades
-  FOR EACH ROW
-  EXECUTE FUNCTION update_order_status();
-
--- Function to update reputation after trade
-CREATE OR REPLACE FUNCTION after_trade_completion()
-RETURNS TRIGGER AS $$
-BEGIN
-  IF NEW.status = 'released' THEN
-    -- Update maker reputation
-    UPDATE user_reputation SET
-      trade_count = trade_count + 1,
-      total_volume = (total_volume::bigint + NEW.fiat_amount::bigint)::text,
-      updated_at = NOW()
-    WHERE user_id = NEW.maker_id;
-    
-    -- Update taker reputation if exists
-    IF NEW.taker_id IS NOT NULL THEN
-      UPDATE user_reputation SET
-        trade_count = trade_count + 1,
-        total_volume = (total_volume::bigint + NEW.fiat_amount::bigint)::text,
-        updated_at = NOW()
-      WHERE user_id = NEW.taker_id;
-    END IF;
-  END IF;
-  
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
--- Trigger for trade completion
-CREATE TRIGGER on_trade_completion
-  AFTER UPDATE ON p2p_trades
-  FOR EACH ROW
-  EXECUTE FUNCTION after_trade_completion();
-
--- =============================================
--- ENCRYPTED WALLETS (Secure Cloud Storage)
--- =============================================
-CREATE TABLE IF NOT EXISTS encrypted_wallets (
-   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-   wallet_address TEXT UNIQUE NOT NULL,
-   encrypted_private_key TEXT NOT NULL,  -- AES-GCM encrypted
-   encrypted_mnemonic TEXT,               -- AES-GCM encrypted (optional backup)
-   encryption_iv TEXT NOT NULL,          -- Initialization vector for AES-GCM
-   encryption_salt TEXT NOT NULL,         -- PBKDF2 salt for key derivation
-   mnemonic_iv TEXT,                     -- IV for mnemonic encryption
-   mnemonic_salt TEXT,                     -- Salt for mnemonic encryption
-   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
+CREATE POLICY "Service can manage p2p trades" ON p2p_trades FOR ALL USING (true);
 
--- =============================================
--- RATE LIMITING
--- =============================================
-CREATE TABLE IF NOT EXISTS rate_limits (
-   ip VARCHAR(45) PRIMARY KEY,
-   count INTEGER NOT NULL DEFAULT 1,
-   window_start TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-
-CREATE INDEX IF NOT EXISTS idx_rate_limits_updated 
-ON rate_limits(updated_at);
-
--- Auto-cleanup old records (older than 1 hour)
-CREATE OR REPLACE FUNCTION cleanup_rate_limits()
-RETURNS void AS $$
-BEGIN
-   DELETE FROM rate_limits 
-   WHERE updated_at < NOW() - INTERVAL '1 hour';
-END;
-$$ LANGUAGE plpgsql;
-
--- Enable RLS for rate_limits (required for upserts from anon key)
-ALTER TABLE rate_limits ENABLE ROW LEVEL SECURITY;
-
--- Policy: Allow anonymous upserts for rate limiting (IP-based)
-CREATE POLICY "Allow rate limit upserts" 
-  ON rate_limits FOR ALL 
-  USING (true)
-  WITH CHECK (true);
-
--- Index for wallet address lookup
-CREATE INDEX idx_encrypted_wallets_address ON encrypted_wallets(wallet_address);
-
--- Enable RLS for encrypted wallets
-ALTER TABLE encrypted_wallets ENABLE ROW LEVEL SECURITY;
-
--- Policy: Users can only access their own wallet
-CREATE POLICY "Users can manage own wallet" 
-  ON encrypted_wallets FOR ALL USING (
-    auth.uid()::text IN (
-      SELECT id::text FROM profiles 
-      WHERE wallet_address = encrypted_wallets.wallet_address
-    )
-  );
-
--- Policy: Only allow authenticated users to check if wallet exists
--- This is needed for login but only for authenticated users
-CREATE POLICY "Authenticated users can check wallet exists" 
-  ON encrypted_wallets FOR SELECT USING (auth.uid() IS NOT NULL);
-
--- =============================================
--- AUDIT LOGS
--- =============================================
-CREATE TABLE IF NOT EXISTS audit_logs (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  user_id UUID REFERENCES auth.users(id),
-  event_type TEXT NOT NULL,
-  metadata JSONB DEFAULT '{}',
-  ip_address TEXT,
-  user_agent TEXT,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
-
--- Index for event type lookup
-CREATE INDEX idx_audit_logs_event_type ON audit_logs(event_type);
-
--- Index for user lookup
-CREATE INDEX idx_audit_logs_user_id ON audit_logs(user_id);
-
--- Enable RLS for audit logs
-ALTER TABLE audit_logs ENABLE ROW LEVEL SECURITY;
-
--- Policy: Users can insert their own audit logs
-CREATE POLICY "Users can insert audit logs" 
-  ON audit_logs FOR INSERT WITH CHECK (auth.uid() = user_id OR user_id IS NULL);
-
--- Policy: Only authenticated users can view audit logs (admins should be added)
-CREATE POLICY "Authenticated users can view audit logs" 
-  ON audit_logs FOR SELECT USING (auth.uid() IS NOT NULL);
-
--- =============================================
--- SEED DATA
--- =============================================
--- Insert default admin user (for disputes resolution)
--- INSERT INTO profiles (id, wallet_address, username, kyc_status)
--- VALUES (uuid_generate_v4(), '0x0000000000000000000000000000000000000001', 'System', 'approved');
+-- Create indexes for performance
+CREATE INDEX IF NOT EXISTS idx_custody_addresses_user_id ON custody_addresses(user_id);
+CREATE INDEX IF NOT EXISTS idx_custody_addresses_chain ON custody_addresses(chain);
+CREATE INDEX IF NOT EXISTS idx_custodial_withdrawals_user_id ON custodial_withdrawals(user_id);
+CREATE INDEX IF NOT EXISTS idx_custodial_withdrawals_idempotency ON custodial_withdrawals(idempotency_key);
+CREATE INDEX IF NOT EXISTS idx_custodial_deposits_user_id ON custodial_deposits(user_id);
+CREATE INDEX IF NOT EXISTS idx_transactions_user_id ON transactions(user_id);
+CREATE INDEX IF NOT EXISTS idx_payment_requests_user_id ON payment_requests(user_id);
+CREATE INDEX IF NOT EXISTS idx_payment_links_user_id ON payment_links(user_id);

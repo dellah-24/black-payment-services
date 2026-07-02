@@ -4,7 +4,7 @@
  */
 
 import { logger } from '@/lib/logger';
-import { env } from '@/lib/env';
+import { env, requireEnv, getEnv } from '@/lib/env';
 
 export interface SecureWalletConfig {
   encryptionKey: string;
@@ -13,8 +13,19 @@ export interface SecureWalletConfig {
   ivLength: number;
 }
 
+// Get encryption key with fallback for local development
+const getEncryptionKey = (): string => {
+  const key = env.WALLET_ENCRYPTION_KEY;
+  if (key) return key;
+  // In local dev, use a default key (not for production!)
+  if (env.NODE_ENV !== 'production') {
+    return 'dev-encryption-key-do-not-use-in-production-32ch';
+  }
+  return requireEnv('WALLET_ENCRYPTION_KEY');
+};
+
 export const SECURE_WALLET_CONFIG: SecureWalletConfig = {
-  encryptionKey: env.WALLET_ENCRYPTION_KEY,
+  encryptionKey: getEncryptionKey(),
   algorithm: 'AES-GCM',
   keyLength: 256,
   ivLength: 12,
@@ -33,7 +44,7 @@ export function validateWalletConfig(): boolean {
       throw new Error('WALLET_ENCRYPTION_KEY must be at least 32 characters');
     }
 
-    if (env.NODE_ENV === 'production' && !env.HSM_API_URL) {
+    if (env.NODE_ENV === 'production' && !getEnv('HSM_API_URL')) {
       throw new Error('HSM_API_URL is required in production');
     }
 
@@ -55,24 +66,24 @@ export function performSecurityChecks(): {
     {
       name: 'Encryption key configured',
       passed: !!SECURE_WALLET_CONFIG.encryptionKey,
-      message: SECURE_WALLET_CONFIG.encryptionKey ? undefined : 'Missing WALLET_ENCRYPTION_KEY',
+      message: !SECURE_WALLET_CONFIG.encryptionKey ? 'Missing WALLET_ENCRYPTION_KEY' : undefined,
     },
     {
       name: 'HSM configured',
-      passed: !!env.HSM_API_URL,
-      message: env.HSM_API_URL ? undefined : 'Missing HSM_API_URL',
+      passed: !!getEnv('HSM_API_URL'),
+      message: !getEnv('HSM_API_URL') ? 'Missing HSM_API_URL' : undefined,
     },
     {
       name: 'Environment is production',
       passed: env.NODE_ENV === 'production',
-      message: env.NODE_ENV === 'production' ? undefined : `Current environment: ${env.NODE_ENV}`,
+      message: env.NODE_ENV !== 'production' ? `Current environment: ${env.NODE_ENV}` : undefined,
     },
     {
       name: 'Supabase configured',
       passed: !!env.SUPABASE_URL && !!env.SUPABASE_ANON_KEY,
       message: (!env.SUPABASE_URL || !env.SUPABASE_ANON_KEY) ? 'Missing Supabase configuration' : undefined,
     },
-  ];
+  ] as Array<{ name: string; passed: boolean; message?: string }>;
 
   const passed = checks.every((check) => check.passed);
 

@@ -116,10 +116,10 @@ export function getEVMWallet(chain: ChainKey | WalletChain, privateKey: string, 
 }
 
 export function getTronEnvUrls(): TronNodeUrls {
-  const fallback = getChainConfig('tron').rpcUrls[0];
+  const fallback = getChainConfig('tron').rpcUrls[0] || 'https://api.trongrid.io/';
   const fullNodeValue = getRuntimeEnv('TRON_FULL_NODE') || getRuntimeEnv('TRON_RPC_URL') || getRuntimeEnv('NEXT_PUBLIC_TRON_RPC');
   assertProductionRpcUrl('TRON_FULL_NODE', fullNodeValue);
-  const fullNode = normalizeTronNodeUrl(fullNodeValue || fallback);
+  const fullNode = normalizeTronNodeUrl(fullNodeValue ?? fallback);
   const solidityNodeValue = getRuntimeEnv('TRON_SOLIDITY_NODE') || fullNode;
   assertProductionRpcUrl('TRON_SOLIDITY_NODE', solidityNodeValue);
   const eventServerValue = getRuntimeEnv('TRON_EVENT_SERVER') || fullNode;
@@ -167,7 +167,7 @@ export async function readEVMUSDTBalance(chain: ChainKey | WalletChain, address:
   const config = getChainConfig(chainKey);
   const provider = getEVMProvider(chainKey);
   const contract = new ethers.Contract(config.usdtAddress, EVM_USDT_ABI, provider);
-  return BigInt(await contract.balanceOf(address));
+  return BigInt(await (contract as any)['balanceOf'](address));
 }
 
 export async function writeEVMUSDTTransfer(params: {
@@ -181,7 +181,7 @@ export async function writeEVMUSDTTransfer(params: {
   const chainKey = getEVMChainKey(params.chain);
   const config = getChainConfig(chainKey);
   const contract = new ethers.Contract(config.usdtAddress, EVM_USDT_ABI, wallet);
-  const tx = await contract.transfer(params.to, params.amount);
+  const tx = await (contract as any)['transfer'](params.to, params.amount);
   const receipt = await tx.wait();
   return receipt?.hash || tx.hash;
 }
@@ -195,7 +195,7 @@ export async function readTronBlockNumber(): Promise<number> {
 export async function readTronUSDTBalance(address: string): Promise<bigint> {
   const tronweb = getTronWeb();
   const contract = tronweb.contract(TRON_USDT_ABI, CHAINS.tron.usdtAddress);
-  const raw = await contract.balanceOf(address).call();
+  const raw = await (contract as any)['balanceOf'](address).call();
   return BigInt(raw?.toString?.() ?? String(raw));
 }
 
@@ -206,14 +206,14 @@ export async function writeTronUSDTTransfer(params: {
   feeLimit?: number;
   rpcUrl?: string;
 }): Promise<string> {
-  const tronweb = getTronWeb(params.privateKey, { rpcUrl: params.rpcUrl });
+  const tronweb = getTronWeb(params.privateKey, params.rpcUrl ? { rpcUrl: params.rpcUrl } : {});
   const from = tronweb.address.fromPrivateKey(params.privateKey);
   if (!from) {
     throw new Error('Unable to derive TRON sender address');
   }
 
   const contract = tronweb.contract(TRON_USDT_ABI, CHAINS.tron.usdtAddress);
-  const txHash = await contract.transfer(params.to, params.amount.toString()).send(
+  const txHash = await (contract as any)['transfer'](params.to, params.amount.toString()).send(
     {
       from,
       feeLimit: params.feeLimit ?? 14_900_000,

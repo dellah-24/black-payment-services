@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { checkRateLimit } from '@/lib/rateLimiterSupabase';
 import { logger } from '@/lib/logger';
-import { generateCSRFToken, validateCSRFToken, cleanupCSRFTokens } from '@/lib/csrf';
+import { generateCsrfToken, validateCSRFToken, cleanupCSRFTokens } from '@/lib/csrf';
 import { isSupabaseConfigured } from '@/lib/supabaseClient';
 
 // Rate limiting constants
@@ -53,7 +53,7 @@ export async function middleware(request: NextRequest) {
         }
       } catch (rateLimitError) {
         // Log but don't block the request if rate limiting fails
-        logger.error('Rate limit check failed in middleware', rateLimitError as Error, { ip });
+        logger.error('Rate limit check failed in middleware', { error: rateLimitError, ip });
       }
     }
 

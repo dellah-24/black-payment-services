@@ -1,12 +1,11 @@
 import { createClient } from '@supabase/supabase-js';
-import { getEnv, isPlaceholder, isProduction } from '@/lib/env';
+import { getEnv, requireEnv, isProduction } from '@/lib/env';
 import { logger } from '@/lib/logger';
-import { getChainConfig, getPrimaryRpcUrl, getUsdtAddress } from '@/config/chains';
-import { WalletChain } from '@/wallet/types';
+import { getChainConfig, getPrimaryRpcUrl, getUsdtAddress, ChainKey } from '@/config/chains';
 
 export interface WalletInfo {
   address: string;
-  chain: WalletChain;
+  chain: ChainKey;
   balance: string;
   usdtBalance: string;
   isConnected: boolean;
@@ -17,7 +16,7 @@ export interface TransferResult {
   from: string;
   to: string;
   amount: string;
-  chain: WalletChain;
+  chain: ChainKey;
   status: 'pending' | 'confirmed' | 'failed';
   timestamp: string;
 }
@@ -26,10 +25,13 @@ export class WalletService {
   private supabase: ReturnType<typeof createClient>;
 
   constructor() {
-    this.supabase = createClient(getEnv('NEXT_PUBLIC_SUPABASE_URL'), getEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY'));
+    this.supabase = createClient(
+      requireEnv('NEXT_PUBLIC_SUPABASE_URL', { allowLocalDev: true }), 
+      requireEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY', { allowLocalDev: true })
+    );
   }
 
-  async getWalletInfo(address: string, chain: WalletChain): Promise<WalletInfo> {
+  async getWalletInfo(address: string, chain: ChainKey): Promise<WalletInfo> {
     try {
       const chainConfig = getChainConfig(chain);
       const rpcUrl = getPrimaryRpcUrl(chain);
@@ -51,7 +53,7 @@ export class WalletService {
     from: string;
     to: string;
     amount: string;
-    chain: WalletChain;
+    chain: ChainKey;
     privateKey?: string;
   }): Promise<TransferResult> {
     try {
@@ -76,7 +78,7 @@ export class WalletService {
     }
   }
 
-  async getTransactionStatus(txHash: string, chain: WalletChain): Promise<TransferResult | null> {
+  async getTransactionStatus(txHash: string, chain: ChainKey): Promise<TransferResult | null> {
     try {
       return {
         hash: txHash,
@@ -93,7 +95,7 @@ export class WalletService {
     }
   }
 
-  async getTransactionHistory(address: string, chain: WalletChain, limit = 50): Promise<TransferResult[]> {
+  async getTransactionHistory(address: string, chain: ChainKey, limit = 50): Promise<TransferResult[]> {
     try {
       return [];
     } catch (error) {

@@ -29,7 +29,12 @@ export async function submitKYCDocument(params: {
   type: KYCDocument['type'];
   documentUrl: string;
 }): Promise<KYCDocument> {
-  const supabase = createClient(getEnv('NEXT_PUBLIC_SUPABASE_URL'), getEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY'));
+  const supabaseUrl = getEnv('NEXT_PUBLIC_SUPABASE_URL');
+  const supabaseKey = getEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY');
+  if (!supabaseUrl || !supabaseKey) {
+    throw new Error('Supabase not configured');
+  }
+  const supabase = createClient(supabaseUrl, supabaseKey);
 
   const { data, error } = await supabase
     .from('kyc_documents')
@@ -61,7 +66,12 @@ export async function submitKYCDocument(params: {
 }
 
 export async function getKYCVerification(userId: string): Promise<KYCVerification | null> {
-  const supabase = createClient(getEnv('NEXT_PUBLIC_SUPABASE_URL'), getEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY'));
+  const supabaseUrl = getEnv('NEXT_PUBLIC_SUPABASE_URL');
+  const supabaseKey = getEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY');
+  if (!supabaseUrl || !supabaseKey) {
+    return null;
+  }
+  const supabase = createClient(supabaseUrl, supabaseKey);
 
   const { data: verification, error: verificationError } = await supabase
     .from('kyc_verifications')
@@ -105,7 +115,12 @@ export async function getKYCVerification(userId: string): Promise<KYCVerificatio
 }
 
 export async function getKYCDocuments(userId: string): Promise<KYCDocument[]> {
-  const supabase = createClient(getEnv('NEXT_PUBLIC_SUPABASE_URL'), getEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY'));
+  const supabaseUrl = getEnv('NEXT_PUBLIC_SUPABASE_URL');
+  const supabaseKey = getEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY');
+  if (!supabaseUrl || !supabaseKey) {
+    return [];
+  }
+  const supabase = createClient(supabaseUrl, supabaseKey);
 
   const { data, error } = await supabase
     .from('kyc_documents')
@@ -131,7 +146,12 @@ export async function getKYCDocuments(userId: string): Promise<KYCDocument[]> {
 }
 
 export async function deleteKYCDocument(documentId: string, userId: string): Promise<void> {
-  const supabase = createClient(getEnv('NEXT_PUBLIC_SUPABASE_URL'), getEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY'));
+  const supabaseUrl = getEnv('NEXT_PUBLIC_SUPABASE_URL');
+  const supabaseKey = getEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY');
+  if (!supabaseUrl || !supabaseKey) {
+    throw new Error('Supabase not configured');
+  }
+  const supabase = createClient(supabaseUrl, supabaseKey);
 
   const { error } = await supabase
     .from('kyc_documents')
@@ -145,3 +165,45 @@ export async function deleteKYCDocument(documentId: string, userId: string): Pro
     throw new Error('Failed to delete KYC document');
   }
 }
+
+export async function submitKYC(userId: string, params: {
+  fullName: string;
+  dateOfBirth: string;
+  address: string;
+  documentType: string;
+  documentNumber: string;
+}): Promise<void> {
+  // This is a placeholder that would typically:
+  // 1. Create a KYC verification record
+  // 2. Upload documents to storage
+  // 3. Trigger verification process
+  const supabaseUrl = getEnv('NEXT_PUBLIC_SUPABASE_URL');
+  const supabaseKey = getEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY');
+  if (!supabaseUrl || !supabaseKey) {
+    throw new Error('Supabase not configured');
+  }
+  const supabase = createClient(supabaseUrl, supabaseKey);
+
+  const { error } = await supabase
+    .from('kyc_verifications')
+    .upsert({
+      user_id: userId,
+      status: 'in_progress',
+      level: 'basic',
+      updated_at: new Date().toISOString(),
+    });
+
+  if (error) {
+    logger.error('Failed to submit KYC', error);
+    throw new Error('Failed to submit KYC');
+  }
+}
+
+// Export all functions as a service object for convenience
+export const kycService = {
+  submitKYC,
+  submitKYCDocument,
+  getKYCVerification,
+  getKYCDocuments,
+  deleteKYCDocument,
+};

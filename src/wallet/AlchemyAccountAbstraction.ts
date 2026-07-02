@@ -64,7 +64,7 @@ export type AAChain = keyof typeof AA_CHAIN_CONFIG;
  * Get Alchemy API key from environment
  */
 const getAlchemyApiKey = (): string => {
-  const apiKey = process.env.NEXT_PUBLIC_ALCHEMY_API_KEY;
+  const apiKey = process.env['NEXT_PUBLIC_ALCHEMY_API_KEY'];
   if (!apiKey) {
     throw new Error(
       'NEXT_PUBLIC_ALCHEMY_API_KEY environment variable is required for AA features'
@@ -161,24 +161,31 @@ export interface UserOperation {
 }
 
 /**
- * AlchemyAccountAbstraction Service
- * 
- * Production implementation using Alchemy's AA SDK
- */
-export class AlchemyAccountAbstractionService {
-  private chainConfigs: typeof AA_CHAIN_CONFIG;
-  private walletData: Map<string, AAWalletData>;
-  private signer: any;
-  private provider: any;
-  private smartAccount: any;
-  private rpcUrl: string;
+   * AlchemyAccountAbstraction Service
+   * 
+   * Production implementation using Alchemy's AA SDK
+   */
+  export class AlchemyAccountAbstractionService {
+    private chainConfigs: typeof AA_CHAIN_CONFIG;
+    private walletData: Map<string, AAWalletData>;
+    private signer: any;
+    private provider: any;
+    private smartAccount: any;
+    private rpcUrl: string;
 
-  constructor() {
-    this.chainConfigs = AA_CHAIN_CONFIG;
-    this.walletData = new Map();
-    this.rpcUrl = '';
-    logger.info('AlchemyAccountAbstractionService initialized');
-  }
+    constructor() {
+      this.chainConfigs = AA_CHAIN_CONFIG;
+      this.walletData = new Map();
+      this.rpcUrl = '';
+      logger.info('AlchemyAccountAbstractionService initialized');
+    }
+
+    /**
+     * Get supported AA chains
+     */
+    getSupportedChains(): AAChain[] {
+      return Object.keys(this.chainConfigs) as AAChain[];
+    }
 
   /**
    * Initialize the AA service with a signer (owner wallet)
@@ -559,4 +566,31 @@ export interface SmartAccountConfig {
   chain: AAChain;
   salt?: string;
   index?: number;
+}
+
+/**
+ * Create a Smart Account
+ */
+export async function createAASmartAccount(
+  ownerPrivateKey: string,
+  chain: AAChain = 'ethereum'
+): Promise<AAWalletData> {
+  const service = new AlchemyAccountAbstractionService();
+  await service.initialize(ownerPrivateKey, chain);
+  return service.createSmartAccount({
+    owner: new (await import('ethers')).Wallet(ownerPrivateKey).address,
+    chain,
+  });
+}
+
+/**
+ * Initialize AA with signer
+ */
+export async function initAAWithSigner(
+  ownerPrivateKey: string,
+  chain: AAChain = 'ethereum'
+): Promise<AlchemyAccountAbstractionService> {
+  const service = new AlchemyAccountAbstractionService();
+  await service.initialize(ownerPrivateKey, chain);
+  return service;
 }

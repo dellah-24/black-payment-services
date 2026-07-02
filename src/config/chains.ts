@@ -160,11 +160,21 @@ export function getChainConfig(chain: ChainKey): ChainConfig {
 }
 
 /**
+ * Get active chain config (alias for getChainConfig)
+ */
+export const getActiveChainConfig = getChainConfig;
+
+/**
  * Get all supported chain keys
  */
 export function getSupportedChains(): ChainKey[] {
   return Object.keys(CHAINS) as ChainKey[];
 }
+
+/**
+ * Array of supported chain keys for direct import
+ */
+export const SUPPORTED_CHAINS = getSupportedChains();
 
 /**
  * Get chain by chain ID

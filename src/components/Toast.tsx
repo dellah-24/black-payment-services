@@ -19,6 +19,9 @@ interface ToastContextValue {
 
 const ToastContext = createContext<ToastContextValue | null>(null);
 
+// Global toast function for use outside of React components
+let globalShowToast: ((type: ToastType, message: string, duration?: number) => void) | null = null;
+
 export function ToastProvider({ children }: { children: ReactNode }) {
   const [toasts, setToasts] = useState<Toast[]>([]);
 
@@ -39,6 +42,9 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     }
   }, [removeToast]);
 
+  // Set global reference
+  globalShowToast = showToast;
+
   return (
     <ToastContext.Provider value={{ toasts, showToast, removeToast }}>
       {children}
@@ -53,6 +59,20 @@ export function useToast() {
     throw new Error('useToast must be used within a ToastProvider');
   }
   return context;
+}
+
+/**
+ * Standalone showToast function for use outside of React components
+ * This is a simple wrapper that uses the context when available
+ */
+export function showToast(type: ToastType, message: string, duration = 5000) {
+  // This will be called after ToastProvider mounts, so globalShowToast will be set
+  if (globalShowToast) {
+    globalShowToast(type, message, duration);
+  } else {
+    // Fallback: log to console if ToastProvider not mounted
+    console.log(`[Toast ${type}] ${message}`);
+  }
 }
 
 interface ToastContainerProps {
