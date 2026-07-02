@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { getEnv, isPlaceholder } from '@/lib/env';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   const apiKey = getEnv('EXCHANGE_API_KEY');
   const apiUrl = getEnv('EXCHANGE_API_URL');
