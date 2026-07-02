@@ -16,7 +16,7 @@ APP_VERSION = "1.0.0"
 
 # Production environment
 [env.production]
-vars = { NODE_ENV = "production" }
+vars = { NODE_ENV = "production", APP_NAME = "BlackPayments Wallet", APP_VERSION = "1.0.0" }
 
 # Production secrets (set via wrangler secret)
 # wrangler secret put SUPABASE_URL
@@ -38,8 +38,3 @@ vars = { NODE_ENV = "production" }
 [limits]
 cpu_ms = 50000
 memory_mb = 128
-
-# Production observability
-[observability]
-enabled = true
-head_sampling_rate = 1
