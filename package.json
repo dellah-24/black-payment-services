@@ -47,7 +47,7 @@
     "@opentelemetry/resources": "^2.7.1",
     "@opentelemetry/sdk-logs": "^0.218.0",
     "@profullstack/autoblog": "github:profullstack/autoblog#75e54af",
-    "@profullstack/coinpay": "file:../../packages/sdk",
+    "@profullstack/coinpay": "file:./packages/sdk",
     "@profullstack/emailer": "^1.0.1",
     "@profullstack/referrals": "^0.1.0",
     "@scure/bip32": "^1.3.3",
