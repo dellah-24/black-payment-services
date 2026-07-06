@@ -24,7 +24,7 @@
     "generate-wallet": "node scripts/generate-hd-wallets.mjs",
     "decrypt-wallet": "node scripts/decrypt-wallet-backup.mjs",
     "coinpay-wallet": "node --import tsx scripts/coinpay-wallet.mjs",
-    "postinstall": "node scripts/configure-git-hooks.mjs && node -e \"const fs=require('fs');const path=require('path');const dirs=[path.join(process.cwd(),'node_modules/@profullstack/autoblog'),path.join(process.cwd(),'node_modules/@profullstack/coinpay')];dirs.forEach(dir=>{if(fs.existsSync(dir)){fs.writeFileSync(path.join(dir,'package.json'),JSON.stringify({name:path.basename(dir),version:'0.6.11',main:'index.js'},null,2));}});\"",
+    "postinstall": "node scripts/configure-git-hooks.mjs && node scripts/fix-stub-packages.mjs",
     "version:patch": "node scripts/version-bump.js patch",
     "version:minor": "node scripts/version-bump.js minor",
     "version:major": "node scripts/version-bump.js major",

@@ -6,8 +6,6 @@ import Footer from '@/components/Footer';
 import { Providers } from '@/components/Providers';
 import './globals.css';
 
-export const runtime = 'edge';
-
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://coinpayportal.com'),
   title: 'CoinPay - Non-Custodial Crypto Payment Gateway',
