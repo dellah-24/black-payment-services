@@ -1,4 +1,4 @@
-import { defineCloudflareConfig } from "opennextjs-cloudflare";
+import { defineCloudflareConfig } from "@opennextjs/cloudflare";
 
 export default defineCloudflareConfig({
   // The app uses Node.js built-ins (crypto, stream) so we rely on the
