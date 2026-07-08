@@ -29,7 +29,9 @@
     "version:minor": "node scripts/version-bump.js minor",
     "version:major": "node scripts/version-bump.js major",
     "plugins:sync-sdk": "./scripts/sync-plugin-sdk.sh",
-    "plugins:build-zips": "./scripts/build-plugin-zips.sh"
+    "plugins:build-zips": "./scripts/build-plugin-zips.sh",
+    "opennext": "opennextjs-cloudflare build",
+    "cf:build": "opennextjs-cloudflare build"
   },
   "dependencies": {
     "@coinbase/wallet-sdk": "^4.3.7",
@@ -110,6 +112,7 @@
     "ignore-loader": "^0.1.2",
     "inquirer": "^13.0.1",
     "jsdom": "^23.2.0",
+    "@opennextjs/cloudflare": "^1.0.0",
     "postcss": "^8.5.10",
     "prettier": "^3.2.4",
     "supabase": "^2.84.4",
