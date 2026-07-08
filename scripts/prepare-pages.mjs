@@ -20,6 +20,12 @@
 // (everything under `.open-next` except the `assets` directory itself) into
 // `.open-next/assets`, placing the entry as `_worker.js`. This keeps every
 // relative import resolvable right next to the worker.
+//
+// We copy with `dereference: true` so that any symlinks in the OpenNext output
+// (e.g. links into the Next.js `.next` build) are resolved to their real files.
+// Cloudflare Pages rejects symlinks that point outside the output directory
+// ("build output directory contains links to files that can't be accessed"),
+// so dereferencing is required.
 
 import { cpSync, existsSync, mkdirSync, readdirSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
@@ -48,9 +54,15 @@ for (const entry of entries) {
   const src = join(openNextDir, entry);
   if (entry === "worker.js") {
     // The Pages Functions entry point must be named exactly `_worker.js`.
-    cpSync(src, join(assetsDir, "_worker.js"), { recursive: true });
+    cpSync(src, join(assetsDir, "_worker.js"), {
+      recursive: true,
+      dereference: true,
+    });
   } else {
-    cpSync(src, join(assetsDir, entry), { recursive: true });
+    cpSync(src, join(assetsDir, entry), {
+      recursive: true,
+      dereference: true,
+    });
   }
 }
 
