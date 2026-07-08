@@ -8,6 +8,8 @@ compatibility_flags = ["nodejs_compat"]
 # `pages_build_output_dir` and uses a `_worker.js` inside it as the
 # Pages Functions worker that handles every request (API routes + SSR),
 # serving static files through the auto-provided `ASSETS` binding.
-# See scripts/prepare-pages.mjs which copies the built worker to
-# `.open-next/assets/_worker.js` after `opennextjs-cloudflare build`.
+# See scripts/prepare-pages.mjs which copies the ENTIRE OpenNext worker
+# runtime (worker.js + its sibling modules: cloudflare/, .build/, middleware/,
+# server-functions/) into `.open-next/assets/_worker.js` after
+# `opennextjs-cloudflare build`, so every relative import resolves next to it.
 pages_build_output_dir = ".open-next/assets"
