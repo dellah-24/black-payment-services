@@ -83,6 +83,17 @@ const nextConfig = {
       },
     ];
   },
+  // Redirect /favicon.ico to /icons/favicon.ico to ensure the browser
+  // can always resolve the favicon regardless of static-file serving quirks.
+  async redirects() {
+    return [
+      {
+        source: '/favicon.ico',
+        destination: '/icons/favicon.ico',
+        permanent: true,
+      },
+    ];
+  },
   // Turbopack configuration
   turbopack: {
     resolveAlias: {
