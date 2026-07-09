@@ -12,4 +12,9 @@ compatibility_flags = ["nodejs_compat"]
 # runtime (worker.js + its sibling modules: cloudflare/, .build/, middleware/,
 # server-functions/) into `.open-next/assets/_worker.js` after
 # `opennextjs-cloudflare build`, so every relative import resolves next to it.
+#
+# NOTE: The bundled OpenNext worker (worker.js + Next.js server handler) is
+# larger than 3 MiB, so deploying requires the Cloudflare **Workers Paid** plan
+# ($5/mo) which raises the Worker script size limit to 10 MiB. The Free plan
+# (3 MiB) will fail at "Failed to publish your Function".
 pages_build_output_dir = ".open-next/assets"
