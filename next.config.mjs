@@ -89,7 +89,12 @@ const nextConfig = {
     return [
       {
         source: '/favicon.ico',
-        destination: '/icons/favicon.ico',
+        destination: '/icons/favicon.png',
+        permanent: true,
+      },
+      {
+        source: '/icons/favicon.ico',
+        destination: '/icons/favicon.png',
         permanent: true,
       },
     ];
