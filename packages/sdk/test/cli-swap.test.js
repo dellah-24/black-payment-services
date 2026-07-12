@@ -8,7 +8,7 @@ import { existsSync, mkdtempSync, writeFileSync, readFileSync, unlinkSync, rmSyn
 import { join } from 'path';
 import { tmpdir, homedir } from 'os';
 
-const CLI_PATH = join(import.meta.dirname, '..', 'bin', 'coinpay.js');
+const CLI_PATH = join(import.meta.dirname, '..', 'bin', 'tempesttouch.js');
 let hasNodeSpawn = false;
 
 try {
@@ -29,7 +29,7 @@ function runCLI(args, options = {}) {
     stdio: ['pipe', 'pipe', 'pipe'],
     env: { 
       ...process.env, 
-      COINPAY_API_KEY: 'cp_test_fake_key',
+      TEMPESTTOUCH_API_KEY: 'cp_test_fake_key',
       HOME: home || process.env.HOME,
       ...extraEnv,
     },
@@ -54,9 +54,9 @@ describe.skipIf(!hasNodeSpawn)('CLI Swap Commands', () => {
   let configPath;
 
   beforeAll(() => {
-    tmpDir = mkdtempSync(join(tmpdir(), 'coinpay-swap-test-'));
+    tmpDir = mkdtempSync(join(tmpdir(), 'tempesttouch-swap-test-'));
     testHome = tmpDir;
-    configPath = join(testHome, '.coinpay.json');
+    configPath = join(testHome, '.tempesttouch.json');
     
     // Create test wallet config
     writeFileSync(configPath, JSON.stringify({
@@ -150,7 +150,7 @@ describe.skipIf(!hasNodeSpawn)('CLI Swap Commands', () => {
 
     it('should require wallet to be configured', () => {
       // Temporarily use a home without wallet config
-      const emptyHome = mkdtempSync(join(tmpdir(), 'coinpay-empty-'));
+      const emptyHome = mkdtempSync(join(tmpdir(), 'tempesttouch-empty-'));
       
       const { output } = runCLI('swap create --from BTC --to ETH --amount 0.1 --settle 0x...', { home: emptyHome });
       
@@ -209,7 +209,7 @@ describe.skipIf(!hasNodeSpawn)('CLI Swap Commands', () => {
 
   describe('swap history', () => {
     it('should require wallet to be configured', () => {
-      const emptyHome = mkdtempSync(join(tmpdir(), 'coinpay-empty-'));
+      const emptyHome = mkdtempSync(join(tmpdir(), 'tempesttouch-empty-'));
       
       const { output } = runCLI('swap history', { home: emptyHome });
       

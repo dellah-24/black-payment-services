@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { CoinPayClient } from '../src/client.js';
+import { TempestTouchClient } from '../src/client.js';
 import { registerMerchant, loginMerchant, getMe } from '../src/auth.js';
 
 describe('Auth SDK', () => {
@@ -7,8 +7,8 @@ describe('Auth SDK', () => {
   
   beforeEach(() => {
     // Create client without API key for auth operations
-    client = new CoinPayClient({ 
-      baseUrl: process.env.COINPAY_BASE_URL || 'https://coinpayportal.com/api' 
+    client = new TempestTouchClient({ 
+      baseUrl: process.env.TEMPESTTOUCH_BASE_URL || 'https://tempesttouch.com/api' 
     });
   });
 
@@ -84,9 +84,9 @@ describe('Auth SDK', () => {
     // Skip actual API test unless in integration mode
     it.skip('should return merchant info when authenticated', async () => {
       // This would require a valid JWT token
-      const authenticatedClient = new CoinPayClient({ 
+      const authenticatedClient = new TempestTouchClient({ 
         apiKey: 'valid-jwt-token',
-        baseUrl: process.env.COINPAY_BASE_URL || 'https://coinpayportal.com/api' 
+        baseUrl: process.env.TEMPESTTOUCH_BASE_URL || 'https://tempesttouch.com/api' 
       });
       
       const result = await getMe(authenticatedClient);
@@ -99,8 +99,8 @@ describe('Auth SDK', () => {
 
   describe('client unauthenticated requests', () => {
     it('should create client without API key', () => {
-      const unauthClient = new CoinPayClient({});
-      expect(unauthClient).toBeInstanceOf(CoinPayClient);
+      const unauthClient = new TempestTouchClient({});
+      expect(unauthClient).toBeInstanceOf(TempestTouchClient);
     });
 
     it('should allow unauthenticated requests', async () => {

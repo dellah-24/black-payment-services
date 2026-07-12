@@ -18,7 +18,7 @@ import {
   getCardEscrowStatus,
 } from '../src/card-payments.js';
 
-// Mock CoinPayClient
+// Mock TempestTouchClient
 const mockClient = {
   createCardPayment: vi.fn(),
   getStripeAccountStatus: vi.fn(),

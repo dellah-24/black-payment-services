@@ -2,7 +2,7 @@
  * Auth SDK Module Types
  */
 
-import { CoinPayClient } from './client.js';
+import { TempestTouchClient } from './client.js';
 
 /**
  * Merchant object returned from auth operations
@@ -44,29 +44,29 @@ export interface LoginParams {
 
 /**
  * Register a new merchant account
- * @param client - CoinPay client (can be unauthenticated)
+ * @param client - Tempest Touch client (can be unauthenticated)
  * @param params - Registration parameters
  * @returns Promise with registration response
  */
 export function registerMerchant(
-  client: CoinPayClient,
+  client: TempestTouchClient,
   params: RegisterParams
 ): Promise<AuthResponse>;
 
 /**
  * Login to merchant account
- * @param client - CoinPay client (can be unauthenticated)
+ * @param client - Tempest Touch client (can be unauthenticated)
  * @param params - Login parameters
  * @returns Promise with login response
  */
 export function loginMerchant(
-  client: CoinPayClient,
+  client: TempestTouchClient,
   params: LoginParams
 ): Promise<AuthResponse>;
 
 /**
  * Get current authenticated merchant info
- * @param client - Authenticated CoinPay client
+ * @param client - Authenticated Tempest Touch client
  * @returns Promise with merchant information
  */
-export function getMe(client: CoinPayClient): Promise<Merchant>;
+export function getMe(client: TempestTouchClient): Promise<Merchant>;

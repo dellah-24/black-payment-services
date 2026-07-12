@@ -21,7 +21,7 @@ import {
 function createMockClient(response = {}) {
   return {
     request: vi.fn().mockResolvedValue(response),
-    baseUrl: 'https://coinpayportal.com',
+    baseUrl: 'https://tempesttouch.com',
   };
 }
 
@@ -86,8 +86,8 @@ describe('Reputation SDK', () => {
 
   describe('getBadgeUrl', () => {
     it('should return correct badge URL', () => {
-      const url = getBadgeUrl('https://coinpayportal.com', 'did:key:z6Mk123');
-      expect(url).toBe('https://coinpayportal.com/api/reputation/badge/did%3Akey%3Az6Mk123');
+      const url = getBadgeUrl('https://tempesttouch.com', 'did:key:z6Mk123');
+      expect(url).toBe('https://tempesttouch.com/api/reputation/badge/did%3Akey%3Az6Mk123');
     });
 
     it('should handle custom base URLs', () => {

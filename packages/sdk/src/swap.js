@@ -1,11 +1,11 @@
 /**
- * Swap Module for CoinPay SDK
+ * Swap Module for Tempest Touch SDK
  * 
  * Provides cryptocurrency swap functionality using ChangeNow v2 API.
  * Swaps are non-custodial and work in the USA (no KYC required).
  */
 
-const DEFAULT_BASE_URL = 'https://coinpayportal.com/api';
+const DEFAULT_BASE_URL = 'https://tempesttouch.com/api';
 
 /**
  * Supported coins for swaps

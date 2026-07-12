@@ -2,10 +2,10 @@
  * CLI wallet backup and encrypted storage tests
  *
  * Tests the encrypted wallet storage flow:
- * - `coinpay wallet create` - creates wallet and saves encrypted
- * - `coinpay wallet unlock` - decrypts and shows info
- * - `coinpay wallet backup` - exports encrypted backup
- * - `coinpay wallet delete` - removes wallet file
+ * - `tempesttouch wallet create` - creates wallet and saves encrypted
+ * - `tempesttouch wallet unlock` - decrypts and shows info
+ * - `tempesttouch wallet backup` - exports encrypted backup
+ * - `tempesttouch wallet delete` - removes wallet file
  *
  * Tests are skipped if gpg is not installed.
  */
@@ -16,7 +16,7 @@ import { existsSync, mkdtempSync, readFileSync, unlinkSync, writeFileSync } from
 import { join } from 'path';
 import { tmpdir, homedir } from 'os';
 
-const CLI_PATH = join(import.meta.dirname, '..', 'bin', 'coinpay.js');
+const CLI_PATH = join(import.meta.dirname, '..', 'bin', 'tempesttouch.js');
 
 // Check if gpg is available
 let hasGpg = false;
@@ -45,7 +45,7 @@ function runCLI(args, { cwd, expectFail, env = {} } = {}) {
     stdio: ['pipe', 'pipe', 'pipe'],
     env: { 
       ...process.env, 
-      COINPAY_API_KEY: 'cp_test_fake_key',
+      TEMPESTTOUCH_API_KEY: 'cp_test_fake_key',
       ...env
     },
     timeout: 30000,
@@ -72,9 +72,9 @@ describe.skipIf(!hasNodeSpawn)('CLI wallet encrypted storage', () => {
   let configFile;
 
   beforeAll(() => {
-    tmpDir = mkdtempSync(join(tmpdir(), 'coinpay-test-'));
+    tmpDir = mkdtempSync(join(tmpdir(), 'tempesttouch-test-'));
     walletFile = join(tmpDir, 'test-wallet.gpg');
-    configFile = join(tmpDir, '.coinpay.json');
+    configFile = join(tmpDir, '.tempesttouch.json');
   });
 
   afterAll(() => {

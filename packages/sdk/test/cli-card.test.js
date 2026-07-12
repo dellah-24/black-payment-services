@@ -8,7 +8,7 @@ import { existsSync, mkdtempSync, writeFileSync, readFileSync, unlinkSync, rmSyn
 import { join } from 'path';
 import { tmpdir, homedir } from 'os';
 
-const CLI_PATH = join(import.meta.dirname, '..', '..', '..', 'bin', 'coinpay');
+const CLI_PATH = join(import.meta.dirname, '..', '..', '..', 'bin', 'tempesttouch');
 let hasNodeSpawn = false;
 
 try {
@@ -29,7 +29,7 @@ function runCLI(args, options = {}) {
     stdio: ['pipe', 'pipe', 'pipe'],
     env: { 
       ...process.env, 
-      COINPAY_API_KEY: 'cp_test_fake_key',
+      TEMPESTTOUCH_API_KEY: 'cp_test_fake_key',
       HOME: home || process.env.HOME,
       ...extraEnv,
     },
@@ -53,7 +53,7 @@ describe.skipIf(!hasNodeSpawn)('CLI Card Commands', () => {
   let testHome;
 
   beforeAll(() => {
-    tmpDir = mkdtempSync(join(tmpdir(), 'coinpay-card-test-'));
+    tmpDir = mkdtempSync(join(tmpdir(), 'tempesttouch-card-test-'));
     testHome = tmpDir;
   });
 
@@ -80,13 +80,13 @@ describe.skipIf(!hasNodeSpawn)('CLI Card Commands', () => {
       const result = runCLI('card', { home: testHome });
       
       expect(result.output).toContain('Card Commands:');
-      expect(result.output).toContain('coinpay card pay');
-      expect(result.output).toContain('coinpay card escrow');
-      expect(result.output).toContain('coinpay card escrows');
-      expect(result.output).toContain('coinpay card release');
-      expect(result.output).toContain('coinpay card refund');
-      expect(result.output).toContain('coinpay card transactions');
-      expect(result.output).toContain('coinpay card balance');
+      expect(result.output).toContain('tempesttouch card pay');
+      expect(result.output).toContain('tempesttouch card escrow');
+      expect(result.output).toContain('tempesttouch card escrows');
+      expect(result.output).toContain('tempesttouch card release');
+      expect(result.output).toContain('tempesttouch card refund');
+      expect(result.output).toContain('tempesttouch card transactions');
+      expect(result.output).toContain('tempesttouch card balance');
       expect(result.status).toBe(1); // Should exit with error for missing command
     });
 
@@ -104,7 +104,7 @@ describe.skipIf(!hasNodeSpawn)('CLI Card Commands', () => {
       const result = runCLI('card pay', { home: testHome });
       
       expect(result.output).toContain('--business, --amount, and --description are required');
-      expect(result.output).toContain('Usage: coinpay card pay --business <id> --amount <usd> --description "text"');
+      expect(result.output).toContain('Usage: tempesttouch card pay --business <id> --amount <usd> --description "text"');
       expect(result.status).toBe(1);
     });
 
@@ -132,10 +132,10 @@ describe.skipIf(!hasNodeSpawn)('CLI Card Commands', () => {
     it('should require API key', () => {
       const result = runCLI('card pay --business biz123 --amount 50 --description "test"', { 
         home: testHome,
-        env: { COINPAY_API_KEY: '' }
+        env: { TEMPESTTOUCH_API_KEY: '' }
       });
       
-      expect(result.output).toContain('COINPAY_API_KEY environment variable required');
+      expect(result.output).toContain('TEMPESTTOUCH_API_KEY environment variable required');
       expect(result.status).toBe(1);
     });
   });
@@ -145,7 +145,7 @@ describe.skipIf(!hasNodeSpawn)('CLI Card Commands', () => {
       const result = runCLI('card escrow', { home: testHome });
       
       expect(result.output).toContain('--business, --amount, and --description are required');
-      expect(result.output).toContain('Usage: coinpay card escrow --business <id> --amount <usd> --description "text"');
+      expect(result.output).toContain('Usage: tempesttouch card escrow --business <id> --amount <usd> --description "text"');
       expect(result.status).toBe(1);
     });
 
@@ -159,10 +159,10 @@ describe.skipIf(!hasNodeSpawn)('CLI Card Commands', () => {
     it('should require API key', () => {
       const result = runCLI('card escrow --business biz123 --amount 100 --description "test escrow"', { 
         home: testHome,
-        env: { COINPAY_API_KEY: '' }
+        env: { TEMPESTTOUCH_API_KEY: '' }
       });
       
-      expect(result.output).toContain('COINPAY_API_KEY environment variable required');
+      expect(result.output).toContain('TEMPESTTOUCH_API_KEY environment variable required');
       expect(result.status).toBe(1);
     });
   });
@@ -171,10 +171,10 @@ describe.skipIf(!hasNodeSpawn)('CLI Card Commands', () => {
     it('should require API key', () => {
       const result = runCLI('card escrows', { 
         home: testHome,
-        env: { COINPAY_API_KEY: '' }
+        env: { TEMPESTTOUCH_API_KEY: '' }
       });
       
-      expect(result.output).toContain('COINPAY_API_KEY environment variable required');
+      expect(result.output).toContain('TEMPESTTOUCH_API_KEY environment variable required');
       expect(result.status).toBe(1);
     });
 
@@ -182,10 +182,10 @@ describe.skipIf(!hasNodeSpawn)('CLI Card Commands', () => {
       // This will fail due to missing API key but should show we parse the args correctly
       const result = runCLI('card escrows --business biz123 --status pending --limit 10', { 
         home: testHome,
-        env: { COINPAY_API_KEY: '' }
+        env: { TEMPESTTOUCH_API_KEY: '' }
       });
       
-      expect(result.output).toContain('COINPAY_API_KEY environment variable required');
+      expect(result.output).toContain('TEMPESTTOUCH_API_KEY environment variable required');
       expect(result.status).toBe(1);
     });
   });
@@ -195,17 +195,17 @@ describe.skipIf(!hasNodeSpawn)('CLI Card Commands', () => {
       const result = runCLI('card release', { home: testHome });
       
       expect(result.output).toContain('Escrow ID is required');
-      expect(result.output).toContain('Usage: coinpay card release <escrowId>');
+      expect(result.output).toContain('Usage: tempesttouch card release <escrowId>');
       expect(result.status).toBe(1);
     });
 
     it('should require API key when escrow ID provided', () => {
       const result = runCLI('card release escrow_123', { 
         home: testHome,
-        env: { COINPAY_API_KEY: '' }
+        env: { TEMPESTTOUCH_API_KEY: '' }
       });
       
-      expect(result.output).toContain('COINPAY_API_KEY environment variable required');
+      expect(result.output).toContain('TEMPESTTOUCH_API_KEY environment variable required');
       expect(result.status).toBe(1);
     });
   });
@@ -215,7 +215,7 @@ describe.skipIf(!hasNodeSpawn)('CLI Card Commands', () => {
       const result = runCLI('card refund', { home: testHome });
       
       expect(result.output).toContain('Escrow ID is required');
-      expect(result.output).toContain('Usage: coinpay card refund <escrowId> [--partial <amount>]');
+      expect(result.output).toContain('Usage: tempesttouch card refund <escrowId> [--partial <amount>]');
       expect(result.status).toBe(1);
     });
 
@@ -223,20 +223,20 @@ describe.skipIf(!hasNodeSpawn)('CLI Card Commands', () => {
       // This will fail due to missing API key but should show we parse the args correctly
       const result = runCLI('card refund escrow_123 --partial 25.50', { 
         home: testHome,
-        env: { COINPAY_API_KEY: '' }
+        env: { TEMPESTTOUCH_API_KEY: '' }
       });
       
-      expect(result.output).toContain('COINPAY_API_KEY environment variable required');
+      expect(result.output).toContain('TEMPESTTOUCH_API_KEY environment variable required');
       expect(result.status).toBe(1);
     });
 
     it('should require API key when escrow ID provided', () => {
       const result = runCLI('card refund escrow_123', { 
         home: testHome,
-        env: { COINPAY_API_KEY: '' }
+        env: { TEMPESTTOUCH_API_KEY: '' }
       });
       
-      expect(result.output).toContain('COINPAY_API_KEY environment variable required');
+      expect(result.output).toContain('TEMPESTTOUCH_API_KEY environment variable required');
       expect(result.status).toBe(1);
     });
   });
@@ -245,10 +245,10 @@ describe.skipIf(!hasNodeSpawn)('CLI Card Commands', () => {
     it('should require API key', () => {
       const result = runCLI('card transactions', { 
         home: testHome,
-        env: { COINPAY_API_KEY: '' }
+        env: { TEMPESTTOUCH_API_KEY: '' }
       });
       
-      expect(result.output).toContain('COINPAY_API_KEY environment variable required');
+      expect(result.output).toContain('TEMPESTTOUCH_API_KEY environment variable required');
       expect(result.status).toBe(1);
     });
 
@@ -256,10 +256,10 @@ describe.skipIf(!hasNodeSpawn)('CLI Card Commands', () => {
       // This will fail due to missing API key but should show we parse the args correctly
       const result = runCLI('card transactions --business biz123 --status completed --limit 20', { 
         home: testHome,
-        env: { COINPAY_API_KEY: '' }
+        env: { TEMPESTTOUCH_API_KEY: '' }
       });
       
-      expect(result.output).toContain('COINPAY_API_KEY environment variable required');
+      expect(result.output).toContain('TEMPESTTOUCH_API_KEY environment variable required');
       expect(result.status).toBe(1);
     });
   });
@@ -281,8 +281,8 @@ describe.skipIf(!hasNodeSpawn)('CLI Card Commands', () => {
       const result = runCLI('card pay --business test --amount 10 --description "test"', {
         home: testHome,
         env: { 
-          COINPAY_API_KEY: 'cp_test_key',
-          COINPAY_API_URL: 'http://localhost:99999' // Unreachable port
+          TEMPESTTOUCH_API_KEY: 'cp_test_key',
+          TEMPESTTOUCH_API_URL: 'http://localhost:99999' // Unreachable port
         }
       });
       
@@ -295,33 +295,33 @@ describe.skipIf(!hasNodeSpawn)('CLI Card Commands', () => {
     it('should parse business ID correctly', () => {
       const result = runCLI('card pay --business "biz with spaces" --amount 50 --description "test"', { 
         home: testHome,
-        env: { COINPAY_API_KEY: '' }
+        env: { TEMPESTTOUCH_API_KEY: '' }
       });
       
       // Should get to the API key check, meaning args were parsed
-      expect(result.output).toContain('COINPAY_API_KEY environment variable required');
+      expect(result.output).toContain('TEMPESTTOUCH_API_KEY environment variable required');
       expect(result.status).toBe(1);
     });
 
     it('should parse quoted descriptions correctly', () => {
       const result = runCLI('card escrow --business biz123 --amount 100 --description "Payment for Order #123"', { 
         home: testHome,
-        env: { COINPAY_API_KEY: '' }
+        env: { TEMPESTTOUCH_API_KEY: '' }
       });
       
       // Should get to the API key check, meaning args were parsed
-      expect(result.output).toContain('COINPAY_API_KEY environment variable required');
+      expect(result.output).toContain('TEMPESTTOUCH_API_KEY environment variable required');
       expect(result.status).toBe(1);
     });
 
     it('should parse numeric amounts correctly', () => {
       const result = runCLI('card pay --business biz123 --amount 99.99 --description "test"', { 
         home: testHome,
-        env: { COINPAY_API_KEY: '' }
+        env: { TEMPESTTOUCH_API_KEY: '' }
       });
       
       // Should get to the API key check, meaning args were parsed
-      expect(result.output).toContain('COINPAY_API_KEY environment variable required');
+      expect(result.output).toContain('TEMPESTTOUCH_API_KEY environment variable required');
       expect(result.status).toBe(1);
     });
   });

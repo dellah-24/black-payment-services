@@ -1,5 +1,5 @@
 /**
- * CoinPay Payouts - Functions for Stripe Connect payouts
+ * Tempest Touch Payouts - Functions for Stripe Connect payouts
  * 
  * Manage payouts to connected Stripe accounts (merchants).
  */
@@ -7,7 +7,7 @@
 /**
  * Create a payout to a connected Stripe account
  * 
- * @param {import('./client.js').CoinPayClient} client - CoinPay client instance
+ * @param {import('./client.js').TempestTouchClient} client - Tempest Touch client instance
  * @param {Object} params - Payout parameters
  * @param {number} params.amount - Amount in cents (e.g., 5000 = $50.00)
  * @param {string} [params.currency='usd'] - Currency code
@@ -32,7 +32,7 @@ export async function createPayout(client, { amount, currency = 'usd', descripti
 /**
  * List payouts for the authenticated merchant
  * 
- * @param {import('./client.js').CoinPayClient} client - CoinPay client instance
+ * @param {import('./client.js').TempestTouchClient} client - Tempest Touch client instance
  * @param {Object} [filters] - Filter options
  * @param {string} [filters.status] - Filter by status (pending, paid, failed, canceled)
  * @param {string} [filters.dateFrom] - Filter from date (ISO string)
@@ -56,7 +56,7 @@ export async function listPayouts(client, filters = {}) {
 /**
  * Get a specific payout by ID
  * 
- * @param {import('./client.js').CoinPayClient} client - CoinPay client instance
+ * @param {import('./client.js').TempestTouchClient} client - Tempest Touch client instance
  * @param {string} payoutId - Payout ID
  * @returns {Promise<Object>} Payout details
  */

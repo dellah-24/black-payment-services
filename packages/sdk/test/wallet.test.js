@@ -227,8 +227,8 @@ describe('Token chain addresses', () => {
 // ============================================================
 
 describe.skipIf(!hasNodeSpawn)('CLI wallet commands', () => {
-  const CLI = join(import.meta.dirname, '..', 'bin', 'coinpay.js');
-  const tmpWallet = join(tmpdir(), `coinpay-test-${Date.now()}.gpg`);
+  const CLI = join(import.meta.dirname, '..', 'bin', 'tempesttouch.js');
+  const tmpWallet = join(tmpdir(), `tempesttouch-test-${Date.now()}.gpg`);
 
   function runNodeCli(args, options = {}) {
     return execFileSync(process.execPath, [CLI, ...args], {
@@ -242,7 +242,7 @@ describe.skipIf(!hasNodeSpawn)('CLI wallet commands', () => {
     try { if (existsSync(tmpWallet)) unlinkSync(tmpWallet); } catch {}
   });
 
-  it('coinpay wallet info fails gracefully without wallet file', () => {
+  it('tempesttouch wallet info fails gracefully without wallet file', () => {
     let out;
     try {
       // Merge stderr into stdout so we capture error messages from print.error
@@ -257,7 +257,7 @@ describe.skipIf(!hasNodeSpawn)('CLI wallet commands', () => {
     expect(out.toLowerCase()).toMatch(/not found|no wallet|password|unlock|error|wallet id|file exists/i);
   });
 
-  it('coinpay wallet import + unlock roundtrip', () => {
+  it('tempesttouch wallet import + unlock roundtrip', () => {
     // Import with known mnemonic and password
     try {
       execSync(
@@ -271,7 +271,7 @@ describe.skipIf(!hasNodeSpawn)('CLI wallet commands', () => {
     }
   });
 
-  it('coinpay wallet delete removes wallet file', () => {
+  it('tempesttouch wallet delete removes wallet file', () => {
     // Create a dummy file
     writeFileSync(tmpWallet, 'dummy');
     expect(existsSync(tmpWallet)).toBe(true);

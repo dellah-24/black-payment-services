@@ -4,13 +4,13 @@
  * Demonstrates fetching single and batch exchange rates.
  *
  * Usage:
- *   COINPAY_API_KEY=cp_live_xxx node 05-exchange-rates.js
+ *   TEMPESTTOUCH_API_KEY=cp_live_xxx node 05-exchange-rates.js
  */
 
-import { CoinPayClient, Blockchain } from '@profullstack/coinpay';
+import { TempestTouchClient, Blockchain } from '@profullstack/tempesttouch';
 
-const client = new CoinPayClient({
-  apiKey: process.env.COINPAY_API_KEY,
+const client = new TempestTouchClient({
+  apiKey: process.env.TEMPESTTOUCH_API_KEY,
 });
 
 // ──────────────────────────────────────────

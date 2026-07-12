@@ -1,10 +1,10 @@
 /**
- * Lightning Module for CoinPay SDK
+ * Lightning Module for Tempest Touch SDK
  *
  * Manages Lightning Network operations: wallet provisioning (via LNbits),
  * lightning address registration, invoice creation, payment sending, and history.
  *
- * Lightning wallets are custodial — funds are held on CoinPay's server.
+ * Lightning wallets are custodial — funds are held on Tempest Touch's server.
  */
 
 /**
@@ -14,7 +14,7 @@ export class LightningClient {
   #client;
 
   /**
-   * @param {import('./client.js').CoinPayClient} client - Parent CoinPay client
+   * @param {import('./client.js').TempestTouchClient} client - Parent Tempest Touch client
    */
   constructor(client) {
     this.#client = client;
@@ -69,7 +69,7 @@ export class LightningClient {
   // ──────────────────────────────────────────────
 
   /**
-   * Register a Lightning Address (username@coinpayportal.com).
+   * Register a Lightning Address (username@tempesttouch.com).
    * Requires Lightning to be enabled first.
    * @param {Object} params
    * @param {string} params.wallet_id - Wallet UUID

@@ -4,21 +4,21 @@
  * Demonstrates the simplest way to create a payment and check its status.
  *
  * Usage:
- *   COINPAY_API_KEY=cp_live_xxx COINPAY_BUSINESS_ID=biz_xxx node 01-quick-start.js
+ *   TEMPESTTOUCH_API_KEY=cp_live_xxx TEMPESTTOUCH_BUSINESS_ID=biz_xxx node 01-quick-start.js
  */
 
-import { CoinPayClient, Blockchain } from '@profullstack/coinpay';
+import { TempestTouchClient, Blockchain } from '@profullstack/tempesttouch';
 
-const API_KEY = process.env.COINPAY_API_KEY;
-const BUSINESS_ID = process.env.COINPAY_BUSINESS_ID;
+const API_KEY = process.env.TEMPESTTOUCH_API_KEY;
+const BUSINESS_ID = process.env.TEMPESTTOUCH_BUSINESS_ID;
 
 if (!API_KEY || !BUSINESS_ID) {
-  console.error('Set COINPAY_API_KEY and COINPAY_BUSINESS_ID environment variables');
+  console.error('Set TEMPESTTOUCH_API_KEY and TEMPESTTOUCH_BUSINESS_ID environment variables');
   process.exit(1);
 }
 
 // 1. Create a client
-const client = new CoinPayClient({ apiKey: API_KEY });
+const client = new TempestTouchClient({ apiKey: API_KEY });
 
 // 2. Create a payment
 const { payment } = await client.createPayment({

@@ -1,4 +1,4 @@
-import { CoinPayClient } from './client';
+import { TempestTouchClient } from './client';
 
 export interface ReceiptInput {
   receipt_id: string;
@@ -64,11 +64,11 @@ export interface Credential {
   revoked_at?: string;
 }
 
-export function submitReceipt(client: CoinPayClient, receipt: ReceiptInput): Promise<{ success: boolean; receipt?: Record<string, unknown>; error?: string }>;
-export function getReputation(client: CoinPayClient, agentDid: string): Promise<{ success: boolean; reputation: ReputationResult }>;
-export function getCredential(client: CoinPayClient, credentialId: string): Promise<{ success: boolean; credential: Credential }>;
-export function verifyCredential(client: CoinPayClient, credential: { credential_id: string }): Promise<{ valid: boolean; reason?: string }>;
-export function getRevocationList(client: CoinPayClient): Promise<{ success: boolean; revoked_credentials: string[]; revocations: Array<Record<string, unknown>> }>;
+export function submitReceipt(client: TempestTouchClient, receipt: ReceiptInput): Promise<{ success: boolean; receipt?: Record<string, unknown>; error?: string }>;
+export function getReputation(client: TempestTouchClient, agentDid: string): Promise<{ success: boolean; reputation: ReputationResult }>;
+export function getCredential(client: TempestTouchClient, credentialId: string): Promise<{ success: boolean; credential: Credential }>;
+export function verifyCredential(client: TempestTouchClient, credential: { credential_id: string }): Promise<{ valid: boolean; reason?: string }>;
+export function getRevocationList(client: TempestTouchClient): Promise<{ success: boolean; revoked_credentials: string[]; revocations: Array<Record<string, unknown>> }>;
 
 // CPTL Phase 2
 
@@ -100,8 +100,8 @@ export interface TrustProfileResult {
   computed_at: string | null;
 }
 
-export function submitActionReceipt(client: CoinPayClient, receipt: ActionReceiptInput): Promise<{ success: boolean; receipt?: Record<string, unknown>; error?: string }>;
-export function getTrustProfile(client: CoinPayClient, agentDid: string): Promise<TrustProfileResult>;
+export function submitActionReceipt(client: TempestTouchClient, receipt: ActionReceiptInput): Promise<{ success: boolean; receipt?: Record<string, unknown>; error?: string }>;
+export function getTrustProfile(client: TempestTouchClient, agentDid: string): Promise<TrustProfileResult>;
 
 export interface DidInfo {
   did: string;
@@ -110,9 +110,9 @@ export interface DidInfo {
   created_at: string;
 }
 
-export function getMyDid(client: CoinPayClient): Promise<DidInfo>;
-export function claimDid(client: CoinPayClient): Promise<DidInfo>;
-export function linkDid(client: CoinPayClient, params: { did: string; publicKey: string; signature: string }): Promise<DidInfo>;
+export function getMyDid(client: TempestTouchClient): Promise<DidInfo>;
+export function claimDid(client: TempestTouchClient): Promise<DidInfo>;
+export function linkDid(client: TempestTouchClient, params: { did: string; publicKey: string; signature: string }): Promise<DidInfo>;
 
 // Platform Issuer Self-Service
 
@@ -126,7 +126,7 @@ export interface PlatformIssuer {
   created_at: string;
 }
 
-export function registerPlatformIssuer(client: CoinPayClient, params: { name: string; domain: string; did?: string }): Promise<{ success: boolean; issuer: PlatformIssuer; api_key: string }>;
-export function listPlatformIssuers(client: CoinPayClient): Promise<{ success: boolean; issuers: PlatformIssuer[] }>;
-export function rotatePlatformApiKey(client: CoinPayClient, issuerId: string): Promise<{ success: boolean; issuer: PlatformIssuer; api_key: string }>;
-export function deactivatePlatformIssuer(client: CoinPayClient, issuerId: string): Promise<{ success: boolean; issuer: PlatformIssuer }>;
+export function registerPlatformIssuer(client: TempestTouchClient, params: { name: string; domain: string; did?: string }): Promise<{ success: boolean; issuer: PlatformIssuer; api_key: string }>;
+export function listPlatformIssuers(client: TempestTouchClient): Promise<{ success: boolean; issuers: PlatformIssuer[] }>;
+export function rotatePlatformApiKey(client: TempestTouchClient, issuerId: string): Promise<{ success: boolean; issuer: PlatformIssuer; api_key: string }>;
+export function deactivatePlatformIssuer(client: TempestTouchClient, issuerId: string): Promise<{ success: boolean; issuer: PlatformIssuer }>;

@@ -3,36 +3,36 @@
  *
  * A complete Express server demonstrating a real-world checkout flow:
  *   1. Customer selects crypto at checkout
- *   2. Server creates a CoinPay payment
+ *   2. Server creates a Tempest Touch payment
  *   3. Customer pays to the generated address
- *   4. CoinPay sends a webhook when payment confirms
+ *   4. Tempest Touch sends a webhook when payment confirms
  *   5. Server fulfills the order
  *
  * Usage:
  *   npm install express
- *   COINPAY_API_KEY=cp_live_xxx \
- *   COINPAY_BUSINESS_ID=biz_xxx \
- *   COINPAY_WEBHOOK_SECRET=whsec_xxx \
+ *   TEMPESTTOUCH_API_KEY=cp_live_xxx \
+ *   TEMPESTTOUCH_BUSINESS_ID=biz_xxx \
+ *   TEMPESTTOUCH_WEBHOOK_SECRET=whsec_xxx \
  *   node 07-ecommerce-checkout.js
  */
 
 import express from 'express';
 import {
-  CoinPayClient,
+  TempestTouchClient,
   Blockchain,
   createWebhookHandler,
   WebhookEvent,
-} from '@profullstack/coinpay';
+} from '@profullstack/tempesttouch';
 
 const app = express();
 app.use(express.json());
 
-const client = new CoinPayClient({
-  apiKey: process.env.COINPAY_API_KEY,
+const client = new TempestTouchClient({
+  apiKey: process.env.TEMPESTTOUCH_API_KEY,
 });
 
-const BUSINESS_ID = process.env.COINPAY_BUSINESS_ID;
-const WEBHOOK_SECRET = process.env.COINPAY_WEBHOOK_SECRET;
+const BUSINESS_ID = process.env.TEMPESTTOUCH_BUSINESS_ID;
+const WEBHOOK_SECRET = process.env.TEMPESTTOUCH_WEBHOOK_SECRET;
 
 // In-memory "database" for this example
 const orders = new Map();
@@ -48,7 +48,7 @@ app.post('/checkout', async (req, res) => {
     const total = items.reduce((sum, item) => sum + item.price * item.qty, 0);
     const orderId = `ORD-${Date.now()}`;
 
-    // Create the CoinPay payment
+    // Create the Tempest Touch payment
     const { payment, usage } = await client.createPayment({
       businessId: BUSINESS_ID,
       amount: total,
@@ -130,7 +130,7 @@ app.get('/order/:id/payment-status', async (req, res) => {
 });
 
 // ──────────────────────────────────────────
-// POST /webhook — Receive CoinPay payment notifications
+// POST /webhook — Receive Tempest Touch payment notifications
 // ──────────────────────────────────────────
 app.post(
   '/webhook',
@@ -204,6 +204,6 @@ app.listen(PORT, () => {
   console.log('  POST /checkout                  — Create order + payment');
   console.log('  GET  /order/:id                 — Get order details');
   console.log('  GET  /order/:id/payment-status  — Check payment status');
-  console.log('  POST /webhook                   — CoinPay webhook receiver');
+  console.log('  POST /webhook                   — Tempest Touch webhook receiver');
   console.log('  GET  /supported-blockchains      — List crypto options');
 });

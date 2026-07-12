@@ -1,6 +1,6 @@
-# CoinPay SDK Examples
+# Tempest Touch SDK Examples
 
-Runnable examples demonstrating every major feature of `@profullstack/coinpay`.
+Runnable examples demonstrating every major feature of `@profullstack/tempesttouch`.
 
 ## Setup
 
@@ -9,9 +9,9 @@ Runnable examples demonstrating every major feature of `@profullstack/coinpay`.
 cd packages/sdk
 
 # Set your credentials
-export COINPAY_API_KEY=cp_live_your_key_here
-export COINPAY_BUSINESS_ID=biz_your_id_here
-export COINPAY_WEBHOOK_SECRET=whsec_your_secret_here
+export TEMPESTTOUCH_API_KEY=cp_live_your_key_here
+export TEMPESTTOUCH_BUSINESS_ID=biz_your_id_here
+export TEMPESTTOUCH_WEBHOOK_SECRET=whsec_your_secret_here
 ```
 
 ## Examples

@@ -5,16 +5,16 @@
  * with metadata, and using different fiat currencies.
  *
  * Usage:
- *   COINPAY_API_KEY=cp_live_xxx COINPAY_BUSINESS_ID=biz_xxx node 02-create-payment.js
+ *   TEMPESTTOUCH_API_KEY=cp_live_xxx TEMPESTTOUCH_BUSINESS_ID=biz_xxx node 02-create-payment.js
  */
 
-import { CoinPayClient, Blockchain, FiatCurrency } from '@profullstack/coinpay';
+import { TempestTouchClient, Blockchain, FiatCurrency } from '@profullstack/tempesttouch';
 
-const client = new CoinPayClient({
-  apiKey: process.env.COINPAY_API_KEY,
+const client = new TempestTouchClient({
+  apiKey: process.env.TEMPESTTOUCH_API_KEY,
 });
 
-const BUSINESS_ID = process.env.COINPAY_BUSINESS_ID;
+const BUSINESS_ID = process.env.TEMPESTTOUCH_BUSINESS_ID;
 
 // ──────────────────────────────────────────
 // Bitcoin payment

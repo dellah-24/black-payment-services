@@ -4,16 +4,16 @@
  * Demonstrates listing payments with pagination and status filters.
  *
  * Usage:
- *   COINPAY_API_KEY=cp_live_xxx COINPAY_BUSINESS_ID=biz_xxx node 04-list-payments.js
+ *   TEMPESTTOUCH_API_KEY=cp_live_xxx TEMPESTTOUCH_BUSINESS_ID=biz_xxx node 04-list-payments.js
  */
 
-import { CoinPayClient, PaymentStatus } from '@profullstack/coinpay';
+import { TempestTouchClient, PaymentStatus } from '@profullstack/tempesttouch';
 
-const client = new CoinPayClient({
-  apiKey: process.env.COINPAY_API_KEY,
+const client = new TempestTouchClient({
+  apiKey: process.env.TEMPESTTOUCH_API_KEY,
 });
 
-const BUSINESS_ID = process.env.COINPAY_BUSINESS_ID;
+const BUSINESS_ID = process.env.TEMPESTTOUCH_BUSINESS_ID;
 
 // ──────────────────────────────────────────
 // List all recent payments

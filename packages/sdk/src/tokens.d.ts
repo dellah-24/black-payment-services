@@ -1,10 +1,10 @@
-import { CoinPayClient, SupportedCoinsParams, SupportedCoinsResponse, TokensResponse } from './client.js';
+import { TempestTouchClient, SupportedCoinsParams, SupportedCoinsResponse, TokensResponse } from './client.js';
 
 export interface TokenDiscoveryParams extends SupportedCoinsParams {
   /** API key — required if `client` is not provided */
   apiKey?: string;
-  /** Existing CoinPayClient instance */
-  client?: CoinPayClient;
+  /** Existing TempestTouchClient instance */
+  client?: TempestTouchClient;
 }
 
 /** List checkout-friendly tokens for a business. */

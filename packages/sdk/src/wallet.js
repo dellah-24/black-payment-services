@@ -1,5 +1,5 @@
 /**
- * Wallet Module for CoinPay SDK
+ * Wallet Module for Tempest Touch SDK
  * 
  * Client-side wallet management with server-side address registration.
  * IMPORTANT: Mnemonic/seed phrases are NEVER sent to the server.
@@ -18,7 +18,7 @@ import { hmac } from '@noble/hashes/hmac.js';
 import { sha512 } from '@noble/hashes/sha2.js';
 import { bytesToHex, hexToBytes } from '@noble/hashes/utils.js';
 
-const DEFAULT_BASE_URL = 'https://coinpayportal.com/api';
+const DEFAULT_BASE_URL = 'https://tempesttouch.com/api';
 
 /**
  * Supported blockchain chains
@@ -426,7 +426,7 @@ function signMessage(message, privateKey) {
 // Arbitrary tx / message signing
 // ----------------------------------------------------------------
 // These primitives let callers (like b1dz.com's DEX engine) sign
-// EVM contract calls and Solana transactions that CoinPay's built-in
+// EVM contract calls and Solana transactions that Tempest Touch's built-in
 // `send` flow doesn't cover (e.g., Uniswap swaps, Jupiter routes).
 //
 // The API intentionally stops at the cryptographic primitive:
@@ -440,7 +440,7 @@ function signMessage(message, privateKey) {
 //
 // This keeps the crypto surface minimal and correct. We don't try to
 // re-implement RLP, EIP-712, or Solana's transaction encoder inside
-// CoinPay — those live in the caller's toolchain.
+// Tempest Touch — those live in the caller's toolchain.
 // ================================================================
 
 /** Chains that sign via secp256k1 (32-byte digest → recoverable sig). */
@@ -712,7 +712,7 @@ export class WalletClient {
     });
     
     // Create proof of ownership
-    const proofMessage = `CoinPay Wallet Import: ${Date.now()}`;
+    const proofMessage = `Tempest Touch Wallet Import: ${Date.now()}`;
     const { privateKey } = deriveKeyPair(seed, 'ETH', 0);
     const signature = signMessage(proofMessage, privateKey);
     
@@ -1025,16 +1025,16 @@ export class WalletClient {
   // Arbitrary-transaction signing (PR: arbitrary-tx-signing)
   //
   // These methods expose raw cryptographic signing so callers can
-  // use CoinPay as a wallet provider for flows CoinPay itself
+  // use Tempest Touch as a wallet provider for flows Tempest Touch itself
   // doesn't implement (Uniswap swaps, Jupiter routes, EIP-712
   // typed data, etc.). The caller builds the unsigned tx with
   // their own library (viem / ethers / @solana/web3.js), passes
-  // the digest or message bytes to CoinPay, and receives the
-  // signature back. CoinPay never learns the tx semantics — it
+  // the digest or message bytes to Tempest Touch, and receives the
+  // signature back. Tempest Touch never learns the tx semantics — it
   // just produces cryptographic output.
   //
   // SECURITY: these methods are intentionally unprivileged from
-  // CoinPay's perspective. If you expose them to untrusted
+  // Tempest Touch's perspective. If you expose them to untrusted
   // callers you're handing over signing authority for the wallet.
   // The CLI `wallet sign-digest` / `sign-message` commands
   // require the GPG-encrypted wallet to be unlocked, same as

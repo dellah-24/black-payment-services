@@ -1,13 +1,13 @@
 /**
- * CoinPay API Client
- * Main client class for interacting with the CoinPay API
+ * Tempest Touch API Client
+ * Main client class for interacting with the Tempest Touch API
  */
 
-/** Options for constructing a CoinPayClient */
-export interface CoinPayClientOptions {
-  /** Your CoinPay API key (starts with `cp_live_` or `cp_test_`) */
+/** Options for constructing a TempestTouchClient */
+export interface TempestTouchClientOptions {
+  /** Your Tempest Touch API key (starts with `cp_live_` or `cp_test_`) */
   apiKey: string;
-  /** API base URL (default: `https://coinpayportal.com/api`) */
+  /** API base URL (default: `https://tempesttouch.com/api`) */
   baseUrl?: string;
   /** Request timeout in milliseconds (default: `30000`) */
   timeout?: number;
@@ -15,7 +15,7 @@ export interface CoinPayClientOptions {
 
 /** Parameters for creating a payment */
 export interface PaymentParams {
-  /** Business ID from your CoinPay dashboard */
+  /** Business ID from your Tempest Touch dashboard */
   businessId: string;
   /** Amount in fiat currency (e.g., `100.00`) */
   amount: number;
@@ -148,17 +148,17 @@ export interface TokensResponse extends SupportedCoinsResponse {
 }
 
 /**
- * CoinPay API Client
+ * Tempest Touch API Client
  *
- * The primary class for interacting with the CoinPay payment API.
+ * The primary class for interacting with the Tempest Touch payment API.
  * Handles authentication, request signing, and provides methods
  * for all API operations.
  *
  * @example
  * ```typescript
- * import { CoinPayClient } from '@profullstack/coinpay';
+ * import { TempestTouchClient } from '@profullstack/tempesttouch';
  *
- * const client = new CoinPayClient({ apiKey: 'cp_live_xxxxx' });
+ * const client = new TempestTouchClient({ apiKey: 'cp_live_xxxxx' });
  *
  * const payment = await client.createPayment({
  *   businessId: 'biz_123',
@@ -167,12 +167,12 @@ export interface TokensResponse extends SupportedCoinsResponse {
  * });
  * ```
  */
-export class CoinPayClient {
+export class TempestTouchClient {
   /**
-   * Create a new CoinPay client
+   * Create a new Tempest Touch client
    * @throws {Error} If `apiKey` is not provided
    */
-  constructor(options: CoinPayClientOptions);
+  constructor(options: TempestTouchClientOptions);
 
   /**
    * Make an authenticated API request.
@@ -315,4 +315,4 @@ export class CoinPayClient {
   testWebhook(businessId: string, eventType?: string): Promise<Record<string, unknown>>;
 }
 
-export default CoinPayClient;
+export default TempestTouchClient;

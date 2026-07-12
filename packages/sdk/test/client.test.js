@@ -1,55 +1,55 @@
 /**
- * CoinPayClient Tests
+ * TempestTouchClient Tests
  * Testing Framework: Vitest
  */
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { CoinPayClient } from '../src/client.js';
+import { TempestTouchClient } from '../src/client.js';
 
-describe('CoinPayClient', () => {
+describe('TempestTouchClient', () => {
   describe('constructor', () => {
     it('should create a client with valid API key', () => {
-      const client = new CoinPayClient({ apiKey: 'cp_live_test_api_key_12345678' });
-      expect(client).toBeInstanceOf(CoinPayClient);
+      const client = new TempestTouchClient({ apiKey: 'cp_live_test_api_key_12345678' });
+      expect(client).toBeInstanceOf(TempestTouchClient);
     });
 
     it('should allow creating client without API key (for auth operations)', () => {
-      const client = new CoinPayClient({});
-      expect(client).toBeInstanceOf(CoinPayClient);
+      const client = new TempestTouchClient({});
+      expect(client).toBeInstanceOf(TempestTouchClient);
     });
 
     it('should allow creating client with empty API key', () => {
-      const client = new CoinPayClient({ apiKey: '' });
-      expect(client).toBeInstanceOf(CoinPayClient);
+      const client = new TempestTouchClient({ apiKey: '' });
+      expect(client).toBeInstanceOf(TempestTouchClient);
     });
 
     it('should use default base URL when not provided', () => {
-      const client = new CoinPayClient({ apiKey: 'cp_live_test_key_123456789' });
-      expect(client).toBeInstanceOf(CoinPayClient);
+      const client = new TempestTouchClient({ apiKey: 'cp_live_test_key_123456789' });
+      expect(client).toBeInstanceOf(TempestTouchClient);
     });
 
     it('should accept custom base URL', () => {
-      const client = new CoinPayClient({
+      const client = new TempestTouchClient({
         apiKey: 'cp_live_test_key_123456789',
         baseUrl: 'https://custom.api.com',
       });
-      expect(client).toBeInstanceOf(CoinPayClient);
+      expect(client).toBeInstanceOf(TempestTouchClient);
     });
 
     it('should remove trailing slash from base URL', () => {
-      const client = new CoinPayClient({
+      const client = new TempestTouchClient({
         apiKey: 'cp_live_test_key_123456789',
         baseUrl: 'https://custom.api.com/',
       });
-      expect(client).toBeInstanceOf(CoinPayClient);
+      expect(client).toBeInstanceOf(TempestTouchClient);
     });
 
     it('should accept custom timeout', () => {
-      const client = new CoinPayClient({
+      const client = new TempestTouchClient({
         apiKey: 'cp_live_test_key_123456789',
         timeout: 60000,
       });
-      expect(client).toBeInstanceOf(CoinPayClient);
+      expect(client).toBeInstanceOf(TempestTouchClient);
     });
   });
 
@@ -57,7 +57,7 @@ describe('CoinPayClient', () => {
     let client;
 
     beforeEach(() => {
-      client = new CoinPayClient({
+      client = new TempestTouchClient({
         apiKey: 'cp_live_test_api_key_12345678',
         baseUrl: 'https://api.test.com',
       });
@@ -93,7 +93,7 @@ describe('CoinPayClient', () => {
     let client;
 
     beforeEach(() => {
-      client = new CoinPayClient({
+      client = new TempestTouchClient({
         apiKey: 'cp_live_test_api_key_12345678',
         baseUrl: 'https://api.test.com',
       });
@@ -129,7 +129,7 @@ describe('CoinPayClient', () => {
     let client;
 
     beforeEach(() => {
-      client = new CoinPayClient({
+      client = new TempestTouchClient({
         apiKey: 'cp_live_test_api_key_12345678',
         baseUrl: 'https://api.test.com',
       });
@@ -151,7 +151,7 @@ describe('CoinPayClient', () => {
     let mockFetch;
 
     beforeEach(() => {
-      client = new CoinPayClient({
+      client = new TempestTouchClient({
         apiKey: 'cp_live_test_api_key_12345678',
         baseUrl: 'https://api.test.com',
       });
@@ -243,7 +243,7 @@ describe('CoinPayClient', () => {
     let mockFetch;
 
     beforeEach(() => {
-      client = new CoinPayClient({
+      client = new TempestTouchClient({
         apiKey: 'cp_live_test_api_key_12345678',
         baseUrl: 'https://api.test.com',
       });
@@ -286,7 +286,7 @@ describe('CoinPayClient', () => {
     let mockFetch;
 
     beforeEach(() => {
-      client = new CoinPayClient({
+      client = new TempestTouchClient({
         apiKey: 'cp_live_test_api_key_12345678',
         baseUrl: 'https://api.test.com',
       });
@@ -367,7 +367,7 @@ describe('CoinPayClient', () => {
     let mockFetch;
 
     beforeEach(() => {
-      client = new CoinPayClient({
+      client = new TempestTouchClient({
         apiKey: 'cp_live_test_api_key_12345678',
         baseUrl: 'https://api.test.com',
       });
@@ -405,7 +405,7 @@ describe('CoinPayClient', () => {
     let client;
 
     beforeEach(() => {
-      client = new CoinPayClient({
+      client = new TempestTouchClient({
         apiKey: 'cp_live_test_api_key_12345678',
         baseUrl: 'https://api.test.com',
       });
@@ -424,7 +424,7 @@ describe('CoinPayClient', () => {
     let client;
 
     beforeEach(() => {
-      client = new CoinPayClient({
+      client = new TempestTouchClient({
         apiKey: 'cp_live_test_api_key_12345678',
         baseUrl: 'https://api.test.com',
       });
@@ -451,7 +451,7 @@ describe('CoinPayClient', () => {
     let client;
 
     beforeEach(() => {
-      client = new CoinPayClient({
+      client = new TempestTouchClient({
         apiKey: 'cp_live_test_api_key_12345678',
         baseUrl: 'https://api.test.com',
       });
@@ -471,7 +471,7 @@ describe('CoinPayClient', () => {
     let mockFetch;
 
     beforeEach(() => {
-      client = new CoinPayClient({
+      client = new TempestTouchClient({
         apiKey: 'cp_live_test_api_key_12345678',
         baseUrl: 'https://api.test.com',
       });

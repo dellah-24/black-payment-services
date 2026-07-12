@@ -4,13 +4,13 @@
  * Authentication functions for registration, login, and merchant management.
  *
  * @example
- * import { CoinPayClient } from '@profullstack/coinpay';
- * import { registerMerchant, loginMerchant, getMe } from '@profullstack/coinpay/auth';
+ * import { TempestTouchClient } from '@profullstack/tempesttouch';
+ * import { registerMerchant, loginMerchant, getMe } from '@profullstack/tempesttouch/auth';
  */
 
 /**
  * Register a new merchant account
- * @param {import('./client.js').CoinPayClient} client - CoinPay client (can be unauthenticated)
+ * @param {import('./client.js').TempestTouchClient} client - Tempest Touch client (can be unauthenticated)
  * @param {Object} params
  * @param {string} params.email - Merchant email
  * @param {string} params.password - Account password
@@ -33,7 +33,7 @@ export async function registerMerchant(client, { email, password, name }) {
 
 /**
  * Login to merchant account
- * @param {import('./client.js').CoinPayClient} client - CoinPay client (can be unauthenticated)
+ * @param {import('./client.js').TempestTouchClient} client - Tempest Touch client (can be unauthenticated)
  * @param {Object} params
  * @param {string} params.email - Merchant email
  * @param {string} params.password - Account password
@@ -54,7 +54,7 @@ export async function loginMerchant(client, { email, password }) {
 
 /**
  * Get current authenticated merchant info
- * @param {import('./client.js').CoinPayClient} client - Authenticated CoinPay client
+ * @param {import('./client.js').TempestTouchClient} client - Authenticated Tempest Touch client
  * @returns {Promise<Object>} Merchant information
  */
 export async function getMe(client) {

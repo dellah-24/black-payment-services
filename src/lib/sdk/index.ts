@@ -1,11 +1,11 @@
 /**
  * SDK Integration Module
  *
- * This module provides integration with the @profullstack/coinpay SDK
- * for use within the CoinPay Portal application.
+ * This module provides integration with the @profullstack/tempesttouch SDK
+ * for use within the TempestTouch Portal application.
  *
  * External applications should install the SDK directly:
- * pnpm add @profullstack/coinpay
+ * pnpm add @profullstack/tempesttouch
  *
  * @module @/lib/sdk
  */
@@ -13,16 +13,16 @@
 // Re-export SDK components for internal use
 // Note: The SDK is a pure JavaScript ESM module
 import {
-  CoinPayClient as SDKCoinPayClient,
+  TempestTouchClient as SDKTempestTouchClient,
   verifyWebhookSignature as sdkVerifyWebhookSignature,
   generateWebhookSignature as sdkGenerateWebhookSignature,
   parseWebhookPayload as sdkParseWebhookPayload,
   createWebhookHandler as sdkCreateWebhookHandler,
   WebhookEvent as SDKWebhookEvent,
-} from '@profullstack/coinpay';
+} from '@profullstack/tempesttouch';
 
 // Re-export for direct use
-export const CoinPayClient = SDKCoinPayClient;
+export const tempesttouchClient = SDKTempestTouchClient;
 export const verifyWebhookSignature = sdkVerifyWebhookSignature;
 export const generateWebhookSignature = sdkGenerateWebhookSignature;
 export const parseWebhookPayload = sdkParseWebhookPayload;
@@ -30,7 +30,7 @@ export const createWebhookHandler = sdkCreateWebhookHandler;
 export const WebhookEvent = SDKWebhookEvent;
 
 // Type definitions for TypeScript compatibility
-export interface CoinPayClientOptions {
+export interface tempesttouchClientOptions {
   apiKey: string;
   baseUrl?: string;
 }
@@ -73,13 +73,13 @@ export interface VerifyWebhookParams {
 }
 
 /**
- * Create a CoinPay client instance for server-side API calls
+ * Create a tempesttouch client instance for server-side API calls
  *
  * @example
  * ```typescript
- * import { createCoinPayClient } from '@/lib/sdk';
+ * import { createtempesttouchClient } from '@/lib/sdk';
  *
- * const client = createCoinPayClient(process.env.COINPAY_API_KEY!);
+ * const client = createtempesttouchClient(process.env.tempesttouch_API_KEY!);
  * const payment = await client.createPayment({
  *   businessId: 'biz_123',
  *   amount: 100,
@@ -88,13 +88,13 @@ export interface VerifyWebhookParams {
  * });
  * ```
  */
-export function createCoinPayClient(
+export function createtempesttouchClient(
   apiKey: string,
   baseUrl?: string
-): InstanceType<typeof SDKCoinPayClient> {
-  return new SDKCoinPayClient({
+): InstanceType<typeof SDKTempestTouchClient> {
+  return new SDKTempestTouchClient({
     apiKey,
-    baseUrl: baseUrl || process.env.NEXT_PUBLIC_API_URL || (process.env.NODE_ENV === 'production' ? 'https://coinpayportal.com' : 'http://localhost:8080'),
+    baseUrl: baseUrl || process.env.NEXT_PUBLIC_API_URL || (process.env.NODE_ENV === 'production' ? 'https://tempesttouch.com' : 'http://localhost:8080'),
   });
 }
 
@@ -112,7 +112,7 @@ export function createCoinPayClient(
  *
  * // In your webhook handler:
  * const rawBody = await request.text();
- * const signature = request.headers.get('x-coinpay-signature');
+ * const signature = request.headers.get('x-tempesttouch-signature');
  *
  * const isValid = verifyIncomingWebhook(rawBody, signature, process.env.WEBHOOK_SECRET!);
  * ```

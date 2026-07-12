@@ -1,16 +1,16 @@
 /**
  * Reputation SDK Module
  *
- * Query and submit reputation data for the CoinPayPortal Reputation Protocol (CPR).
+ * Query and submit reputation data for the Tempest Touch Reputation Protocol (CPR).
  *
  * @example
- * import { CoinPayClient } from '@profullstack/coinpay';
- * import { submitReceipt, getReputation } from '@profullstack/coinpay/reputation';
+ * import { TempestTouchClient } from '@profullstack/tempesttouch';
+ * import { submitReceipt, getReputation } from '@profullstack/tempesttouch/reputation';
  */
 
 /**
  * Submit a task receipt
- * @param {import('./client.js').CoinPayClient} client
+ * @param {import('./client.js').TempestTouchClient} client
  * @param {Object} receipt - Receipt data
  * @returns {Promise<Object>}
  */
@@ -23,7 +23,7 @@ export async function submitReceipt(client, receipt) {
 
 /**
  * Get reputation for an agent DID
- * @param {import('./client.js').CoinPayClient} client
+ * @param {import('./client.js').TempestTouchClient} client
  * @param {string} agentDid
  * @returns {Promise<Object>}
  */
@@ -33,7 +33,7 @@ export async function getReputation(client, agentDid) {
 
 /**
  * Get a specific credential
- * @param {import('./client.js').CoinPayClient} client
+ * @param {import('./client.js').TempestTouchClient} client
  * @param {string} credentialId
  * @returns {Promise<Object>}
  */
@@ -43,7 +43,7 @@ export async function getCredential(client, credentialId) {
 
 /**
  * Verify a credential
- * @param {import('./client.js').CoinPayClient} client
+ * @param {import('./client.js').TempestTouchClient} client
  * @param {Object} credential - { credential_id: string }
  * @returns {Promise<{valid: boolean, reason?: string}>}
  */
@@ -56,7 +56,7 @@ export async function verifyCredential(client, credential) {
 
 /**
  * Get the revocation list
- * @param {import('./client.js').CoinPayClient} client
+ * @param {import('./client.js').TempestTouchClient} client
  * @returns {Promise<Object>}
  */
 export async function getRevocationList(client) {
@@ -65,7 +65,7 @@ export async function getRevocationList(client) {
 
 /**
  * Get the authenticated merchant's DID
- * @param {import('./client.js').CoinPayClient} client
+ * @param {import('./client.js').TempestTouchClient} client
  * @returns {Promise<Object>}
  */
 export async function getMyDid(client) {
@@ -74,7 +74,7 @@ export async function getMyDid(client) {
 
 /**
  * Claim (auto-generate) a new DID for the authenticated merchant
- * @param {import('./client.js').CoinPayClient} client
+ * @param {import('./client.js').TempestTouchClient} client
  * @returns {Promise<Object>}
  */
 export async function claimDid(client) {
@@ -85,7 +85,7 @@ export async function claimDid(client) {
 
 /**
  * Link an existing DID to the authenticated merchant
- * @param {import('./client.js').CoinPayClient} client
+ * @param {import('./client.js').TempestTouchClient} client
  * @param {Object} params
  * @param {string} params.did - The DID to link
  * @param {string} params.publicKey - Base64url-encoded public key
@@ -105,7 +105,7 @@ export async function linkDid(client, { did, publicKey, signature }) {
 
 /**
  * Get all credentials for a DID
- * @param {import('./client.js').CoinPayClient} client
+ * @param {import('./client.js').TempestTouchClient} client
  * @param {string} did - The DID to query credentials for
  * @returns {Promise<Object>}
  */
@@ -115,7 +115,7 @@ export async function getCredentials(client, did) {
 
 /**
  * Get all task receipts for a DID
- * @param {import('./client.js').CoinPayClient} client
+ * @param {import('./client.js').TempestTouchClient} client
  * @param {string} did - The DID to query receipts for
  * @returns {Promise<Object>}
  */
@@ -137,7 +137,7 @@ const CANONICAL_CATEGORIES = [
 
 /**
  * Submit an action receipt with schema validation
- * @param {import('./client.js').CoinPayClient} client
+ * @param {import('./client.js').TempestTouchClient} client
  * @param {Object} receipt - Action receipt with action_category
  * @returns {Promise<Object>}
  */
@@ -158,7 +158,7 @@ export async function submitActionReceipt(client, receipt) {
 
 /**
  * Get trust profile (trust vector) for an agent DID
- * @param {import('./client.js').CoinPayClient} client
+ * @param {import('./client.js').TempestTouchClient} client
  * @param {string} agentDid
  * @returns {Promise<Object>} Trust vector { E, P, B, D, R, A, C }
  */
@@ -173,7 +173,7 @@ export async function getTrustProfile(client, agentDid) {
 
 /**
  * Get the badge URL for a DID
- * @param {string} baseUrl - The CoinPayPortal base URL
+ * @param {string} baseUrl - The Tempest Touch base URL
  * @param {string} did - The DID
  * @returns {string} Badge SVG URL
  */
@@ -187,7 +187,7 @@ export function getBadgeUrl(baseUrl, did) {
 
 /**
  * Register a new platform issuer
- * @param {import('./client.js').CoinPayClient} client
+ * @param {import('./client.js').TempestTouchClient} client
  * @param {Object} params
  * @param {string} params.name - Issuer name (alphanumeric, dots, hyphens, underscores)
  * @param {string} params.domain - Issuer domain
@@ -203,7 +203,7 @@ export async function registerPlatformIssuer(client, { name, domain, did }) {
 
 /**
  * List merchant's registered platform issuers (keys masked)
- * @param {import('./client.js').CoinPayClient} client
+ * @param {import('./client.js').TempestTouchClient} client
  * @returns {Promise<Object>} { success, issuers }
  */
 export async function listPlatformIssuers(client) {
@@ -212,7 +212,7 @@ export async function listPlatformIssuers(client) {
 
 /**
  * Rotate a platform issuer's API key
- * @param {import('./client.js').CoinPayClient} client
+ * @param {import('./client.js').TempestTouchClient} client
  * @param {string} issuerId - The issuer ID
  * @returns {Promise<Object>} { success, issuer, api_key }
  */
@@ -224,7 +224,7 @@ export async function rotatePlatformApiKey(client, issuerId) {
 
 /**
  * Deactivate a platform issuer (soft delete)
- * @param {import('./client.js').CoinPayClient} client
+ * @param {import('./client.js').TempestTouchClient} client
  * @param {string} issuerId - The issuer ID
  * @returns {Promise<Object>} { success, issuer }
  */

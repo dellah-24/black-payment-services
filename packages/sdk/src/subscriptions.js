@@ -1,5 +1,5 @@
 /**
- * CoinPay Subscriptions - Stripe subscription billing integration
+ * Tempest Touch Subscriptions - Stripe subscription billing integration
  * 
  * Provides functions for managing subscription plans and customer subscriptions
  * through Stripe's subscription billing system.
@@ -32,7 +32,7 @@ export const SubscriptionStatus = {
 /**
  * Create a subscription plan (Stripe Price + Product)
  * 
- * @param {import('./client.js').CoinPayClient} client - CoinPay client instance
+ * @param {import('./client.js').TempestTouchClient} client - Tempest Touch client instance
  * @param {Object} params - Plan parameters
  * @param {string} params.businessId - Business ID
  * @param {string} params.name - Plan name
@@ -89,7 +89,7 @@ export async function createSubscriptionPlan(client, params) {
 /**
  * List subscription plans for a business
  * 
- * @param {import('./client.js').CoinPayClient} client - CoinPay client instance
+ * @param {import('./client.js').TempestTouchClient} client - Tempest Touch client instance
  * @param {string} businessId - Business ID
  * @param {Object} [options] - Query options
  * @param {number} [options.limit=20] - Max results
@@ -107,7 +107,7 @@ export async function listSubscriptionPlans(client, businessId, options = {}) {
 /**
  * Subscribe a customer to a plan
  * 
- * @param {import('./client.js').CoinPayClient} client - CoinPay client instance
+ * @param {import('./client.js').TempestTouchClient} client - Tempest Touch client instance
  * @param {Object} params - Subscription parameters
  * @param {string} params.planId - Plan/Price ID
  * @param {string} params.customerEmail - Customer email
@@ -159,7 +159,7 @@ export async function subscribeCustomer(client, params) {
 /**
  * Cancel a subscription
  * 
- * @param {import('./client.js').CoinPayClient} client - CoinPay client instance
+ * @param {import('./client.js').TempestTouchClient} client - Tempest Touch client instance
  * @param {string} subscriptionId - Subscription ID
  * @param {Object} [options] - Cancellation options
  * @param {boolean} [options.immediately=false] - Cancel immediately vs at period end
@@ -181,7 +181,7 @@ export async function cancelSubscription(client, subscriptionId, options = {}) {
 /**
  * List subscriptions
  * 
- * @param {import('./client.js').CoinPayClient} client - CoinPay client instance
+ * @param {import('./client.js').TempestTouchClient} client - Tempest Touch client instance
  * @param {Object} [options] - Query options
  * @param {string} [options.businessId] - Filter by business
  * @param {string} [options.customerId] - Filter by customer
@@ -204,7 +204,7 @@ export async function listSubscriptions(client, options = {}) {
 /**
  * Get subscription status/details
  * 
- * @param {import('./client.js').CoinPayClient} client - CoinPay client instance
+ * @param {import('./client.js').TempestTouchClient} client - Tempest Touch client instance
  * @param {string} subscriptionId - Subscription ID
  * @returns {Promise<Object>} Subscription details
  */

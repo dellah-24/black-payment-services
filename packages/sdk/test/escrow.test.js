@@ -4,7 +4,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { CoinPayClient } from '../src/client.js';
+import { TempestTouchClient } from '../src/client.js';
 import { 
   createEscrow, 
   getEscrow, 

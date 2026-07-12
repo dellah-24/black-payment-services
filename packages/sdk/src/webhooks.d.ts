@@ -1,8 +1,8 @@
 /**
- * Webhook utilities for CoinPay SDK
+ * Webhook utilities for Tempest Touch SDK
  *
  * Functions for verifying, parsing, and handling webhook events
- * sent by the CoinPay API.
+ * sent by the Tempest Touch API.
  */
 
 import type { IncomingMessage, ServerResponse } from 'http';
@@ -11,9 +11,9 @@ import type { IncomingMessage, ServerResponse } from 'http';
 export interface VerifyWebhookParams {
   /** Raw request body as a string */
   payload: string;
-  /** Value of the `X-CoinPay-Signature` header */
+  /** Value of the `X-Tempest Touch-Signature` header */
   signature: string;
-  /** Your webhook secret (from the CoinPay dashboard) */
+  /** Your webhook secret (from the Tempest Touch dashboard) */
   secret: string;
   /** Timestamp tolerance in seconds (default: `300` — 5 minutes) */
   tolerance?: number;
@@ -67,7 +67,7 @@ export declare const WebhookEvent: {
 };
 
 /**
- * Verify a webhook signature from the `X-CoinPay-Signature` header.
+ * Verify a webhook signature from the `X-Tempest Touch-Signature` header.
  *
  * Signature format: `t=<timestamp>,v1=<hmac-sha256-hex>`
  *
@@ -78,12 +78,12 @@ export declare const WebhookEvent: {
  *
  * @example
  * ```typescript
- * import { verifyWebhookSignature } from '@profullstack/coinpay';
+ * import { verifyWebhookSignature } from '@profullstack/tempesttouch';
  *
  * const isValid = verifyWebhookSignature({
  *   payload: rawBody,
- *   signature: req.headers['x-coinpay-signature'],
- *   secret: process.env.COINPAY_WEBHOOK_SECRET,
+ *   signature: req.headers['x-tempesttouch-signature'],
+ *   secret: process.env.TEMPESTTOUCH_WEBHOOK_SECRET,
  * });
  * ```
  */
@@ -114,13 +114,13 @@ export function parseWebhookPayload(payload: string): ParsedWebhookEvent;
  * @example
  * ```typescript
  * import express from 'express';
- * import { createWebhookHandler, WebhookEvent } from '@profullstack/coinpay';
+ * import { createWebhookHandler, WebhookEvent } from '@profullstack/tempesttouch';
  *
  * const app = express();
  * app.use(express.raw({ type: 'application/json' }));
  *
  * app.post('/webhook', createWebhookHandler({
- *   secret: process.env.COINPAY_WEBHOOK_SECRET,
+ *   secret: process.env.TEMPESTTOUCH_WEBHOOK_SECRET,
  *   onEvent: async (event) => {
  *     if (event.type === WebhookEvent.PAYMENT_COMPLETED) {
  *       await fulfillOrder(event.data);

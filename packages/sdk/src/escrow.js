@@ -5,9 +5,9 @@
  * Both humans and AI agents can create/fund/release/dispute escrows.
  *
  * @example
- * import { CoinPayClient } from '@profullstack/coinpay';
+ * import { TempestTouchClient } from '@profullstack/tempesttouch';
  *
- * const client = new CoinPayClient({ apiKey: 'your-key' });
+ * const client = new TempestTouchClient({ apiKey: 'your-key' });
  *
  * // Create escrow
  * const escrow = await client.createEscrow({
@@ -28,7 +28,7 @@
 
 /**
  * Create a new escrow
- * @param {CoinPayClient} client - API client instance
+ * @param {TempestTouchClient} client - API client instance
  * @param {Object} params - Escrow parameters
  * @param {string} params.chain - Blockchain (BTC, ETH, SOL, POL, etc.)
  * @param {number} [params.amount] - Crypto amount to escrow
@@ -102,7 +102,7 @@ export async function createEscrow(client, {
 
 /**
  * Get escrow status
- * @param {CoinPayClient} client
+ * @param {TempestTouchClient} client
  * @param {string} escrowId
  * @returns {Promise<Object>} Escrow status (public view, no tokens)
  */
@@ -113,7 +113,7 @@ export async function getEscrow(client, escrowId) {
 
 /**
  * List escrows with filters
- * @param {CoinPayClient} client
+ * @param {TempestTouchClient} client
  * @param {Object} [filters]
  * @param {string} [filters.status] - Filter by status
  * @param {string} [filters.depositor] - Filter by depositor address
@@ -141,7 +141,7 @@ export async function listEscrows(client, filters = {}) {
 
 /**
  * Release escrow funds to beneficiary
- * @param {CoinPayClient} client
+ * @param {TempestTouchClient} client
  * @param {string} escrowId
  * @param {string} releaseToken - Secret token from escrow creation
  * @returns {Promise<Object>} Updated escrow
@@ -156,7 +156,7 @@ export async function releaseEscrow(client, escrowId, releaseToken) {
 
 /**
  * Refund escrow to depositor
- * @param {CoinPayClient} client
+ * @param {TempestTouchClient} client
  * @param {string} escrowId
  * @param {string} releaseToken
  * @returns {Promise<Object>} Updated escrow
@@ -171,7 +171,7 @@ export async function refundEscrow(client, escrowId, releaseToken) {
 
 /**
  * Dispute an escrow
- * @param {CoinPayClient} client
+ * @param {TempestTouchClient} client
  * @param {string} escrowId
  * @param {string} token - release_token or beneficiary_token
  * @param {string} reason - Dispute reason (min 10 chars)
@@ -187,7 +187,7 @@ export async function disputeEscrow(client, escrowId, token, reason) {
 
 /**
  * Authenticate with escrow using token
- * @param {CoinPayClient} client
+ * @param {TempestTouchClient} client
  * @param {string} escrowId - Escrow ID
  * @param {string} token - Release token or beneficiary token
  * @returns {Promise<Object>} { escrow, role } where role is 'depositor' or 'beneficiary'
@@ -211,7 +211,7 @@ export async function authenticateEscrow(client, escrowId, token) {
 
 /**
  * Get escrow event log
- * @param {CoinPayClient} client
+ * @param {TempestTouchClient} client
  * @param {string} escrowId
  * @returns {Promise<Array>} Array of events
  */
@@ -229,7 +229,7 @@ export async function getEscrowEvents(client, escrowId) {
 
 /**
  * Poll escrow until it reaches a target status
- * @param {CoinPayClient} client
+ * @param {TempestTouchClient} client
  * @param {string} escrowId
  * @param {Object} [options]
  * @param {string} [options.targetStatus] - Status to wait for (default: 'funded')

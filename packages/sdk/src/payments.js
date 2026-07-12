@@ -1,11 +1,11 @@
 /**
- * Payment utilities for CoinPay SDK
+ * Payment utilities for Tempest Touch SDK
  *
  * This module provides helper functions for creating and managing cryptocurrency payments.
  *
  * @example
  * // Quick payment creation
- * import { createPayment } from '@coinpay/sdk';
+ * import { createPayment } from '@tempesttouch/sdk';
  *
  * const payment = await createPayment({
  *   apiKey: 'cp_live_xxxxx',
@@ -16,7 +16,7 @@
  * });
  */
 
-import { CoinPayClient } from './client.js';
+import { TempestTouchClient } from './client.js';
 
 /**
  * Create a payment using a client instance or API key
@@ -27,8 +27,8 @@ import { CoinPayClient } from './client.js';
  *
  * @param {Object} params - Payment parameters
  * @param {string} params.apiKey - API key (required if not using client)
- * @param {CoinPayClient} [params.client] - Existing client instance (optional)
- * @param {string} params.businessId - Business ID from your CoinPay dashboard
+ * @param {TempestTouchClient} [params.client] - Existing client instance (optional)
+ * @param {string} params.businessId - Business ID from your Tempest Touch dashboard
  * @param {number} params.amount - Amount in fiat currency (e.g., 100.00)
  * @param {string} [params.currency='USD'] - Fiat currency code (USD, EUR, etc.)
  * @param {string} params.blockchain - Blockchain to use (BTC, ETH, SOL, POL, BCH, USDC_ETH, USDC_POL, USDC_SOL)
@@ -61,9 +61,9 @@ export async function createPayment({
   description,
   metadata,
 }) {
-  const coinpay = client || new CoinPayClient({ apiKey });
+  const tempesttouch = client || new TempestTouchClient({ apiKey });
   
-  return coinpay.createPayment({
+  return tempesttouch.createPayment({
     businessId,
     amount,
     currency,
@@ -77,20 +77,20 @@ export async function createPayment({
  * Get payment by ID
  * @param {Object} params - Parameters
  * @param {string} params.apiKey - API key (if not using client)
- * @param {CoinPayClient} [params.client] - Existing client instance
+ * @param {TempestTouchClient} [params.client] - Existing client instance
  * @param {string} params.paymentId - Payment ID
  * @returns {Promise<Object>} Payment details
  */
 export async function getPayment({ apiKey, client, paymentId }) {
-  const coinpay = client || new CoinPayClient({ apiKey });
-  return coinpay.getPayment(paymentId);
+  const tempesttouch = client || new TempestTouchClient({ apiKey });
+  return tempesttouch.getPayment(paymentId);
 }
 
 /**
  * List payments
  * @param {Object} params - Parameters
  * @param {string} params.apiKey - API key (if not using client)
- * @param {CoinPayClient} [params.client] - Existing client instance
+ * @param {TempestTouchClient} [params.client] - Existing client instance
  * @param {string} params.businessId - Business ID
  * @param {string} [params.status] - Filter by status
  * @param {number} [params.limit] - Number of results
@@ -105,8 +105,8 @@ export async function listPayments({
   limit,
   offset,
 }) {
-  const coinpay = client || new CoinPayClient({ apiKey });
-  return coinpay.listPayments({ businessId, status, limit, offset });
+  const tempesttouch = client || new TempestTouchClient({ apiKey });
+  return tempesttouch.listPayments({ businessId, status, limit, offset });
 }
 
 /**
@@ -127,7 +127,7 @@ export const PaymentStatus = {
  * Use these constants when creating payments to ensure valid blockchain values.
  *
  * @example
- * import { Blockchain, createPayment } from '@coinpay/sdk';
+ * import { Blockchain, createPayment } from '@tempesttouch/sdk';
  *
  * const payment = await createPayment({
  *   apiKey: 'cp_live_xxxxx',

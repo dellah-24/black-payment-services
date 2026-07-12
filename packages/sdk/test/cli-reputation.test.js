@@ -8,7 +8,7 @@ import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const CLI = resolve(__dirname, '../bin/coinpay.js');
+const CLI = resolve(__dirname, '../bin/tempesttouch.js');
 let hasNodeSpawn = false;
 
 try {
@@ -23,7 +23,7 @@ function run(args) {
     return execSync(`node ${CLI} ${args} 2>&1`, {
       encoding: 'utf-8',
       timeout: 5000,
-      env: { ...process.env, COINPAY_API_KEY: 'test-key-123' },
+      env: { ...process.env, TEMPESTTOUCH_API_KEY: 'test-key-123' },
     });
   } catch (error) {
     return (error.stdout || '') + (error.stderr || '');

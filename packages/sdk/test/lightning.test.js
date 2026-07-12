@@ -3,15 +3,15 @@
  */
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { CoinPayClient } from '../src/client.js';
+import { TempestTouchClient } from '../src/client.js';
 
-describe('LightningClient (via CoinPayClient)', () => {
+describe('LightningClient (via TempestTouchClient)', () => {
   let client;
 
   beforeEach(() => {
-    client = new CoinPayClient({
+    client = new TempestTouchClient({
       apiKey: 'cp_live_test_key_123456789',
-      baseUrl: 'https://test.coinpayportal.com/api',
+      baseUrl: 'https://test.tempesttouch.com/api',
     });
 
     // Mock the underlying request method
@@ -174,7 +174,7 @@ describe('LightningClient (via CoinPayClient)', () => {
     it('should POST to /lightning/payments with lightning address', async () => {
       await client.lightning.sendPayment({
         wallet_id: 'w-1',
-        destination: 'alice@coinpayportal.com',
+        destination: 'alice@tempesttouch.com',
         amount_sats: 100,
       });
 
@@ -182,7 +182,7 @@ describe('LightningClient (via CoinPayClient)', () => {
         method: 'POST',
         body: JSON.stringify({
           wallet_id: 'w-1',
-          bolt12: 'alice@coinpayportal.com',
+          bolt12: 'alice@tempesttouch.com',
           amount_sats: 100,
         }),
       });

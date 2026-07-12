@@ -1,19 +1,19 @@
 /**
- * Payment utilities for CoinPay SDK
+ * Payment utilities for Tempest Touch SDK
  *
  * Standalone functions for creating and managing payments without
- * manually instantiating a `CoinPayClient`.
+ * manually instantiating a `TempestTouchClient`.
  */
 
-import { CoinPayClient } from './client.js';
+import { TempestTouchClient } from './client.js';
 
 /** Parameters for the standalone `createPayment` function */
 export interface CreatePaymentParams {
   /** API key — required if `client` is not provided */
   apiKey?: string;
-  /** Existing CoinPayClient instance (takes precedence over `apiKey`) */
-  client?: CoinPayClient;
-  /** Business ID from your CoinPay dashboard */
+  /** Existing TempestTouchClient instance (takes precedence over `apiKey`) */
+  client?: TempestTouchClient;
+  /** Business ID from your Tempest Touch dashboard */
   businessId: string;
   /** Amount in fiat currency */
   amount: number;
@@ -31,8 +31,8 @@ export interface CreatePaymentParams {
 export interface GetPaymentParams {
   /** API key — required if `client` is not provided */
   apiKey?: string;
-  /** Existing CoinPayClient instance */
-  client?: CoinPayClient;
+  /** Existing TempestTouchClient instance */
+  client?: TempestTouchClient;
   /** Payment ID to look up */
   paymentId: string;
 }
@@ -41,8 +41,8 @@ export interface GetPaymentParams {
 export interface ListPaymentsFnParams {
   /** API key — required if `client` is not provided */
   apiKey?: string;
-  /** Existing CoinPayClient instance */
-  client?: CoinPayClient;
+  /** Existing TempestTouchClient instance */
+  client?: TempestTouchClient;
   /** Business ID */
   businessId: string;
   /** Filter by payment status */
@@ -57,11 +57,11 @@ export interface ListPaymentsFnParams {
  * Create a payment using an API key or existing client.
  *
  * Convenience wrapper — for multiple operations, prefer creating a
- * `CoinPayClient` instance and reusing it.
+ * `TempestTouchClient` instance and reusing it.
  *
  * @example
  * ```typescript
- * import { createPayment, Blockchain } from '@profullstack/coinpay';
+ * import { createPayment, Blockchain } from '@profullstack/tempesttouch';
  *
  * const result = await createPayment({
  *   apiKey: 'cp_live_xxxxx',

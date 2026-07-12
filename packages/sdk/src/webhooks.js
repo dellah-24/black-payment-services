@@ -1,18 +1,18 @@
 /**
- * Webhook utilities for CoinPay SDK
+ * Webhook utilities for Tempest Touch SDK
  *
  * Contract:
  *   - Each business has ONE webhook URL + ONE webhook secret. Both crypto
  *     and card payment events route to the same endpoint, signed with the
  *     same secret. Distinguish rails via data.metadata.payment_rail
  *     ("crypto" or "card").
- *   - Header: X-CoinPay-Signature: t=<unix_seconds>,v1=<hex_hmac>
+ *   - Header: X-Tempest Touch-Signature: t=<unix_seconds>,v1=<hex_hmac>
  *   - HMAC body: `${timestamp}.${rawBody}`
  *   - Algorithm: HMAC-SHA256
  *   - Tolerance: 300 seconds
  *
  * The server-side signer (src/lib/webhooks/service.ts) and the d0rz
- * verifier (lib/coinpay-client.ts) are kept in lockstep with this file
+ * verifier (lib/tempesttouch-client.ts) are kept in lockstep with this file
  * by src/lib/webhooks/contract.test.ts in the main repo. Don't drift.
  */
 
@@ -37,7 +37,7 @@ export const WebhookEvent = {
  * Verify webhook signature
  * @param {Object} params - Verification parameters
  * @param {string} params.payload - Raw request body (string)
- * @param {string} params.signature - Signature from X-CoinPay-Signature header
+ * @param {string} params.signature - Signature from X-Tempest Touch-Signature header
  * @param {string} params.secret - Your webhook secret
  * @param {number} [params.tolerance] - Timestamp tolerance in seconds (default: 300)
  * @returns {boolean} True if signature is valid
@@ -127,7 +127,7 @@ export function parseWebhookPayload(payload) {
 export function createWebhookHandler({ secret, onEvent, onError }) {
   return async (req, res) => {
     try {
-      const signature = req.headers['x-coinpay-signature'];
+      const signature = req.headers['x-tempesttouch-signature'];
       const payload = typeof req.body === 'string' ? req.body : JSON.stringify(req.body);
 
       // Verify signature

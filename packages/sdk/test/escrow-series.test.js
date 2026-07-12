@@ -3,10 +3,10 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { CoinPayClient } from '../src/client.js';
+import { TempestTouchClient } from '../src/client.js';
 
 const createMockClient = () => {
-  const client = new CoinPayClient({ apiKey: 'test-key', baseUrl: 'http://localhost:3000/api' });
+  const client = new TempestTouchClient({ apiKey: 'test-key', baseUrl: 'http://localhost:3000/api' });
   client.request = vi.fn();
   return client;
 };

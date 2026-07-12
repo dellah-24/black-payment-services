@@ -6,10 +6,10 @@
  * or optional Stripe checkout.
  *
  * @example
- * import { CoinPayClient } from '@profullstack/coinpay';
- * import { createInvoice, sendInvoice, getInvoicePaymentData } from '@profullstack/coinpay';
+ * import { TempestTouchClient } from '@profullstack/tempesttouch';
+ * import { createInvoice, sendInvoice, getInvoicePaymentData } from '@profullstack/tempesttouch';
  *
- * const client = new CoinPayClient({ apiKey: 'your-key' });
+ * const client = new TempestTouchClient({ apiKey: 'your-key' });
  *
  * // Create an invoice
  * const invoice = await createInvoice(client, {
@@ -30,7 +30,7 @@
 
 /**
  * Create a new invoice
- * @param {CoinPayClient} client - API client instance
+ * @param {TempestTouchClient} client - API client instance
  * @param {Object} options - Invoice parameters
  * @param {string} options.businessId - Business ID
  * @param {string} [options.clientId] - Client ID (optional)
@@ -76,7 +76,7 @@ export async function createInvoice(client, {
 
 /**
  * List invoices with optional filters
- * @param {CoinPayClient} client
+ * @param {TempestTouchClient} client
  * @param {Object} [filters]
  * @param {string} [filters.businessId] - Filter by business ID
  * @param {string} [filters.status] - Filter by status (draft, sent, paid, overdue, cancelled)
@@ -110,7 +110,7 @@ export async function listInvoices(client, filters = {}) {
 
 /**
  * Get a single invoice by ID
- * @param {CoinPayClient} client
+ * @param {TempestTouchClient} client
  * @param {string} id - Invoice ID
  * @returns {Promise<Object>} Invoice details
  */
@@ -121,7 +121,7 @@ export async function getInvoice(client, id) {
 
 /**
  * Update an invoice
- * @param {CoinPayClient} client
+ * @param {TempestTouchClient} client
  * @param {string} id - Invoice ID
  * @param {Object} updates - Partial invoice fields to update
  * @param {number} [updates.amount] - Updated amount
@@ -155,7 +155,7 @@ export async function updateInvoice(client, id, updates) {
 
 /**
  * Delete a draft invoice
- * @param {CoinPayClient} client
+ * @param {TempestTouchClient} client
  * @param {string} id - Invoice ID (must be in draft status)
  * @returns {Promise<Object>} Deletion confirmation
  */
@@ -168,7 +168,7 @@ export async function deleteInvoice(client, id) {
 /**
  * Send an invoice to the client
  * Generates a payment address and optional Stripe checkout link.
- * @param {CoinPayClient} client
+ * @param {TempestTouchClient} client
  * @param {string} id - Invoice ID
  * @returns {Promise<Object>} Send result with payment details
  */
@@ -182,7 +182,7 @@ export async function sendInvoice(client, id) {
 /**
  * Get invoice payment data (public, no auth required)
  * Used by clients/customers to view payment instructions.
- * @param {CoinPayClient} client
+ * @param {TempestTouchClient} client
  * @param {string} id - Invoice ID
  * @returns {Promise<Object>} Payment data (address, amount, status, etc.)
  */

@@ -6,13 +6,13 @@
  *   2. Automatic polling until completion (waitForPayment)
  *
  * Usage:
- *   COINPAY_API_KEY=cp_live_xxx node 03-check-payment-status.js <payment-id>
+ *   TEMPESTTOUCH_API_KEY=cp_live_xxx node 03-check-payment-status.js <payment-id>
  */
 
-import { CoinPayClient, PaymentStatus } from '@profullstack/coinpay';
+import { TempestTouchClient, PaymentStatus } from '@profullstack/tempesttouch';
 
-const client = new CoinPayClient({
-  apiKey: process.env.COINPAY_API_KEY,
+const client = new TempestTouchClient({
+  apiKey: process.env.TEMPESTTOUCH_API_KEY,
 });
 
 const PAYMENT_ID = process.argv[2];

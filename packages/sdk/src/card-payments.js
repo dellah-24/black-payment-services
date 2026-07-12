@@ -1,5 +1,5 @@
 /**
- * CoinPay Card Payments - Convenience functions for Stripe integration
+ * Tempest Touch Card Payments - Convenience functions for Stripe integration
  * 
  * This module provides high-level convenience functions for working with
  * card payments through Stripe Connect, similar to the payments.js module.
@@ -8,7 +8,7 @@
 /**
  * Quick card payment creation with sensible defaults
  * 
- * @param {import('./client.js').CoinPayClient} client - CoinPay client instance
+ * @param {import('./client.js').TempestTouchClient} client - Tempest Touch client instance
  * @param {string} businessId - Business ID
  * @param {number} amountUSD - Amount in USD (will be converted to cents)
  * @param {string} description - Payment description
@@ -20,7 +20,7 @@
  * @returns {Promise<Object>} Payment session with checkout URL
  * 
  * @example
- * import { createQuickCardPayment } from '@profullstack/coinpay/card-payments';
+ * import { createQuickCardPayment } from '@profullstack/tempesttouch/card-payments';
  * 
  * const payment = await createQuickCardPayment(client, 'business-id', 50, 'Order #123', {
  *   metadata: { orderId: '123' },
@@ -58,7 +58,7 @@ export async function createQuickCardPayment(client, businessId, amountUSD, desc
  * Polls the Stripe account status until onboarding is complete.
  * Useful for integration flows where you need to wait for merchant setup.
  * 
- * @param {import('./client.js').CoinPayClient} client - CoinPay client instance
+ * @param {import('./client.js').TempestTouchClient} client - Tempest Touch client instance
  * @param {string} businessId - Business ID
  * @param {Object} [options] - Polling options
  * @param {number} [options.intervalMs=5000] - Polling interval in ms
@@ -106,7 +106,7 @@ export async function waitForStripeOnboarding(client, businessId, options = {}) 
  * Checks if merchant has completed Stripe onboarding first, and provides
  * helpful error messages if not. Prevents failed payment attempts.
  * 
- * @param {import('./client.js').CoinPayClient} client - CoinPay client instance
+ * @param {import('./client.js').TempestTouchClient} client - Tempest Touch client instance
  * @param {Object} params - Payment parameters (same as createCardPayment)
  * @returns {Promise<Object>} Payment session or onboarding info if incomplete
  * 
@@ -169,7 +169,7 @@ export async function createCardPaymentWithOnboardingCheck(client, params) {
  * Returns which payment methods are available for a merchant.
  * Helps with conditional UI rendering.
  * 
- * @param {import('./client.js').CoinPayClient} client - CoinPay client instance
+ * @param {import('./client.js').TempestTouchClient} client - Tempest Touch client instance
  * @param {string} businessId - Business ID
  * @returns {Promise<Object>} Available payment methods
  * 
@@ -288,7 +288,7 @@ export function calculateCardPaymentFees(amountCents, tier = 'free') {
 /**
  * Create a card escrow payment
  * 
- * @param {import('./client.js').CoinPayClient} client - CoinPay client instance
+ * @param {import('./client.js').TempestTouchClient} client - Tempest Touch client instance
  * @param {string} businessId - Business ID
  * @param {number} amountUSD - Amount in USD (will be converted to cents)
  * @param {string} description - Payment description
@@ -296,7 +296,7 @@ export function calculateCardPaymentFees(amountCents, tier = 'free') {
  * @returns {Promise<Object>} Escrow payment session with checkout URL
  * 
  * @example
- * import { createCardEscrow } from '@profullstack/coinpay/card-payments';
+ * import { createCardEscrow } from '@profullstack/tempesttouch/card-payments';
  * 
  * const escrow = await createCardEscrow(client, 'business-id', 100, 'Service payment', {
  *   orderId: '123',
@@ -322,7 +322,7 @@ export async function createCardEscrow(client, businessId, amountUSD, descriptio
 /**
  * List card escrows
  * 
- * @param {import('./client.js').CoinPayClient} client - CoinPay client instance
+ * @param {import('./client.js').TempestTouchClient} client - Tempest Touch client instance
  * @param {Object} [options={}] - Filtering options
  * @param {string} [options.businessId] - Filter by business ID
  * @param {string} [options.status] - Filter by status
@@ -352,7 +352,7 @@ export async function listCardEscrows(client, options = {}) {
 /**
  * Release a card escrow
  * 
- * @param {import('./client.js').CoinPayClient} client - CoinPay client instance
+ * @param {import('./client.js').TempestTouchClient} client - Tempest Touch client instance
  * @param {string} escrowId - Escrow ID to release
  * @returns {Promise<Object>} Release result
  * 
@@ -368,7 +368,7 @@ export async function releaseCardEscrow(client, escrowId) {
 /**
  * Refund a card escrow
  * 
- * @param {import('./client.js').CoinPayClient} client - CoinPay client instance
+ * @param {import('./client.js').TempestTouchClient} client - Tempest Touch client instance
  * @param {string} escrowId - Escrow ID to refund
  * @param {Object} [options={}] - Refund options
  * @param {number} [options.amount] - Partial refund amount in cents
@@ -395,7 +395,7 @@ export async function refundCardEscrow(client, escrowId, options = {}) {
 /**
  * Get card escrow status and transaction details
  * 
- * @param {import('./client.js').CoinPayClient} client - CoinPay client instance
+ * @param {import('./client.js').TempestTouchClient} client - Tempest Touch client instance
  * @param {string} escrowId - Escrow/transaction ID
  * @returns {Promise<Object>} Transaction details with escrow status
  * 

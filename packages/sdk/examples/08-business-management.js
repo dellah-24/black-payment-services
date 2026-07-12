@@ -2,16 +2,16 @@
  * Business Management Example
  *
  * Demonstrates creating, listing, and updating businesses
- * via the CoinPay API.
+ * via the Tempest Touch API.
  *
  * Usage:
- *   COINPAY_API_KEY=cp_live_xxx node 08-business-management.js
+ *   TEMPESTTOUCH_API_KEY=cp_live_xxx node 08-business-management.js
  */
 
-import { CoinPayClient } from '@profullstack/coinpay';
+import { TempestTouchClient } from '@profullstack/tempesttouch';
 
-const client = new CoinPayClient({
-  apiKey: process.env.COINPAY_API_KEY,
+const client = new TempestTouchClient({
+  apiKey: process.env.TEMPESTTOUCH_API_KEY,
 });
 
 // ──────────────────────────────────────────
@@ -30,7 +30,7 @@ async function listBusinesses() {
 async function createBusiness() {
   const result = await client.createBusiness({
     name: 'My Online Store',
-    webhookUrl: 'https://mystore.com/webhook/coinpay',
+    webhookUrl: 'https://mystore.com/webhook/tempesttouch',
     walletAddresses: {
       BTC: 'bc1q...',
       ETH: '0x...',
@@ -49,7 +49,7 @@ async function createBusiness() {
 async function updateBusiness(businessId) {
   const result = await client.updateBusiness(businessId, {
     name: 'My Online Store (Updated)',
-    webhookUrl: 'https://mystore.com/webhook/coinpay/v2',
+    webhookUrl: 'https://mystore.com/webhook/tempesttouch/v2',
   });
 
   console.log('\nBusiness updated:');

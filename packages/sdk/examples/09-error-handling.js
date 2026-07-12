@@ -2,19 +2,19 @@
  * Error Handling Example
  *
  * Demonstrates how to handle various error types returned by the
- * CoinPay API: auth errors, validation errors, rate limits, timeouts.
+ * Tempest Touch API: auth errors, validation errors, rate limits, timeouts.
  *
  * Usage:
- *   COINPAY_API_KEY=cp_live_xxx node 09-error-handling.js
+ *   TEMPESTTOUCH_API_KEY=cp_live_xxx node 09-error-handling.js
  */
 
-import { CoinPayClient, Blockchain } from '@profullstack/coinpay';
+import { TempestTouchClient, Blockchain } from '@profullstack/tempesttouch';
 
 // ──────────────────────────────────────────
 // Auth error (invalid API key)
 // ──────────────────────────────────────────
 async function testAuthError() {
-  const badClient = new CoinPayClient({ apiKey: 'cp_live_invalid_key' });
+  const badClient = new TempestTouchClient({ apiKey: 'cp_live_invalid_key' });
 
   try {
     await badClient.listBusinesses();
@@ -31,7 +31,7 @@ async function testAuthError() {
 // Validation error (missing required fields)
 // ──────────────────────────────────────────
 async function testValidationError() {
-  const client = new CoinPayClient({ apiKey: process.env.COINPAY_API_KEY });
+  const client = new TempestTouchClient({ apiKey: process.env.TEMPESTTOUCH_API_KEY });
 
   try {
     // Missing businessId and blockchain
@@ -53,7 +53,7 @@ async function testValidationError() {
 // Rate limit error
 // ──────────────────────────────────────────
 async function testRateLimit() {
-  const client = new CoinPayClient({ apiKey: process.env.COINPAY_API_KEY });
+  const client = new TempestTouchClient({ apiKey: process.env.TEMPESTTOUCH_API_KEY });
 
   try {
     await client.createPayment({
@@ -78,8 +78,8 @@ async function testRateLimit() {
 // ──────────────────────────────────────────
 async function testTimeout() {
   // Set an impossibly short timeout
-  const client = new CoinPayClient({
-    apiKey: process.env.COINPAY_API_KEY,
+  const client = new TempestTouchClient({
+    apiKey: process.env.TEMPESTTOUCH_API_KEY,
     timeout: 1, // 1ms — will almost certainly timeout
   });
 
@@ -97,7 +97,7 @@ async function testTimeout() {
 // ──────────────────────────────────────────
 function testConstructorError() {
   try {
-    new CoinPayClient({ apiKey: '' });
+    new TempestTouchClient({ apiKey: '' });
   } catch (error) {
     console.log('Constructor error:');
     console.log(`  Message: ${error.message}`);  // "API key is required"

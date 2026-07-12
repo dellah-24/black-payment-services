@@ -6,7 +6,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { execFileSync, execSync } from 'child_process';
 import { resolve } from 'path';
 
-const CLI_PATH = resolve(import.meta.dirname, '../../../bin/coinpay');
+const CLI_PATH = resolve(import.meta.dirname, '../../../bin/tempesttouch');
 let hasNodeSpawn = false;
 
 try {
@@ -32,7 +32,7 @@ describe.skipIf(!hasNodeSpawn)('CLI Subscription Commands', () => {
       try {
         execSync(`node ${CLI_PATH} subscription create-plan`, {
           encoding: 'utf-8',
-          env: { ...process.env, COINPAY_API_KEY: 'test_key' },
+          env: { ...process.env, TEMPESTTOUCH_API_KEY: 'test_key' },
           stdio: ['pipe', 'pipe', 'pipe'],
         });
         expect.fail('Should have thrown');
@@ -47,7 +47,7 @@ describe.skipIf(!hasNodeSpawn)('CLI Subscription Commands', () => {
       try {
         execSync(`node ${CLI_PATH} subscription subscribe`, {
           encoding: 'utf-8',
-          env: { ...process.env, COINPAY_API_KEY: 'test_key' },
+          env: { ...process.env, TEMPESTTOUCH_API_KEY: 'test_key' },
           stdio: ['pipe', 'pipe', 'pipe'],
         });
         expect.fail('Should have thrown');
@@ -62,7 +62,7 @@ describe.skipIf(!hasNodeSpawn)('CLI Subscription Commands', () => {
       try {
         execSync(`node ${CLI_PATH} subscription cancel`, {
           encoding: 'utf-8',
-          env: { ...process.env, COINPAY_API_KEY: 'test_key' },
+          env: { ...process.env, TEMPESTTOUCH_API_KEY: 'test_key' },
           stdio: ['pipe', 'pipe', 'pipe'],
         });
         expect.fail('Should have thrown');

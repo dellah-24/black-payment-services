@@ -6,7 +6,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { execFileSync, execSync } from 'child_process';
 import { join } from 'path';
 
-const CLI_PATH = join(import.meta.dirname, '..', 'bin', 'coinpay.js');
+const CLI_PATH = join(import.meta.dirname, '..', 'bin', 'tempesttouch.js');
 let hasNodeSpawn = false;
 
 try {
@@ -19,8 +19,8 @@ try {
 describe.skipIf(!hasNodeSpawn)('CLI Payout Commands', () => {
   const env = {
     ...process.env,
-    COINPAY_API_KEY: 'cp_test_key',
-    COINPAY_BASE_URL: 'http://localhost:9999',
+    TEMPESTTOUCH_API_KEY: 'cp_test_key',
+    TEMPESTTOUCH_BASE_URL: 'http://localhost:9999',
   };
 
   it('should show error for unknown payout subcommand', () => {

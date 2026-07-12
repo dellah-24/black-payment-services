@@ -1,25 +1,25 @@
 /**
- * CoinPay API Client
- * Main client class for interacting with the CoinPay API
+ * Tempest Touch API Client
+ * Main client class for interacting with the Tempest Touch API
  */
 
 import { LightningClient } from './lightning.js';
 
-const DEFAULT_BASE_URL = 'https://coinpayportal.com/api';
+const DEFAULT_BASE_URL = 'https://tempesttouch.com/api';
 
 /**
- * CoinPay API Client
+ * Tempest Touch API Client
  */
-export class CoinPayClient {
+export class TempestTouchClient {
   #apiKey;
   #baseUrl;
   #timeout;
 
   /**
-   * Create a new CoinPay client
+   * Create a new Tempest Touch client
    * @param {Object} options - Client options
-   * @param {string} [options.apiKey] - Your CoinPay API key (optional for auth operations)
-   * @param {string} [options.baseUrl] - API base URL (default: https://coinpayportal.com/api)
+   * @param {string} [options.apiKey] - Your Tempest Touch API key (optional for auth operations)
+   * @param {string} [options.baseUrl] - API base URL (default: https://tempesttouch.com/api)
    * @param {number} [options.timeout] - Request timeout in ms (default: 30000)
    */
   constructor({ apiKey, baseUrl = DEFAULT_BASE_URL, timeout = 30000 } = {}) {
@@ -126,7 +126,7 @@ export class CoinPayClient {
    * payment address and QR code.
    *
    * @param {Object} params - Payment parameters
-   * @param {string} params.businessId - Business ID (from your CoinPay dashboard)
+   * @param {string} params.businessId - Business ID (from your Tempest Touch dashboard)
    * @param {number} params.amount - Amount in fiat currency (e.g., 100.00)
    * @param {string} [params.currency='USD'] - Fiat currency code (USD, EUR, etc.)
    * @param {string} params.blockchain - Blockchain/cryptocurrency (BTC, ETH, SOL, POL, BCH, USDC_ETH, USDC_POL, USDC_SOL)
@@ -959,4 +959,4 @@ export class CoinPayClient {
   }
 }
 
-export default CoinPayClient;
+export default TempestTouchClient;

@@ -121,7 +121,7 @@ describe('x402 Module', () => {
       expect(entry.maxAmountRequired).toBe('5000000');
       expect(entry.payTo).toBe('0xABC');
       expect(entry.maxTimeoutSeconds).toBe(300);
-      expect(entry.extra.facilitator).toBe('https://coinpayportal.com/api/x402');
+      expect(entry.extra.facilitator).toBe('https://tempesttouch.com/api/x402');
     });
 
     it('should use default values for optional fields', () => {
@@ -329,7 +329,7 @@ describe('x402 Module', () => {
       await middleware(req, res, next);
 
       expect(mockFetch).toHaveBeenCalledWith(
-        'https://coinpayportal.com/api/x402/verify',
+        'https://tempesttouch.com/api/x402/verify',
         expect.objectContaining({
           method: 'POST',
           headers: expect.objectContaining({ 'X-API-Key': 'cp_live_test' }),

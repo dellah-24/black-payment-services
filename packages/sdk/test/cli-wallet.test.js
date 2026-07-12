@@ -9,7 +9,7 @@ import { existsSync, mkdtempSync, writeFileSync, readFileSync, unlinkSync, rmSyn
 import { join } from 'path';
 import { tmpdir, homedir } from 'os';
 
-const CLI_PATH = join(import.meta.dirname, '..', 'bin', 'coinpay.js');
+const CLI_PATH = join(import.meta.dirname, '..', 'bin', 'tempesttouch.js');
 const TEST_MNEMONIC = 'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about';
 
 // Check if gpg is available
@@ -42,7 +42,7 @@ function runCLI(args, options = {}) {
     stdio: ['pipe', 'pipe', 'pipe'],
     env: { 
       ...process.env, 
-      COINPAY_API_KEY: 'cp_test_fake_key',
+      TEMPESTTOUCH_API_KEY: 'cp_test_fake_key',
       HOME: options.home || process.env.HOME,
       ...extraEnv,
     },
@@ -65,10 +65,10 @@ describe.skipIf(!hasNodeSpawn)('CLI Wallet Commands', () => {
   let walletPath;
 
   beforeAll(() => {
-    tmpDir = mkdtempSync(join(tmpdir(), 'coinpay-wallet-test-'));
+    tmpDir = mkdtempSync(join(tmpdir(), 'tempesttouch-wallet-test-'));
     testHome = tmpDir;
-    configPath = join(testHome, '.coinpay.json');
-    walletPath = join(testHome, '.coinpay-wallet.gpg');
+    configPath = join(testHome, '.tempesttouch.json');
+    walletPath = join(testHome, '.tempesttouch-wallet.gpg');
   });
 
   afterAll(() => {
@@ -420,7 +420,7 @@ describe('CLI Wallet Backup Commands (GPG)', () => {
   let tmpDir;
 
   beforeAll(() => {
-    tmpDir = mkdtempSync(join(tmpdir(), 'coinpay-backup-test-'));
+    tmpDir = mkdtempSync(join(tmpdir(), 'tempesttouch-backup-test-'));
   });
 
   afterAll(() => {
@@ -434,7 +434,7 @@ describe('CLI Wallet Backup Commands (GPG)', () => {
     const testWalletId = 'wid-backup-test';
 
     it('wallet info shows file status', () => {
-      const configPath = join(tmpDir, '.coinpay.json');
+      const configPath = join(tmpDir, '.tempesttouch.json');
       const walletPath = join(tmpDir, 'test-wallet.gpg');
       
       writeFileSync(configPath, JSON.stringify({

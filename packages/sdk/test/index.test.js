@@ -5,15 +5,15 @@
 
 import { describe, it, expect } from 'vitest';
 import * as sdk from '../src/index.js';
-import { CoinPayClient } from '../src/client.js';
+import { TempestTouchClient } from '../src/client.js';
 import { verifyWebhookSignature, WebhookEvent } from '../src/webhooks.js';
 import { Blockchain, PaymentStatus, FiatCurrency } from '../src/payments.js';
 
-describe('@profullstack/coinpay SDK exports', () => {
+describe('@profullstack/tempesttouch SDK exports', () => {
   describe('named exports', () => {
-    it('should export CoinPayClient', () => {
-      expect(sdk.CoinPayClient).toBeDefined();
-      expect(sdk.CoinPayClient).toBe(CoinPayClient);
+    it('should export TempestTouchClient', () => {
+      expect(sdk.TempestTouchClient).toBeDefined();
+      expect(sdk.TempestTouchClient).toBe(TempestTouchClient);
     });
 
     it('should export verifyWebhookSignature', () => {
@@ -63,9 +63,9 @@ describe('@profullstack/coinpay SDK exports', () => {
   });
 
   describe('default export', () => {
-    it('should have CoinPayClient as default export', () => {
+    it('should have TempestTouchClient as default export', () => {
       expect(sdk.default).toBeDefined();
-      expect(sdk.default).toBe(CoinPayClient);
+      expect(sdk.default).toBe(TempestTouchClient);
     });
   });
 
@@ -116,19 +116,19 @@ describe('@profullstack/coinpay SDK exports', () => {
     });
   });
 
-  describe('CoinPayClient instantiation', () => {
+  describe('TempestTouchClient instantiation', () => {
     it('should create client with API key', () => {
-      const client = new sdk.CoinPayClient({ apiKey: 'cp_live_test_key_123456789' });
-      expect(client).toBeInstanceOf(CoinPayClient);
+      const client = new sdk.TempestTouchClient({ apiKey: 'cp_live_test_key_123456789' });
+      expect(client).toBeInstanceOf(TempestTouchClient);
     });
 
     it('should create client with all options', () => {
-      const client = new sdk.CoinPayClient({
+      const client = new sdk.TempestTouchClient({
         apiKey: 'cp_live_test_key_123456789',
         baseUrl: 'https://custom.api.com',
         timeout: 60000,
       });
-      expect(client).toBeInstanceOf(CoinPayClient);
+      expect(client).toBeInstanceOf(TempestTouchClient);
     });
   });
 

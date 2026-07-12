@@ -1,16 +1,16 @@
 /**
  * Webhook Handler Example
  *
- * Express server that receives and verifies CoinPay webhook events.
+ * Express server that receives and verifies Tempest Touch webhook events.
  * Shows both the middleware approach and manual verification.
  *
  * Usage:
  *   npm install express
- *   COINPAY_WEBHOOK_SECRET=whsec_xxx node 06-webhook-handler.js
+ *   TEMPESTTOUCH_WEBHOOK_SECRET=whsec_xxx node 06-webhook-handler.js
  *
  * Test with:
- *   Use the CoinPay dashboard "Test webhook" button, or:
- *   coinpay webhook test <business-id>
+ *   Use the Tempest Touch dashboard "Test webhook" button, or:
+ *   tempesttouch webhook test <business-id>
  */
 
 import express from 'express';
@@ -19,13 +19,13 @@ import {
   verifyWebhookSignature,
   parseWebhookPayload,
   WebhookEvent,
-} from '@profullstack/coinpay';
+} from '@profullstack/tempesttouch';
 
 const app = express();
-const WEBHOOK_SECRET = process.env.COINPAY_WEBHOOK_SECRET;
+const WEBHOOK_SECRET = process.env.TEMPESTTOUCH_WEBHOOK_SECRET;
 
 if (!WEBHOOK_SECRET) {
-  console.error('Set COINPAY_WEBHOOK_SECRET environment variable');
+  console.error('Set TEMPESTTOUCH_WEBHOOK_SECRET environment variable');
   process.exit(1);
 }
 
@@ -79,7 +79,7 @@ app.post(
   '/webhook-manual',
   express.text({ type: 'application/json' }),
   async (req, res) => {
-    const signature = req.headers['x-coinpay-signature'];
+    const signature = req.headers['x-tempesttouch-signature'];
     const rawBody = req.body;
 
     // Step 1: Verify signature

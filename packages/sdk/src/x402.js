@@ -1,7 +1,7 @@
 /**
  * x402 Payment Protocol Support
  * 
- * CoinPayPortal as the first multi-chain, multi-asset x402 facilitator.
+ * Tempest Touch as the first multi-chain, multi-asset x402 facilitator.
  * Supports native crypto (BTC, ETH, SOL, POL, BCH), USDC stablecoins,
  * Lightning (BOLT12), and Stripe fiat — all via HTTP 402.
  * 
@@ -132,7 +132,7 @@ export const CHAIN_IDS = {
 /**
  * Default facilitator URL
  */
-const DEFAULT_FACILITATOR_URL = 'https://coinpayportal.com/api/x402';
+const DEFAULT_FACILITATOR_URL = 'https://tempesttouch.com/api/x402';
 
 /**
  * x402 protocol version
@@ -209,7 +209,7 @@ function buildAcceptEntry(methodKey, { payTo, amount, resource, description, mim
 /**
  * Build a 402 response payload advertising multiple payment options.
  * 
- * This is CoinPayPortal's key differentiator: the `accepts` array includes
+ * This is Tempest Touch's key differentiator: the `accepts` array includes
  * every supported chain and asset, letting the buyer choose.
  * 
  * @param {Object} options
@@ -338,14 +338,14 @@ function _networkToMethodKey(network) {
  * The 402 response advertises ALL supported payment methods by default.
  * 
  * @param {Object} globalOptions
- * @param {string} globalOptions.apiKey - CoinPayPortal API key
+ * @param {string} globalOptions.apiKey - Tempest Touch API key
  * @param {string|Object} globalOptions.payTo - Wallet address(es): string or { network: address }
  * @param {string[]} [globalOptions.methods] - Payment methods to accept (default: all with addresses)
  * @param {Object} [globalOptions.rates] - Exchange rates { BTC: 65000, ... }
  * @param {string} [globalOptions.ratesEndpoint] - URL to fetch live rates (polled periodically)
  * @param {string} [globalOptions.description='Payment required'] - Default description
  * @param {string} [globalOptions.facilitatorUrl] - Custom facilitator URL
- * @param {string} [globalOptions.apiBaseUrl='https://coinpayportal.com'] - CoinPayPortal API base
+ * @param {string} [globalOptions.apiBaseUrl='https://tempesttouch.com'] - Tempest Touch API base
  * @returns {Function} Middleware factory: (routeOptions) => middleware
  * 
  * @example
@@ -372,7 +372,7 @@ export function createX402Middleware(globalOptions) {
     rates = {},
     description = 'Payment required',
     facilitatorUrl = DEFAULT_FACILITATOR_URL,
-    apiBaseUrl = 'https://coinpayportal.com',
+    apiBaseUrl = 'https://tempesttouch.com',
   } = globalOptions;
 
   if (!apiKey) throw new Error('x402 middleware requires an apiKey');
@@ -463,19 +463,19 @@ export function createX402Middleware(globalOptions) {
 /**
  * Verify an x402 payment proof.
  * 
- * Calls CoinPayPortal's facilitator API to validate the cryptographic
+ * Calls Tempest Touch's facilitator API to validate the cryptographic
  * signature and payment details in the X-PAYMENT header.
  * Supports all payment schemes: EVM signatures, BTC/BCH tx proofs,
  * Solana tx proofs, Lightning preimages, and Stripe payment intents.
  * 
  * @param {string} paymentHeader - The X-PAYMENT header value (base64-encoded JSON)
  * @param {Object} options
- * @param {string} options.apiKey - CoinPayPortal API key
- * @param {string} [options.apiBaseUrl='https://coinpayportal.com'] - API base URL
+ * @param {string} options.apiKey - Tempest Touch API key
+ * @param {string} [options.apiBaseUrl='https://tempesttouch.com'] - API base URL
  * @returns {Promise<{valid: boolean, payment?: Object, reason?: string}>}
  */
 export async function verifyX402Payment(paymentHeader, options = {}) {
-  const { apiKey, apiBaseUrl = 'https://coinpayportal.com' } = options;
+  const { apiKey, apiBaseUrl = 'https://tempesttouch.com' } = options;
 
   if (!paymentHeader) {
     return { valid: false, reason: 'Missing payment header' };
@@ -505,7 +505,7 @@ export async function verifyX402Payment(paymentHeader, options = {}) {
     }
   }
 
-  // Call CoinPayPortal facilitator to verify
+  // Call Tempest Touch facilitator to verify
   try {
     const response = await fetch(`${apiBaseUrl}/api/x402/verify`, {
       method: 'POST',
@@ -537,12 +537,12 @@ export async function verifyX402Payment(paymentHeader, options = {}) {
  * 
  * @param {string} paymentHeader - The X-PAYMENT header value (base64-encoded JSON)
  * @param {Object} options
- * @param {string} options.apiKey - CoinPayPortal API key
- * @param {string} [options.apiBaseUrl='https://coinpayportal.com'] - API base URL
+ * @param {string} options.apiKey - Tempest Touch API key
+ * @param {string} [options.apiBaseUrl='https://tempesttouch.com'] - API base URL
  * @returns {Promise<{settled: boolean, txHash?: string, network?: string, error?: string}>}
  */
 export async function settleX402Payment(paymentHeader, options = {}) {
-  const { apiKey, apiBaseUrl = 'https://coinpayportal.com' } = options;
+  const { apiKey, apiBaseUrl = 'https://tempesttouch.com' } = options;
 
   if (!paymentHeader) {
     return { settled: false, error: 'Missing payment header' };

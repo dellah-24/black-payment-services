@@ -1,14 +1,14 @@
 /**
- * CoinPay SDK
+ * Tempest Touch SDK
  * Cryptocurrency payment integration for Node.js
  *
- * @module @profullstack/coinpay
+ * @module @profullstack/tempesttouch
  *
  * @example
  * // Quick start
- * import { CoinPayClient, Blockchain } from '@profullstack/coinpay';
+ * import { TempestTouchClient, Blockchain } from '@profullstack/tempesttouch';
  *
- * const client = new CoinPayClient({ apiKey: 'cp_live_xxxxx' });
+ * const client = new TempestTouchClient({ apiKey: 'cp_live_xxxxx' });
  *
  * const payment = await client.createPayment({
  *   businessId: 'your-business-id',
@@ -19,7 +19,7 @@
  *
  * @example
  * // Wallet usage
- * import { WalletClient } from '@profullstack/coinpay';
+ * import { WalletClient } from '@profullstack/tempesttouch';
  *
  * // Create a new wallet
  * const wallet = await WalletClient.create({ words: 12, chains: ['BTC', 'ETH'] });
@@ -30,13 +30,13 @@
  *
  * @example
  * // Swap usage
- * import { SwapClient } from '@profullstack/coinpay';
+ * import { SwapClient } from '@profullstack/tempesttouch';
  *
  * const swap = new SwapClient({ walletId: 'your-wallet-id' });
  * const quote = await swap.getSwapQuote('BTC', 'ETH', 0.1);
  */
 
-import { CoinPayClient } from './client.js';
+import { TempestTouchClient } from './client.js';
 import {
   createPayment,
   getPayment,
@@ -181,7 +181,7 @@ import {
 
 export {
   // Client
-  CoinPayClient,
+  TempestTouchClient,
   
   // Payment functions
   createPayment,
@@ -306,4 +306,4 @@ export {
   WebhookEvent,
 };
 
-export default CoinPayClient;
+export default TempestTouchClient;

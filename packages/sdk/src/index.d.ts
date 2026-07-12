@@ -1,14 +1,14 @@
 /**
- * @profullstack/coinpay - CoinPay SDK
+ * @profullstack/tempesttouch - Tempest Touch SDK
  * Cryptocurrency payment integration for Node.js
  *
- * @module @profullstack/coinpay
+ * @module @profullstack/tempesttouch
  */
 
 // Client exports
-export { CoinPayClient } from './client.js';
+export { TempestTouchClient } from './client.js';
 export type { 
-  CoinPayClientOptions, 
+  TempestTouchClientOptions, 
   PaymentParams, 
   ListPaymentsParams, 
   WaitForPaymentOptions, 
@@ -124,5 +124,5 @@ export type {
   Credential,
 } from './reputation.js';
 
-import { CoinPayClient } from './client.js';
-export default CoinPayClient;
+import { TempestTouchClient } from './client.js';
+export default TempestTouchClient;

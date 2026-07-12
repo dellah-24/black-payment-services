@@ -13,7 +13,7 @@ import {
   PaymentStatus,
   FiatCurrency,
 } from '../src/payments.js';
-import { CoinPayClient } from '../src/client.js';
+import { TempestTouchClient } from '../src/client.js';
 
 describe('Payments Module', () => {
   describe('Blockchain constants', () => {
@@ -95,7 +95,7 @@ describe('Payments Module', () => {
     });
 
     it('should create payment with existing client', async () => {
-      const client = new CoinPayClient({
+      const client = new TempestTouchClient({
         apiKey: 'cp_live_test_api_key_12345678',
         baseUrl: 'https://api.test.com',
       });

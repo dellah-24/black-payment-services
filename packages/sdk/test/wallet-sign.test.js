@@ -6,7 +6,7 @@
  * recovering the public key / verifying via noble-curves.
  *
  * These tests are purely offline — they don't hit any network and
- * don't need a CoinPay server.
+ * don't need a Tempest Touch server.
  */
 
 import { describe, it, expect } from 'vitest';
