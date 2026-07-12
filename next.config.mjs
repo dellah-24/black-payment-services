@@ -1,4 +1,6 @@
 /** @type {import('next').NextConfig} */
+const path = require('path');
+
 const nextConfig = {
   poweredByHeader: false,
   reactStrictMode: true,
@@ -12,7 +14,7 @@ const nextConfig = {
   },
   // Transpile wallet packages that have ESM/CJS issues
   transpilePackages: [
-    '@profullstack/coinpay',
+    '@profullstack/tempesttouch',
     '@reown/appkit',
     '@reown/appkit-adapter-wagmi',
     '@reown/appkit-controllers',
@@ -29,6 +31,13 @@ const nextConfig = {
     '@noble/curves',
     'openpgp',
   ],
+  webpack: (config) => {
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      '@profullstack/tempesttouch': path.resolve(__dirname, 'packages/sdk/src'),
+    };
+    return config;
+  },
   // Security headers
   async headers() {
     return [
