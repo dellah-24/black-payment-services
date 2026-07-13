@@ -1,9 +1,4 @@
 /** @type {import('next').NextConfig} */
-import path from 'path';
-import { fileURLToPath } from 'url';
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-
 const nextConfig = {
   poweredByHeader: false,
   reactStrictMode: true,
@@ -34,13 +29,6 @@ const nextConfig = {
     '@noble/curves',
     'openpgp',
   ],
-  webpack: (config) => {
-    config.resolve.alias = {
-      ...config.resolve.alias,
-      '@profullstack/tempesttouch': path.resolve(__dirname, 'packages/sdk/src'),
-    };
-    return config;
-  },
   // Security headers
   async headers() {
     return [
