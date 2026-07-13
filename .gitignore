@@ -60,3 +60,6 @@ certs/
 .claude/
 # drewrox2009 local tracking
 .drewrox2009/
+ 
+# IDE files 
+.idea/ 
