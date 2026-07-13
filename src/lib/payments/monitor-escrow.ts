@@ -3,6 +3,7 @@
  */
 
 import { checkBalance, processPayment, type Payment } from './monitor-balance';
+import { internalFetch } from '@/lib/internal-api';
 
 // ── Retry tracking (in-memory) ──
 // Prevents infinite retry loops that leak memory and cause OOM crashes.
@@ -242,7 +243,6 @@ export async function runEscrowCycle(supabase: any, now: Date): Promise<EscrowSt
  */
 async function processEscrowSettlement(escrows: Escrow[], action: 'release' | 'refund'): Promise<{ settled: number; errors: number }> {
   const stats = { settled: 0, errors: 0 };
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL || 'http://localhost:3000';
   const internalApiKey = process.env.INTERNAL_API_KEY;
 
   if (!internalApiKey) {
@@ -265,7 +265,7 @@ async function processEscrowSettlement(escrows: Escrow[], action: 'release' | 'r
 
     try {
       const body = action === 'refund' ? JSON.stringify({ action: 'refund' }) : undefined;
-      const settleResponse = await fetch(`${appUrl}/api/escrow/${escrow.id}/settle`, {
+      const settleResponse = await internalFetch(`/api/escrow/${escrow.id}/settle`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -343,7 +343,6 @@ export async function runRecurringEscrowCycle(supabase: any, now: Date): Promise
       return stats;
     }
 
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL || 'http://localhost:3000';
     const internalApiKey = process.env.INTERNAL_API_KEY;
 
     if (!internalApiKey) {
@@ -371,7 +370,7 @@ export async function runRecurringEscrowCycle(supabase: any, now: Date): Promise
         let childCreated = false;
 
         if (series.payment_method === 'crypto') {
-          const res = await fetch(`${appUrl}/api/escrow`, {
+          const res = await internalFetch(`/api/escrow`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -406,7 +405,7 @@ export async function runRecurringEscrowCycle(supabase: any, now: Date): Promise
             continue;
           }
         } else if (series.payment_method === 'card') {
-          const res = await fetch(`${appUrl}/api/stripe/payments/create`, {
+          const res = await internalFetch(`/api/stripe/payments/create`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',

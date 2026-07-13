@@ -5,6 +5,7 @@
 import { sendEmail } from '../email';
 import { invoicePaidMerchantTemplate, invoiceOverdueTemplate } from '../email/invoice-templates';
 import { checkBalance } from './monitor-balance';
+import { internalAppUrl } from '@/lib/internal-api';
 
 // Invoice Payment Monitoring
 // ────────────────────────────────────────────────────────────
@@ -86,7 +87,7 @@ export async function runInvoiceMonitorCycle(supabase: any, now: Date): Promise<
             console.log(`[Monitor] Invoice ${invoice.invoice_number} PAID (${balanceResult.balance} ${invoice.crypto_currency})`);
 
             // Forward to merchant minus fee
-            const appUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL || 'http://localhost:3000';
+            const appUrl = internalAppUrl();
             const internalApiKey = process.env.INTERNAL_API_KEY;
             if (internalApiKey && invoice.merchant_wallet_address) {
               try {

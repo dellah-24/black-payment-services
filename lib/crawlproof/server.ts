@@ -29,6 +29,7 @@ export async function sendCrawlProofEvent(event: CrawlProofEvent): Promise<void>
       headers: {
         Authorization: `Bearer ${projectKey}`,
         "Content-Type": "application/json",
+        "User-Agent": "TempestTouch-CrawlProof/1.0 (+https://tempesttouch.com; first-party)",
       },
       body: JSON.stringify({ project: "tempesttouch.com", ...event }),
     });

@@ -4,6 +4,8 @@
  * Shared balance-checking utilities used by the payment monitor.
  */
 
+import { internalFetch } from '@/lib/internal-api';
+
 // RPC endpoints for different blockchains
 const RPC_ENDPOINTS: Record<string, string> = {
   BTC: process.env.BITCOIN_RPC_URL || 'https://blockstream.info/api',
@@ -570,13 +572,12 @@ export async function processPayment(supabase: any, payment: Payment): Promise<{
       .eq('id', payment.id);
     
     // Trigger forwarding
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL || 'http://localhost:3000';
     const internalApiKey = process.env.INTERNAL_API_KEY;
-    
+
     if (internalApiKey) {
       try {
         console.log(`[Monitor] Triggering forwarding for payment ${payment.id}`);
-        const forwardResponse = await fetch(`${appUrl}/api/payments/${payment.id}/forward`, {
+        const forwardResponse = await internalFetch(`/api/payments/${payment.id}/forward`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

@@ -11,6 +11,7 @@ import { sendWebhook } from './webhook';
 import type { Payment, MonitorStats } from './types';
 import { processConfirmedBusinessCollectionPayment } from '@/lib/payments/business-collection';
 import { handleSubscriptionPaymentConfirmed } from '@/lib/subscriptions/service';
+import { internalFetch } from '@/lib/internal-api';
 
 const MAX_FORWARD_RETRY_ATTEMPTS = 5;
 
@@ -169,12 +170,11 @@ export async function monitorPayments(
         }
 
         // Trigger forwarding
-        const appUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL || 'http://localhost:3000';
         const internalApiKey = process.env.INTERNAL_API_KEY;
 
         if (internalApiKey) {
           try {
-            const forwardResponse = await fetch(`${appUrl}/api/payments/${payment.id}/forward`, {
+            const forwardResponse = await internalFetch(`/api/payments/${payment.id}/forward`, {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
@@ -187,7 +187,7 @@ export async function monitorPayments(
               console.error(`Failed to trigger forwarding for ${payment.id}: ${forwardResponse.status} - ${errorText}`);
 
               // Immediate auto-retry once before queueing
-              const retryResponse = await fetch(`${appUrl}/api/payments/${payment.id}/forward`, {
+              const retryResponse = await internalFetch(`/api/payments/${payment.id}/forward`, {
                 method: 'POST',
                 headers: {
                   'Content-Type': 'application/json',
@@ -365,7 +365,6 @@ export async function monitorPayments(
   }
 
   // Process queued forwarding retries
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL || 'http://localhost:3000';
   const internalApiKey = process.env.INTERNAL_API_KEY;
 
   if (internalApiKey) {
@@ -388,7 +387,7 @@ export async function monitorPayments(
             .update({ status: 'processing', updated_at: new Date().toISOString() })
             .eq('payment_id', item.payment_id);
 
-          const retryResponse = await fetch(`${appUrl}/api/payments/${item.payment_id}/forward`, {
+          const retryResponse = await internalFetch(`/api/payments/${item.payment_id}/forward`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',

@@ -12,6 +12,7 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import { checkBalance } from './balance-checkers';
 import type { EscrowStats } from './types';
 import { randomUUID } from 'crypto';
+import { internalFetch } from '@/lib/internal-api';
 
 /**
  * Run the full escrow monitoring cycle
@@ -200,7 +201,6 @@ async function settleReleasedEscrows(supabase: SupabaseClient): Promise<void> {
   if (!releasedEscrows || releasedEscrows.length === 0) return;
 
   console.log(`Processing ${releasedEscrows.length} released escrows for settlement`);
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL || 'http://localhost:3000';
   const internalApiKey = process.env.INTERNAL_API_KEY;
 
   // Chains that support automated on-chain settlement
@@ -219,7 +219,7 @@ async function settleReleasedEscrows(supabase: SupabaseClient): Promise<void> {
 
     try {
       if (internalApiKey) {
-        const settleResponse = await fetch(`${appUrl}/api/escrow/${escrow.id}/settle`, {
+        const settleResponse = await internalFetch(`/api/escrow/${escrow.id}/settle`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -271,13 +271,12 @@ async function settleRefundedEscrows(supabase: SupabaseClient): Promise<void> {
   if (!refundedEscrows || refundedEscrows.length === 0) return;
 
   console.log(`Processing ${refundedEscrows.length} refunded escrows`);
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL || 'http://localhost:3000';
   const internalApiKey = process.env.INTERNAL_API_KEY;
 
   for (const escrow of refundedEscrows) {
     try {
       if (internalApiKey) {
-        const refundResponse = await fetch(`${appUrl}/api/escrow/${escrow.id}/settle`, {
+        const refundResponse = await internalFetch(`/api/escrow/${escrow.id}/settle`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

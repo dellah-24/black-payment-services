@@ -46,8 +46,12 @@ function loadEnv() {
 loadEnv();
 
 const command = process.argv[2] || 'status';
-const APP_URL = process.argv[3] || process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL || 'http://localhost:3000';
+// Prefer INTERNAL_APP_URL (a direct, non-Cloudflare origin) so monitor requests
+// bypass Super Bot Fight Mode on the public edge. Falls back to the public APP_URL
+// only when no internal origin is configured.
+const APP_URL = process.argv[3] || process.env.INTERNAL_APP_URL || process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL || 'http://localhost:3000';
 const API_KEY = process.argv[4] || process.env.INTERNAL_API_KEY;
+const USER_AGENT = 'TempestTouch-MonitorCLI/1.0 (+https://tempesttouch.com; first-party)';
 
 async function checkStatus() {
   console.log('Checking monitor status...');
@@ -59,6 +63,7 @@ async function checkStatus() {
       headers: {
         'Authorization': `Bearer ${API_KEY}`,
         'Content-Type': 'application/json',
+        'User-Agent': USER_AGENT,
       },
     });
     
@@ -87,6 +92,7 @@ async function controlMonitor(action) {
       headers: {
         'Authorization': `Bearer ${API_KEY}`,
         'Content-Type': 'application/json',
+        'User-Agent': USER_AGENT,
       },
       body: JSON.stringify({ action }),
     });
@@ -123,6 +129,7 @@ async function testCronEndpoint() {
       headers: {
         'Authorization': `Bearer ${API_KEY}`,
         'Content-Type': 'application/json',
+        'User-Agent': USER_AGENT,
       },
     });
     

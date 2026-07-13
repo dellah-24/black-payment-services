@@ -539,8 +539,14 @@ Deno.serve(async (req) => {
           stats.confirmed++;
           console.log(`Payment ${payment.id} confirmed with balance ${balance}`);
           
-          // Trigger forwarding via the forward-payment function
-          const appUrl = Deno.env.get('APP_URL') || 'http://localhost:3000';
+          // Trigger forwarding via the forward-payment function.
+          // Prefer INTERNAL_APP_URL (a direct, non-Cloudflare origin) so these
+          // automated requests bypass Super Bot Fight Mode on the public edge
+          // (which otherwise returns 301/403). Falls back to APP_URL, then localhost.
+          const appUrl =
+            Deno.env.get('INTERNAL_APP_URL') ||
+            Deno.env.get('APP_URL') ||
+            'http://localhost:3000';
           const internalApiKey = Deno.env.get('INTERNAL_API_KEY');
           
           if (internalApiKey) {
@@ -550,6 +556,7 @@ Deno.serve(async (req) => {
                 headers: {
                   'Content-Type': 'application/json',
                   'Authorization': `Bearer ${internalApiKey}`,
+                  'User-Agent': 'TempestTouch-MonitorFn/1.0 (+https://tempesttouch.com; first-party)',
                 },
               });
               
