@@ -81,9 +81,6 @@ importers:
       '@profullstack/referrals':
         specifier: ^0.1.0
         version: 0.1.0(react@19.2.7)
-      '@profullstack/tempesttouch':
-        specifier: file:./packages/sdk
-        version: link:packages/sdk
       '@scure/bip32':
         specifier: ^1.3.3
         version: 1.7.0
