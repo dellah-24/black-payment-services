@@ -27,7 +27,7 @@
         "./src/*"
       ],
       "@profullstack/tempesttouch": [
-        "./packages/sdk/src"
+        "./packages/sdk/src/index.d.ts"
       ],
       "@noble/curves/secp256k1": [
         "./node_modules/@noble/curves/secp256k1"
