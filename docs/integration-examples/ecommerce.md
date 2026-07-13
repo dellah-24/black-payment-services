@@ -7,7 +7,7 @@ Add crypto payments to an existing e-commerce checkout flow. This example shows 
 ## Architecture
 
 ```
-Customer → Your Checkout → Your Backend → CoinPay API
+Customer → Your Checkout → Your Backend → Tempest Touch API
                                 ↓
                           Create Payment
                                 ↓
@@ -15,7 +15,7 @@ Customer ← Show QR/Address ← Payment Details
                                 ↓
                           Customer Sends Crypto
                                 ↓
-CoinPay Monitor → Detects Funds → Webhook → Your Backend → Fulfill Order
+Tempest Touch Monitor → Detects Funds → Webhook → Your Backend → Fulfill Order
 ```
 
 ---
@@ -24,14 +24,14 @@ CoinPay Monitor → Detects Funds → Webhook → Your Backend → Fulfill Order
 
 ```javascript
 // routes/checkout.mjs
-import { CoinPayClient, Blockchain } from '@profullstack/coinpay';
+import { Tempest TouchClient, Blockchain } from '@profullstack/tempesttouch';
 import { db } from '../lib/database.mjs';
 
-const coinpay = new CoinPayClient({
-  apiKey: process.env.COINPAY_API_KEY,
+const tempesttouch = new Tempest TouchClient({
+  apiKey: process.env.TEMPESTTOUCH_API_KEY,
 });
 
-const BUSINESS_ID = process.env.COINPAY_BUSINESS_ID;
+const BUSINESS_ID = process.env.TEMPESTTOUCH_BUSINESS_ID;
 
 /**
  * POST /checkout/crypto
@@ -59,8 +59,8 @@ export async function createCryptoCheckout(req, res) {
     status: 'awaiting_payment',
   });
 
-  // 3. Create CoinPay payment
-  const result = await coinpay.createPayment({
+  // 3. Create Tempest Touch payment
+  const result = await tempesttouch.createPayment({
     businessId: BUSINESS_ID,
     amount: totalUsd,
     currency: 'USD',
@@ -75,9 +75,9 @@ export async function createCryptoCheckout(req, res) {
 
   const payment = result.payment;
 
-  // 4. Link CoinPay payment to your order
+  // 4. Link Tempest Touch payment to your order
   await db.orders.update(order.id, {
-    coinpayPaymentId: payment.id,
+    tempesttouchPaymentId: payment.id,
     paymentAddress: payment.payment_address,
     cryptoAmount: payment.crypto_amount || payment.amount_crypto,
     expiresAt: payment.expires_at,
@@ -91,7 +91,7 @@ export async function createCryptoCheckout(req, res) {
     cryptoAmount: payment.crypto_amount || payment.amount_crypto,
     blockchain,
     expiresAt: payment.expires_at,
-    qrUrl: coinpay.getPaymentQRUrl(payment.id),
+    qrUrl: tempesttouch.getPaymentQRUrl(payment.id),
     statusUrl: `/orders/${order.id}/status`,
   });
 }
@@ -123,20 +123,20 @@ export async function getOrderStatus(req, res) {
 
 ```javascript
 // routes/webhooks.mjs
-import { verifyWebhookSignature, parseWebhookPayload } from '@profullstack/coinpay';
+import { verifyWebhookSignature, parseWebhookPayload } from '@profullstack/tempesttouch';
 import { db } from '../lib/database.mjs';
 import { sendOrderConfirmationEmail } from '../lib/email.mjs';
 import { shipOrder } from '../lib/fulfillment.mjs';
 
-const WEBHOOK_SECRET = process.env.COINPAY_WEBHOOK_SECRET;
+const WEBHOOK_SECRET = process.env.TEMPESTTOUCH_WEBHOOK_SECRET;
 
 /**
- * POST /webhooks/coinpay
+ * POST /webhooks/tempesttouch
  * Handle payment lifecycle events
  */
 export async function handleWebhook(req, res) {
   // 1. Verify signature (use raw body!)
-  const signature = req.headers['x-coinpay-signature'];
+  const signature = req.headers['x-tempesttouch-signature'];
   const rawBody = req.rawBody || req.body.toString();
 
   const isValid = verifyWebhookSignature({
@@ -250,7 +250,7 @@ import { handleWebhook } from './routes/webhooks.mjs';
 const app = express();
 
 // Webhook route MUST use raw body for signature verification
-app.post('/webhooks/coinpay', express.raw({ type: 'application/json' }), handleWebhook);
+app.post('/webhooks/tempesttouch', express.raw({ type: 'application/json' }), handleWebhook);
 
 // Regular routes use JSON parsing
 app.use(express.json());
@@ -274,7 +274,7 @@ CREATE TABLE orders (
   total_usd NUMERIC(10, 2) NOT NULL,
   payment_method TEXT DEFAULT 'crypto',
   payment_blockchain TEXT,
-  coinpay_payment_id TEXT,
+  tempesttouch_payment_id TEXT,
   payment_address TEXT,
   crypto_amount TEXT,
   status TEXT DEFAULT 'awaiting_payment',
@@ -293,7 +293,7 @@ CREATE TABLE webhook_events (
   processed_at TIMESTAMPTZ DEFAULT NOW()
 );
 
-CREATE INDEX idx_orders_coinpay_payment ON orders(coinpay_payment_id);
+CREATE INDEX idx_orders_tempesttouch_payment ON orders(tempesttouch_payment_id);
 CREATE INDEX idx_orders_status ON orders(status);
 ```
 
@@ -302,7 +302,7 @@ CREATE INDEX idx_orders_status ON orders(status);
 ## Checklist for Production
 
 - [ ] Store webhook events for idempotency (don't fulfill twice)
-- [ ] Set up webhook retry handling (CoinPay retries failed deliveries)
+- [ ] Set up webhook retry handling (Tempest Touch retries failed deliveries)
 - [ ] Monitor `payment.failed` events and alert your ops team
 - [ ] Reserve inventory when payment is created, release on expiry
 - [ ] Set reasonable payment expiry times (30-60 minutes for crypto)

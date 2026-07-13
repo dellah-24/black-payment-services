@@ -1,4 +1,4 @@
-Contact: mailto:security@coinpayportal.com
+Contact: mailto:security@tempesttouch.com
 Preferred-Languages: en
-Canonical: https://coinpayportal.com/.well-known/security.txt
+Canonical: https://tempesttouch.com/.well-known/security.txt
 Expires: 2027-05-10T00:00:00.000Z

@@ -1,6 +1,6 @@
 # Security Best Practices
 
-Guidelines for keeping your CoinPay integration, merchant accounts, and customer data secure.
+Guidelines for keeping your Tempest Touch integration, merchant accounts, and customer data secure.
 
 ---
 
@@ -34,19 +34,19 @@ If an API key may be compromised:
 
 ## Webhook Security
 
-Webhooks are how CoinPay tells your server about payment events. **Always verify signatures.**
+Webhooks are how Tempest Touch tells your server about payment events. **Always verify signatures.**
 
 ### Verify Every Webhook
 
 ```javascript
-import { verifyWebhookSignature } from '@profullstack/coinpay';
+import { verifyWebhookSignature } from '@profullstack/tempesttouch';
 
 // Express middleware — use raw body parsing
-app.post('/webhooks/coinpay', express.raw({ type: 'application/json' }), (req, res) => {
+app.post('/webhooks/tempesttouch', express.raw({ type: 'application/json' }), (req, res) => {
   const isValid = verifyWebhookSignature({
     payload: req.body.toString(),               // raw string, not parsed JSON
-    signature: req.headers['x-coinpay-signature'],
-    secret: process.env.COINPAY_WEBHOOK_SECRET,
+    signature: req.headers['x-tempesttouch-signature'],
+    secret: process.env.TEMPESTTOUCH_WEBHOOK_SECRET,
     tolerance: 300,                              // reject if >5 min old
   });
 
@@ -67,7 +67,7 @@ Without signature verification, anyone can send a fake `payment.confirmed` webho
 ### Webhook Signature Format
 
 ```
-X-CoinPay-Signature: t=1705312500,v1=5257a869e7ecebeda32affa62cdca3fa51cad...
+X-Tempest Touch-Signature: t=1705312500,v1=5257a869e7ecebeda32affa62cdca3fa51cad...
 ```
 
 - `t` = Unix timestamp when the webhook was sent
@@ -104,7 +104,7 @@ app.post('/fulfill', (req, res) => {
 });
 
 // ✅ GOOD: Verify via webhook or API
-app.post('/webhooks/coinpay', (req, res) => {
+app.post('/webhooks/tempesttouch', (req, res) => {
   // Signature verification happens first (see above)
   const event = parseWebhookPayload(req.body.toString());
   if (event.type === 'payment.confirmed') {
@@ -149,16 +149,16 @@ if (event.type === 'payment.confirmed') {
 
 ### Merchant Wallets
 
-- Use **dedicated wallet addresses** for receiving CoinPay payments — don't mix with personal wallets
+- Use **dedicated wallet addresses** for receiving Tempest Touch payments — don't mix with personal wallets
 - Use **hardware wallets** or **multisig wallets** for your merchant receiving address
 - **Monitor your receiving address** independently (e.g., on a block explorer) as a backup check
 - Consider a **cold storage strategy**: sweep funds from your receiving wallet to cold storage periodically
 
 ### Web Wallet Users
 
-If you're using the CoinPay Web Wallet:
+If you're using the Tempest Touch Web Wallet:
 
-- **Never share your seed phrase** — CoinPay staff will never ask for it
+- **Never share your seed phrase** — Tempest Touch staff will never ask for it
 - **Back up your seed phrase offline** — write it on paper, store in a safe
 - Your seed phrase is the **only way to recover** your wallet if you lose access
 - **Enable daily spend limits** in wallet settings to limit damage if your device is compromised
@@ -171,13 +171,13 @@ If you're using the CoinPay Web Wallet:
 
 ### HTTPS Everywhere
 
-- All CoinPay API calls use HTTPS (TLS 1.2+)
-- Your webhook endpoint **must** use HTTPS — CoinPay will not deliver to HTTP URLs
+- All Tempest Touch API calls use HTTPS (TLS 1.2+)
+- Your webhook endpoint **must** use HTTPS — Tempest Touch will not deliver to HTTP URLs
 - Use HSTS headers on your webhook server
 
 ### Rate Limiting
 
-CoinPay enforces rate limits per IP and per account:
+Tempest Touch enforces rate limits per IP and per account:
 
 - 100 requests/minute per IP
 - 1000 requests/hour per account
@@ -204,8 +204,8 @@ async function requestWithRetry(fn, maxRetries = 3) {
 
 ### Firewall Rules
 
-- Allow outbound HTTPS to `coinpayportal.com` (API calls)
-- Allow inbound HTTPS from CoinPay's IP range for webhooks (or don't restrict, since you verify signatures)
+- Allow outbound HTTPS to `tempesttouch.com` (API calls)
+- Allow inbound HTTPS from Tempest Touch's IP range for webhooks (or don't restrict, since you verify signatures)
 - Block all unnecessary inbound traffic to your webhook endpoint
 
 ---
@@ -215,9 +215,9 @@ async function requestWithRetry(fn, maxRetries = 3) {
 Your production server should have these secrets configured securely:
 
 ```bash
-# CoinPay credentials
-COINPAY_API_KEY=cp_live_xxx          # API key for your business
-COINPAY_WEBHOOK_SECRET=whsec_xxx     # Webhook signing secret
+# Tempest Touch credentials
+TEMPESTTOUCH_API_KEY=cp_live_xxx          # API key for your business
+TEMPESTTOUCH_WEBHOOK_SECRET=whsec_xxx     # Webhook signing secret
 
 # Database (Supabase)
 NEXT_PUBLIC_SUPABASE_URL=https://xxx.supabase.co
@@ -245,7 +245,7 @@ Use a secrets manager in production:
 2. Deploy the new key to your servers
 3. Check webhook logs for unauthorized payment creations
 4. Review payment history for suspicious activity
-5. Contact CoinPay support if needed
+5. Contact Tempest Touch support if needed
 
 ### If Your Webhook Secret Is Compromised
 
@@ -258,7 +258,7 @@ Use a secrets manager in production:
 1. Check the payment details — is the address/amount what you expected?
 2. Verify on a block explorer independently
 3. Don't fulfill suspicious orders
-4. Contact CoinPay support with the payment ID
+4. Contact Tempest Touch support with the payment ID
 
 ---
 

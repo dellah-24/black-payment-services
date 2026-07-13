@@ -1,10 +1,10 @@
 -- 3rd-party manual payment methods (Venmo, Cash App, Zelle).
 --
--- Per product decision: CoinPay does NOT take a cut and does NOT touch the money
+-- Per product decision: Tempest Touch does NOT take a cut and does NOT touch the money
 -- on these rails. The merchant shows the customer their own handle, the customer
 -- pays them directly (P2P), and the merchant marks the invoice paid. This
 -- sidesteps money-transmitter licensing (Zelle) and PayPal partner underwriting
--- (Venmo) entirely — CoinPay is display + bookkeeping only.
+-- (Venmo) entirely — Tempest Touch is display + bookkeeping only.
 --
 -- They plug into the W5 cascade as integration_type = 'manual'. The per-store
 -- handle/instructions live in merchant_payment_settings.config.

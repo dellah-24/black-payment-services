@@ -6,7 +6,7 @@ export function WebAuthnDocs() {
   return (
     <DocSection title="WebAuthn / Passkeys">
       <p className="text-gray-300 mb-6">
-        CoinPayPortal supports <strong>passwordless authentication</strong> using WebAuthn / FIDO2 passkeys.
+        TempestTouch supports <strong>passwordless authentication</strong> using WebAuthn / FIDO2 passkeys.
         Users can register hardware keys, biometric authenticators, or platform passkeys (Touch ID, Windows Hello, etc.)
         for secure, phishing-resistant login.
       </p>
@@ -46,7 +46,7 @@ export function WebAuthnDocs() {
 
       <ApiEndpoint method="GET" path="/api/auth/webauthn/register-options" description="Get WebAuthn registration options. Requires authentication (user must already be logged in).">
         <CodeBlock title="cURL Example" language="curl">
-{`curl https://coinpayportal.com/api/auth/webauthn/register-options \\
+{`curl https://tempesttouch.com/api/auth/webauthn/register-options \\
   -H "Authorization: Bearer YOUR_TOKEN"`}
         </CodeBlock>
 
@@ -56,8 +56,8 @@ export function WebAuthnDocs() {
   "options": {
     "challenge": "base64url-encoded-challenge",
     "rp": {
-      "name": "CoinPayPortal",
-      "id": "coinpayportal.com"
+      "name": "TempestTouch",
+      "id": "tempesttouch.com"
     },
     "user": {
       "id": "base64url-encoded-user-id",
@@ -123,7 +123,7 @@ export function WebAuthnDocs() {
   "success": true,
   "options": {
     "challenge": "base64url-encoded-challenge",
-    "rpId": "coinpayportal.com",
+    "rpId": "tempesttouch.com",
     "allowCredentials": [
       {
         "id": "base64url-credential-id",

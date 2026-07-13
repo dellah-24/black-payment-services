@@ -66,8 +66,8 @@ export async function GET(request: NextRequest) {
     const stripe = await getStripe();
 
     // Merchants only ever see webhooks that live on their own connected
-    // account. Platform-level webhooks belong to CoinPay infrastructure
-    // (the single coinpayportal.com/api/stripe/webhook endpoint) and are
+    // account. Platform-level webhooks belong to Tempest Touch infrastructure
+    // (the single tempesttouch.com/api/stripe/webhook endpoint) and are
     // never exposed in the merchant UI — they aren't theirs to view, edit,
     // or delete. The strict business_id + stripe_account_id match is
     // defense in depth so a stale UUID can't surface another tenant's
@@ -143,10 +143,10 @@ export async function POST(request: NextRequest) {
 
     // Merchants are ONLY allowed to create webhooks on their OWN connected
     // account (scope='account'). Platform-scoped webhooks listen for events
-    // across every business on the platform — they belong to CoinPay infra,
+    // across every business on the platform — they belong to Tempest Touch infra,
     // not merchants. A misconfigured merchant URL here would silently hijack
     // checkout.session.completed / payment_intent.* for every payment on the
-    // platform and route them away from CoinPay's own ingestion endpoint at
+    // platform and route them away from Tempest Touch's own ingestion endpoint at
     // /api/stripe/webhook (which is exactly the d0rz incident).
     //
     // We also forbid platform-only event types on the merchant's connected
@@ -158,8 +158,8 @@ export async function POST(request: NextRequest) {
           success: false,
           error:
             'Platform-scoped webhooks cannot be created by merchants. ' +
-            'CoinPay manages the single platform-level Stripe webhook ' +
-            '(coinpayportal.com/api/stripe/webhook). Use scope="account" ' +
+            'Tempest Touch manages the single platform-level Stripe webhook ' +
+            '(tempesttouch.com/api/stripe/webhook). Use scope="account" ' +
             'to register a webhook on your own connected account.',
         },
         { status: 403 }
@@ -190,9 +190,9 @@ export async function POST(request: NextRequest) {
         {
           success: false,
           error:
-            `These events are handled by CoinPay's platform webhook and cannot ` +
+            `These events are handled by Tempest Touch's platform webhook and cannot ` +
             `be subscribed to from a merchant endpoint: ${offending.join(', ')}. ` +
-            `CoinPay forwards the corresponding payment.* events to your ` +
+            `Tempest Touch forwards the corresponding payment.* events to your ` +
             `business webhook_url after processing.`,
         },
         { status: 400 }

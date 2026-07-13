@@ -1,17 +1,17 @@
 # SDK Getting Started Guide
 
-The `@profullstack/coinpay` SDK lets you integrate CoinPay crypto payments into any Node.js or browser application in minutes.
+The `@profullstack/tempesttouch` SDK lets you integrate Tempest Touch crypto payments into any Node.js or browser application in minutes.
 
 ---
 
 ## Installation
 
 ```bash
-npm install @profullstack/coinpay
+npm install @profullstack/tempesttouch
 # or
-pnpm add @profullstack/coinpay
+pnpm add @profullstack/tempesttouch
 # or
-yarn add @profullstack/coinpay
+yarn add @profullstack/tempesttouch
 ```
 
 The SDK has zero dependencies — it uses the native `fetch` API (Node 18+ / modern browsers).
@@ -22,7 +22,7 @@ The SDK has zero dependencies — it uses the native `fetch` API (Node 18+ / mod
 
 ### 1. Get Your API Key
 
-1. Sign up at [coinpayportal.com](https://coinpayportal.com)
+1. Sign up at [tempesttouch.com](https://tempesttouch.com)
 2. Create a business from the dashboard
 3. Go to **Business Settings → API Keys**
 4. Copy your API key (starts with `cp_live_`)
@@ -30,11 +30,11 @@ The SDK has zero dependencies — it uses the native `fetch` API (Node 18+ / mod
 ### 2. Initialize the Client
 
 ```javascript
-import { CoinPayClient, Blockchain } from '@profullstack/coinpay';
+import { Tempest TouchClient, Blockchain } from '@profullstack/tempesttouch';
 
-const client = new CoinPayClient({
+const client = new Tempest TouchClient({
   apiKey: 'cp_live_your_api_key_here',
-  // baseUrl: 'https://coinpayportal.com/api',  // default
+  // baseUrl: 'https://tempesttouch.com/api',  // default
   // timeout: 30000,                              // default: 30s
 });
 ```
@@ -84,20 +84,20 @@ if (final.payment.status === 'confirmed' || final.payment.status === 'forwarded'
 
 ```javascript
 import express from 'express';
-import { verifyWebhookSignature, parseWebhookPayload, WebhookEvent } from '@profullstack/coinpay';
+import { verifyWebhookSignature, parseWebhookPayload, WebhookEvent } from '@profullstack/tempesttouch';
 
 const app = express();
 
 // IMPORTANT: Use raw body for signature verification
-app.post('/webhooks/coinpay', express.raw({ type: 'application/json' }), (req, res) => {
-  const signature = req.headers['x-coinpay-signature'];
+app.post('/webhooks/tempesttouch', express.raw({ type: 'application/json' }), (req, res) => {
+  const signature = req.headers['x-tempesttouch-signature'];
   const payload = req.body.toString();
 
-  // Verify the webhook is from CoinPay
+  // Verify the webhook is from Tempest Touch
   const isValid = verifyWebhookSignature({
     payload,
     signature,
-    secret: process.env.COINPAY_WEBHOOK_SECRET,
+    secret: process.env.TEMPESTTOUCH_WEBHOOK_SECRET,
     tolerance: 300, // reject webhooks older than 5 minutes
   });
 
@@ -137,7 +137,7 @@ app.listen(3000);
 Use the `Blockchain` enum for type-safe chain selection:
 
 ```javascript
-import { Blockchain } from '@profullstack/coinpay';
+import { Blockchain } from '@profullstack/tempesttouch';
 
 Blockchain.BTC       // Bitcoin
 Blockchain.BCH       // Bitcoin Cash
@@ -206,25 +206,25 @@ The SDK includes a command-line tool:
 
 ```bash
 # Install globally
-npm install -g @profullstack/coinpay
+npm install -g @profullstack/tempesttouch
 
 # Configure
-coinpay config set-key cp_live_your_key
+tempesttouch config set-key cp_live_your_key
 
 # Create a payment
-coinpay payment create --business-id biz_123 --amount 100 --blockchain BTC
+tempesttouch payment create --business-id biz_123 --amount 100 --blockchain BTC
 
 # Check payment status
-coinpay payment get pay_abc123
+tempesttouch payment get pay_abc123
 
 # List businesses
-coinpay business list
+tempesttouch business list
 
 # Get exchange rates
-coinpay rates get BTC
+tempesttouch rates get BTC
 ```
 
-Run `coinpay --help` for full command reference.
+Run `tempesttouch --help` for full command reference.
 
 ---
 
@@ -232,9 +232,9 @@ Run `coinpay --help` for full command reference.
 
 | Variable | Description |
 |----------|-------------|
-| `COINPAY_API_KEY` | API key (overrides constructor/config) |
-| `COINPAY_BASE_URL` | Custom API URL |
-| `COINPAY_WEBHOOK_SECRET` | Webhook signing secret |
+| `TEMPESTTOUCH_API_KEY` | API key (overrides constructor/config) |
+| `TEMPESTTOUCH_BASE_URL` | Custom API URL |
+| `TEMPESTTOUCH_WEBHOOK_SECRET` | Webhook signing secret |
 
 ---
 
@@ -269,11 +269,11 @@ The SDK includes full Lightning Network support via LNbits.
 ```typescript
 // Get current Lightning Address
 const addr = await wallet.getLightningAddress();
-console.log(addr.lightning_address); // "alice@coinpayportal.com"
+console.log(addr.lightning_address); // "alice@tempesttouch.com"
 
 // Register a Lightning Address
 const result = await wallet.setLightningAddress('alice');
-console.log(result.lightning_address); // "alice@coinpayportal.com"
+console.log(result.lightning_address); // "alice@tempesttouch.com"
 ```
 
 ### Create & Pay Invoices
@@ -297,7 +297,7 @@ const payments = await wallet.listLightningPayments(20);
 
 ### Lightning Address Resolution
 
-Anyone can pay `alice@coinpayportal.com` from any Lightning wallet (Phoenix, Muun, Wallet of Satoshi, etc). The address resolves via the LNURL-pay protocol at `coinpayportal.com/.well-known/lnurlp/alice`.
+Anyone can pay `alice@tempesttouch.com` from any Lightning wallet (Phoenix, Muun, Wallet of Satoshi, etc). The address resolves via the LNURL-pay protocol at `tempesttouch.com/.well-known/lnurlp/alice`.
 
 ---
 
@@ -309,7 +309,7 @@ The SDK includes full support for the [x402 protocol](https://x402.org) — gate
 
 ```javascript
 import express from 'express';
-import { createX402Middleware } from '@profullstack/coinpay';
+import { createX402Middleware } from '@profullstack/tempesttouch';
 
 const app = express();
 
@@ -346,7 +346,7 @@ app.listen(3000);
 
 ```javascript
 // middleware.js
-import { buildPaymentRequired, verifyX402Payment } from '@profullstack/coinpay';
+import { buildPaymentRequired, verifyX402Payment } from '@profullstack/tempesttouch';
 
 export async function middleware(request) {
   const paymentHeader = request.headers.get('x-payment');
@@ -365,7 +365,7 @@ export async function middleware(request) {
   }
 
   const result = await verifyX402Payment(paymentHeader, {
-    apiKey: process.env.COINPAY_API_KEY,
+    apiKey: process.env.TEMPESTTOUCH_API_KEY,
   });
 
   if (!result.valid) {
@@ -384,10 +384,10 @@ export const config = {
 
 ```bash
 # Check x402 facilitator status and configuration
-coinpay x402 status
+tempesttouch x402 status
 
 # Test your x402 setup end-to-end (uses testnet)
-coinpay x402 test
+tempesttouch x402 test
 ```
 
 ---

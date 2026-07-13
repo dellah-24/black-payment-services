@@ -12,7 +12,6 @@ const nextConfig = {
   },
   // Transpile wallet packages that have ESM/CJS issues
   transpilePackages: [
-    '@profullstack/tempesttouch',
     '@reown/appkit',
     '@reown/appkit-adapter-wagmi',
     '@reown/appkit-controllers',

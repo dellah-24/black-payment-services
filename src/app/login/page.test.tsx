@@ -51,7 +51,7 @@ describe('LoginPage', () => {
       render(<LoginPage />);
 
       expect(screen.getByText('Welcome back')).toBeInTheDocument();
-      expect(screen.getByText('Log in to your CoinPay account')).toBeInTheDocument();
+      expect(screen.getByText('Log in to your Tempest Touch account')).toBeInTheDocument();
       expect(screen.getByLabelText(/email address/i)).toBeInTheDocument();
       expect(screen.getByLabelText(/password/i)).toBeInTheDocument();
       expect(screen.getByRole('button', { name: /log in/i })).toBeInTheDocument();

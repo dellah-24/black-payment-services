@@ -1,12 +1,12 @@
 {
-  "name": "coinpayportal-opencart",
-  "displayName": "CoinPayPortal for OpenCart",
+  "name": "tempesttouch-opencart",
+  "displayName": "Tempest Touch for OpenCart",
   "version": "0.0.0",
   "status": "stub",
   "platform": "opencart",
   "platformMinVersion": "4.0",
   "language": "php",
-  "sdk": "packages/coinpay-php",
+  "sdk": "packages/tempesttouch-php",
   "supportedEvents": [
     "payment.confirmed",
     "payment.expired",

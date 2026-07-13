@@ -94,7 +94,7 @@ async function createStripeCheckoutSession(
   const platformFeeRate = tier === 'pro' ? 0.005 : 0.01;
   const platformFeeAmount = Math.round(amountCents * platformFeeRate);
 
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://coinpayportal.com';
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://tempesttouch.com';
 
   const stripe = await getStripe();
   const session = await stripe.checkout.sessions.create({
@@ -115,7 +115,7 @@ async function createStripeCheckoutSession(
         destination: stripeAccount.stripe_account_id,
       },
       metadata: {
-        coinpay_payment_id: paymentId,
+        tempesttouch_payment_id: paymentId,
         business_id: businessId,
         merchant_id: merchantId,
       },
@@ -123,7 +123,7 @@ async function createStripeCheckoutSession(
     success_url: successUrl || `${appUrl}/pay/${paymentId}?status=success`,
     cancel_url: cancelUrl || `${appUrl}/pay/${paymentId}`,
     metadata: {
-      coinpay_payment_id: paymentId,
+      tempesttouch_payment_id: paymentId,
       business_id: businessId,
       merchant_id: merchantId,
       platform_fee_amount: platformFeeAmount.toString(),
@@ -501,3 +501,4 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+

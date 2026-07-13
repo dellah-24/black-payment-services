@@ -1,4 +1,4 @@
-// Database types for CoinPay
+// Database types for Tempest Touch
 
 export type Blockchain =
   | 'btc'

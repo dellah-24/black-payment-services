@@ -1,37 +1,37 @@
 <?php
 /**
- * CoinPay Payment Gateway for WHMCS.
+ * Tempest Touch Payment Gateway for WHMCS.
  *
  * Register in WHMCS:
- *   Setup → Payments → Payment Gateways → All Payment Gateways → CoinPay.
+ *   Setup → Payments → Payment Gateways → All Payment Gateways → Tempest Touch.
  *
  * File layout (required by WHMCS module loader):
- *   modules/gateways/coinpay.php              ← this file (module entrypoint)
- *   modules/gateways/coinpay/lib/CoinPay/...  ← shared PHP client (vendored)
- *   modules/gateways/callback/coinpay.php     ← webhook receiver
+ *   modules/gateways/tempesttouch.php              ← this file (module entrypoint)
+ *   modules/gateways/tempesttouch/lib/Tempest Touch/...  ← shared PHP client (vendored)
+ *   modules/gateways/callback/tempesttouch.php     ← webhook receiver
  */
 
 if (!defined('WHMCS')) {
     die('This file cannot be accessed directly');
 }
 
-require_once __DIR__ . '/coinpay/lib/CoinPay/ApiException.php';
-require_once __DIR__ . '/coinpay/lib/CoinPay/Client.php';
-require_once __DIR__ . '/coinpay/lib/CoinPay/Webhook.php';
-require_once __DIR__ . '/coinpay/lib/CoinPay/StatusMap.php';
+require_once __DIR__ . '/tempesttouch/lib/Tempest Touch/ApiException.php';
+require_once __DIR__ . '/tempesttouch/lib/Tempest Touch/Client.php';
+require_once __DIR__ . '/tempesttouch/lib/Tempest Touch/Webhook.php';
+require_once __DIR__ . '/tempesttouch/lib/Tempest Touch/StatusMap.php';
 
-use CoinPay\Client as CoinPayClient;
-use CoinPay\ApiException as CoinPayApiException;
+use Tempest Touch\Client as Tempest TouchClient;
+use Tempest Touch\ApiException as Tempest TouchApiException;
 
 /**
  * Module metadata.
  *
  * @return array
  */
-function coinpay_MetaData()
+function tempesttouch_MetaData()
 {
     return [
-        'DisplayName'                => 'CoinPay (crypto + card)',
+        'DisplayName'                => 'Tempest Touch (crypto + card)',
         'APIVersion'                 => '1.1',
         'DisableLocalCreditCardInput'=> true,
         'TokenisedStorage'           => false,
@@ -43,40 +43,40 @@ function coinpay_MetaData()
  *
  * @return array
  */
-function coinpay_config()
+function tempesttouch_config()
 {
     $systemUrl = rtrim((string) \WHMCS\Config\Setting::getValue('SystemURL'), '/');
-    $callback  = $systemUrl !== '' ? $systemUrl . '/modules/gateways/callback/coinpay.php' : '/modules/gateways/callback/coinpay.php';
+    $callback  = $systemUrl !== '' ? $systemUrl . '/modules/gateways/callback/tempesttouch.php' : '/modules/gateways/callback/tempesttouch.php';
 
     return [
         'FriendlyName' => [
             'Type'  => 'System',
-            'Value' => 'CoinPay',
+            'Value' => 'Tempest Touch',
         ],
         'apiBaseUrl' => [
             'FriendlyName' => 'API base URL',
             'Type'         => 'text',
             'Size'         => '60',
-            'Default'      => CoinPayClient::DEFAULT_BASE_URL,
-            'Description'  => 'Override only if instructed by CoinPay support.',
+            'Default'      => Tempest TouchClient::DEFAULT_BASE_URL,
+            'Description'  => 'Override only if instructed by Tempest Touch support.',
         ],
         'apiKey' => [
             'FriendlyName' => 'API key',
             'Type'         => 'password',
             'Size'         => '60',
-            'Description'  => 'From your CoinPay dashboard → Settings → API keys.',
+            'Description'  => 'From your Tempest Touch dashboard → Settings → API keys.',
         ],
         'businessId' => [
             'FriendlyName' => 'Business ID',
             'Type'         => 'text',
             'Size'         => '40',
-            'Description'  => 'The CoinPay business that should receive payments.',
+            'Description'  => 'The Tempest Touch business that should receive payments.',
         ],
         'webhookSecret' => [
             'FriendlyName' => 'Webhook secret',
             'Type'         => 'password',
             'Size'         => '60',
-            'Description'  => 'Paste the webhook URL below into CoinPay → Webhooks, then paste the signing secret here: <code>' . htmlspecialchars($callback, ENT_QUOTES) . '</code>',
+            'Description'  => 'Paste the webhook URL below into Tempest Touch → Webhooks, then paste the signing secret here: <code>' . htmlspecialchars($callback, ENT_QUOTES) . '</code>',
         ],
         'environment' => [
             'FriendlyName' => 'Environment',
@@ -89,7 +89,7 @@ function coinpay_config()
             'Type'         => 'dropdown',
             'Options'      => 'both,crypto,card',
             'Default'      => 'both',
-            'Description'  => 'Choose what CoinPay checkout offers buyers.',
+            'Description'  => 'Choose what Tempest Touch checkout offers buyers.',
         ],
         'cryptoChain' => [
             'FriendlyName' => 'Default crypto chain',
@@ -115,7 +115,7 @@ function coinpay_config()
  * @param array|string $response
  * @param array|string $replace
  */
-function coinpay_log($moduleName, $request, $response, $replace = [])
+function tempesttouch_log($moduleName, $request, $response, $replace = [])
 {
     if (function_exists('logModuleCall')) {
         logModuleCall($moduleName, 'gateway', $request, $response, '', $replace);
@@ -125,18 +125,18 @@ function coinpay_log($moduleName, $request, $response, $replace = [])
 /**
  * Payment link builder — invoked by WHMCS when rendering an unpaid invoice.
  *
- * We eagerly call CoinPay, generate a hosted checkout URL, and render a
- * "Pay with CoinPay" button that links straight to it. A pending payment is
+ * We eagerly call Tempest Touch, generate a hosted checkout URL, and render a
+ * "Pay with Tempest Touch" button that links straight to it. A pending payment is
  * cached on the invoice (in tblinvoices.notes) to avoid creating a fresh
  * session on every page load.
  *
  * @param array $params
  * @return string Rendered HTML form/button.
  */
-function coinpay_link($params)
+function tempesttouch_link($params)
 {
     $apiKey        = trim((string) ($params['apiKey'] ?? ''));
-    $apiBaseUrl    = trim((string) ($params['apiBaseUrl'] ?? CoinPayClient::DEFAULT_BASE_URL));
+    $apiBaseUrl    = trim((string) ($params['apiBaseUrl'] ?? Tempest TouchClient::DEFAULT_BASE_URL));
     $businessId    = trim((string) ($params['businessId'] ?? ''));
     $paymentMode   = (string) ($params['paymentMode'] ?? 'both');
     $cryptoChain   = (string) ($params['cryptoChain'] ?? 'BTC');
@@ -151,7 +151,7 @@ function coinpay_link($params)
     $cancelUrl   = $returnUrl;
 
     if ($apiKey === '' || $businessId === '') {
-        return '<p style="color:#b00">CoinPay is not configured. Please contact the administrator.</p>';
+        return '<p style="color:#b00">Tempest Touch is not configured. Please contact the administrator.</p>';
     }
 
     $metadata = [
@@ -166,7 +166,7 @@ function coinpay_link($params)
         'cancel_url'     => $cancelUrl,
     ];
 
-    $client = new CoinPayClient([
+    $client = new Tempest TouchClient([
         'api_key'  => $apiKey,
         'base_url' => $apiBaseUrl,
     ]);
@@ -192,8 +192,8 @@ function coinpay_link($params)
                 'metadata'    => $metadata,
             ]);
         }
-    } catch (CoinPayApiException $e) {
-        coinpay_log('CoinPay', [
+    } catch (Tempest TouchApiException $e) {
+        tempesttouch_log('Tempest Touch', [
             'action'     => 'create_payment',
             'invoice_id' => $invoiceId,
             'mode'       => $paymentMode,
@@ -202,16 +202,16 @@ function coinpay_link($params)
             'message' => $e->getMessage(),
         ], [$apiKey]);
 
-        return '<p style="color:#b00">Could not create CoinPay payment session. Please try again.</p>';
+        return '<p style="color:#b00">Could not create Tempest Touch payment session. Please try again.</p>';
     } catch (\Throwable $e) {
-        coinpay_log('CoinPay', [
+        tempesttouch_log('Tempest Touch', [
             'action'     => 'create_payment',
             'invoice_id' => $invoiceId,
         ], [
             'error' => $e->getMessage(),
         ], [$apiKey]);
 
-        return '<p style="color:#b00">Could not create CoinPay payment session. Please try again.</p>';
+        return '<p style="color:#b00">Could not create Tempest Touch payment session. Please try again.</p>';
     }
 
     $payment     = isset($response['payment']) && is_array($response['payment']) ? $response['payment'] : $response;
@@ -223,11 +223,11 @@ function coinpay_link($params)
         ?? null;
 
     if (!$checkoutUrl || !filter_var($checkoutUrl, FILTER_VALIDATE_URL)) {
-        coinpay_log('CoinPay', ['action' => 'create_payment', 'invoice_id' => $invoiceId], $response, [$apiKey]);
-        return '<p style="color:#b00">CoinPay did not return a checkout URL. Please contact the administrator.</p>';
+        tempesttouch_log('Tempest Touch', ['action' => 'create_payment', 'invoice_id' => $invoiceId], $response, [$apiKey]);
+        return '<p style="color:#b00">Tempest Touch did not return a checkout URL. Please contact the administrator.</p>';
     }
 
-    coinpay_log('CoinPay', [
+    tempesttouch_log('Tempest Touch', [
         'action'     => 'create_payment',
         'invoice_id' => $invoiceId,
         'mode'       => $paymentMode,
@@ -237,22 +237,22 @@ function coinpay_link($params)
     ], [$apiKey]);
 
     return '<form method="get" action="' . htmlspecialchars($checkoutUrl, ENT_QUOTES) . '">'
-         . '<button type="submit" style="padding:10px 18px;font-size:14px;cursor:pointer;">Pay with CoinPay</button>'
+         . '<button type="submit" style="padding:10px 18px;font-size:14px;cursor:pointer;">Pay with Tempest Touch</button>'
          . '</form>';
 }
 
 /**
- * CoinPay currently requires admin-initiated refunds via the dashboard for
+ * Tempest Touch currently requires admin-initiated refunds via the dashboard for
  * most rails. Expose a hook that annotates the invoice so WHMCS merchants
  * understand the workflow.
  *
  * @param array $params
  * @return array
  */
-function coinpay_refund($params)
+function tempesttouch_refund($params)
 {
     return [
         'status'  => 'declined',
-        'rawdata' => 'Refunds must currently be initiated from the CoinPay dashboard. A refund webhook will automatically update this invoice in WHMCS.',
+        'rawdata' => 'Refunds must currently be initiated from the Tempest Touch dashboard. A refund webhook will automatically update this invoice in WHMCS.',
     ];
 }

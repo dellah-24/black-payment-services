@@ -13,11 +13,11 @@ export function getRpId(request?: Request): string {
     }
   }
 
-  return 'coinpayportal.com';
+  return 'tempesttouch.com';
 }
 
 export function getRpName(): string {
-  return 'CoinPay';
+  return 'TempestTouch';
 }
 
 export function getOrigin(request?: Request): string {
@@ -29,5 +29,5 @@ export function getOrigin(request?: Request): string {
     if (host) return `${proto}://${host}`;
   }
 
-  return 'https://coinpayportal.com';
+  return 'https://tempesttouch.com';
 }

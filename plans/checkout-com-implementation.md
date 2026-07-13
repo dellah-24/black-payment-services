@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document outlines the implementation plan for integrating Checkout.com as the credit card payment provider for CoinPay, enabling merchants to accept card payments alongside cryptocurrency.
+This document outlines the implementation plan for integrating Checkout.com as the credit card payment provider for Tempest Touch, enabling merchants to accept card payments alongside cryptocurrency.
 
 ## Product to Use: Checkout.com Marketplaces
 
@@ -57,10 +57,10 @@ graph TB
         Browser[Customer Browser]
     end
     
-    subgraph CoinPay Platform
+    subgraph Tempest Touch Platform
         UI[Payment Page]
         Frames[Checkout.com Frames.js]
-        API[CoinPay API]
+        API[Tempest Touch API]
         DB[(Supabase DB)]
     end
     
@@ -77,7 +77,7 @@ graph TB
     end
     
     subgraph Platform
-        PlatformBank[CoinPay Bank Account - 1% Commission]
+        PlatformBank[Tempest Touch Bank Account - 1% Commission]
     end
     
     Browser --> UI
@@ -100,36 +100,36 @@ graph TB
 ```mermaid
 sequenceDiagram
     participant Customer
-    participant CoinPayUI
+    participant Tempest TouchUI
     participant Frames as Checkout Frames.js
-    participant CoinPayAPI
+    participant Tempest TouchAPI
     participant CheckoutAPI as Checkout.com API
     participant MerchantBank
     participant PlatformBank
     
-    Customer->>CoinPayUI: Enter card details
-    CoinPayUI->>Frames: Render secure card input
+    Customer->>Tempest TouchUI: Enter card details
+    Tempest TouchUI->>Frames: Render secure card input
     Customer->>Frames: Submit card
     Frames->>CheckoutAPI: Tokenize card
     CheckoutAPI-->>Frames: Return card token
-    Frames-->>CoinPayUI: Token received
-    CoinPayUI->>CoinPayAPI: Create payment with token
-    CoinPayAPI->>CheckoutAPI: Request payment with split
+    Frames-->>Tempest TouchUI: Token received
+    Tempest TouchUI->>Tempest TouchAPI: Create payment with token
+    Tempest TouchAPI->>CheckoutAPI: Request payment with split
     
     Note over CheckoutAPI: Fraud check runs automatically
     
     alt 3D Secure Required
-        CheckoutAPI-->>CoinPayAPI: 3DS redirect URL
-        CoinPayAPI-->>CoinPayUI: Redirect to 3DS
+        CheckoutAPI-->>Tempest TouchAPI: 3DS redirect URL
+        Tempest TouchAPI-->>Tempest TouchUI: Redirect to 3DS
         Customer->>CheckoutAPI: Complete 3DS
-        CheckoutAPI-->>CoinPayUI: Return to success URL
+        CheckoutAPI-->>Tempest TouchUI: Return to success URL
     end
     
     CheckoutAPI->>MerchantBank: Transfer 99%
     CheckoutAPI->>PlatformBank: Transfer 1% commission
-    CheckoutAPI->>CoinPayAPI: Webhook - payment.captured
-    CoinPayAPI->>CoinPayAPI: Update payment status
-    CoinPayAPI->>CoinPayUI: Payment confirmed
+    CheckoutAPI->>Tempest TouchAPI: Webhook - payment.captured
+    Tempest TouchAPI->>Tempest TouchAPI: Update payment status
+    Tempest TouchAPI->>Tempest TouchUI: Payment confirmed
 ```
 
 ---
@@ -417,7 +417,7 @@ Create a new card payment request.
   "amount": 99.99,
   "currency": "USD",
   "status": "pending",
-  "payment_url": "https://coinpay.com/pay/card/uuid", // Hosted payment page
+  "payment_url": "https://tempesttouch.com/pay/card/uuid", // Hosted payment page
   "created_at": "2024-01-01T00:00:00Z",
   "expires_at": "2024-01-01T01:00:00Z"
 }

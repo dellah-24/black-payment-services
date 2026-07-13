@@ -1,7 +1,7 @@
 /**
  * Example Webhook Receiver Endpoint
  *
- * Receives and verifies CoinPay webhooks using the @profullstack/coinpay SDK.
+ * Receives and verifies Tempest Touch webhooks using the @profullstack/tempesttouch SDK.
  */
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -59,10 +59,10 @@ function trackEvent(type: string, id: string, business_id: string, data: any): E
 
 export async function POST(request: NextRequest) {
   try {
-    const signature = request.headers.get('x-coinpay-signature');
+    const signature = request.headers.get('x-tempesttouch-signature');
     if (!signature) {
       return NextResponse.json(
-        { success: false, error: 'Missing X-CoinPay-Signature header' },
+        { success: false, error: 'Missing X-tempesttouch-Signature header' },
         { status: 401 }
       );
     }
@@ -161,3 +161,4 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+

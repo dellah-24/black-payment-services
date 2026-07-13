@@ -7,13 +7,13 @@ import { Providers } from '@/components/Providers';
 import './globals.css';
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://coinpayportal.com'),
-  title: 'CoinPay - Non-Custodial Crypto Payment Gateway',
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://tempesttouch.com'),
+  title: 'TempestTouch - Non-Custodial Crypto Payment Gateway',
   description: 'Accept cryptocurrency payments in your e-commerce store with automatic fee handling and real-time processing',
   keywords: ['cryptocurrency', 'payment gateway', 'crypto payments', 'non-custodial', 'blockchain', 'bitcoin', 'ethereum'],
-  authors: [{ name: 'CoinPay' }],
-  creator: 'CoinPay',
-  publisher: 'CoinPay',
+  authors: [{ name: 'TempestTouch' }],
+  creator: 'TempestTouch',
+  publisher: 'TempestTouch',
   formatDetection: {
     email: false,
     address: false,
@@ -24,27 +24,27 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',
-    title: 'CoinPay',
+    title: 'TempestTouch',
   },
   openGraph: {
     type: 'website',
     locale: 'en_US',
-    url: 'https://coinpayportal.com',
-    title: 'CoinPay - Non-Custodial Crypto Payment Gateway',
+    url: 'https://tempesttouch.com',
+    title: 'TempestTouch - Non-Custodial Crypto Payment Gateway',
     description: 'Accept cryptocurrency payments with automatic fee handling and real-time processing',
-    siteName: 'CoinPay',
+    siteName: 'TempestTouch',
     images: [
       {
         url: '/logo.svg',
         width: 1200,
         height: 630,
-        alt: 'CoinPay - Non-Custodial Crypto Payment Gateway',
+        alt: 'TempestTouch - Non-Custodial Crypto Payment Gateway',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'CoinPay - Non-Custodial Crypto Payment Gateway',
+    title: 'TempestTouch - Non-Custodial Crypto Payment Gateway',
     description: 'Accept cryptocurrency payments with automatic fee handling and real-time processing',
     images: ['/logo.svg'],
   },
@@ -61,19 +61,19 @@ export const metadata: Metadata = {
   },
 };
 
-const SITE_URL = (process.env.NEXT_PUBLIC_APP_URL || 'https://coinpayportal.com').replace(/\/$/, '');
+const SITE_URL = (process.env.NEXT_PUBLIC_APP_URL || 'https://tempesttouch.com').replace(/\/$/, '');
 
 const organizationJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'Organization',
-  name: 'CoinPay',
+  name: 'TempestTouch',
   url: SITE_URL,
   logo: `${SITE_URL}/logo.svg`,
   description:
     'Non-custodial cryptocurrency payment gateway with multi-chain support, Lightning, and built-in escrow. Accept BTC, ETH, stablecoins; funds settle directly to merchant wallets.',
-  email: 'hello@coinpayportal.com',
+  email: 'hello@tempesttouch.com',
   sameAs: [
-    'https://github.com/profullstack/coinpay',
+    'https://github.com/profullstack/tempesttouch',
   ],
 };
 
@@ -117,7 +117,7 @@ export default function RootLayout({
         </Providers>
         <Script
           data-website-id="dfid_Bc4cBplBsTIY1hg3v3QDj"
-          data-domain="coinpayportal.com"
+          data-domain="tempesttouch.com"
           src="https://datafa.st/js/script.js"
           strategy="afterInteractive"
         />
@@ -132,7 +132,7 @@ export default function RootLayout({
           src="https://crawlproof.com/stats.js"
           strategy="afterInteractive"
         />
-      <script async src="https://feedback.profullstack.com/embed/profullstack-feedback.js" data-property="coinpayportal.com"></script></body>
+      <script async src="https://feedback.profullstack.com/embed/profullstack-feedback.js" data-property="tempesttouch.com"></script></body>
     </html>
   );
 }

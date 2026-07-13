@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to `@profullstack/coinpay` will be documented in this file.
+All notable changes to `@profullstack/tempesttouch` will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - OAuth client management methods: `listOAuthClients()`, `createOAuthClient()`, `getOAuthClient()`, `deleteOAuthClient()`
-- CLI `coinpay oauth` commands: `list`, `create`, `get`, `delete`
+- CLI `tempesttouch oauth` commands: `list`, `create`, `get`, `delete`
 - OAuth section in SDK documentation
 
 ## [0.2.0] - 2025-01-15
@@ -34,10 +34,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - Initial SDK release
-- `CoinPayClient` class with `createPayment`, `getPayment`, `listPayments`
+- `Tempest TouchClient` class with `createPayment`, `getPayment`, `listPayments`
 - Standalone helper functions: `createPayment`, `getPayment`, `listPayments`
 - Constants: `Blockchain`, `PaymentStatus`, `FiatCurrency`
 - Webhook utilities: `verifyWebhookSignature`, `generateWebhookSignature`, `parseWebhookPayload`, `createWebhookHandler`
 - `WebhookEvent` constants
-- CLI tool (`coinpay`) for command-line payment management
+- CLI tool (`tempesttouch`) for command-line payment management
 - Support for BTC, BCH, ETH, POL, SOL, USDC_ETH, USDC_POL, USDC_SOL

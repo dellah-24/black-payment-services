@@ -1,4 +1,4 @@
-# CoinPay Multisig Escrow v2 – Architecture Overview
+# Tempest Touch Multisig Escrow v2 – Architecture Overview
 
 Generated: 2026-02-27T08:09:21.585178 UTC
 
@@ -7,12 +7,12 @@ Eliminate unilateral custody and regulatory exposure by implementing
 a cross-chain 2-of-3 multisig escrow model.
 
 ## Core Rule
-CoinPay must never be able to move funds alone.
+Tempest Touch must never be able to move funds alone.
 
 ## Participants
 - Depositor (Buyer)
 - Beneficiary (Seller)
-- CoinPay (Arbitrator)
+- Tempest Touch (Arbitrator)
 
 Threshold = 2
 

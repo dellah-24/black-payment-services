@@ -7,7 +7,7 @@ import { sendPaymentWebhook } from '@/lib/webhooks/service';
  * POST /api/invoices/[id]/mark-paid
  * Merchant-only. Manually mark an invoice paid — used for the manual P2P rails
  * (Venmo / Cash App / Zelle) where the customer pays the merchant directly and
- * CoinPay never sees the funds, so there's no automated confirmation. Records
+ * Tempest Touch never sees the funds, so there's no automated confirmation. Records
  * who/when/which method, and fires the invoice.paid webhook like the automated
  * rails. Idempotent on an already-paid invoice.
  *

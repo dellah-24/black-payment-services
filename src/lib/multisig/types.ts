@@ -1,8 +1,8 @@
 /**
  * Multisig Escrow Types
  *
- * 2-of-3 multisig escrow: Depositor, Beneficiary, CoinPay (Arbiter).
- * CoinPay can never move funds alone — always requires 2 of 3 signers.
+ * 2-of-3 multisig escrow: Depositor, Beneficiary, Tempest Touch (Arbiter).
+ * Tempest Touch can never move funds alone — always requires 2 of 3 signers.
  */
 
 // ── Chain Types ─────────────────────────────────────────────

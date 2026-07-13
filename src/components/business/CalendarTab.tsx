@@ -114,13 +114,13 @@ function generateICalString(
   const lines = [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
-    'PRODID:-//CoinPayPortal//Calendar//EN',
+    'PRODID:-//Tempest Touch//Calendar//EN',
     'CALSCALE:GREGORIAN',
   ];
 
   for (const ev of events) {
     lines.push('BEGIN:VEVENT');
-    lines.push(`UID:${ev.id}@coinpayportal`);
+    lines.push(`UID:${ev.id}@tempesttouch`);
     lines.push(`SUMMARY:${(ev.title || '').replace(/\n/g, '\\n')}`);
     if (ev.description) {
       lines.push(`DESCRIPTION:${ev.description.replace(/\n/g, '\\n')}`);

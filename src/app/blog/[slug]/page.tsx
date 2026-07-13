@@ -11,11 +11,11 @@ export const dynamic = 'force-dynamic';
 export async function generateMetadata({ params }: RouteParams): Promise<Metadata> {
   const { slug } = await params;
   const post = await getPostBySlug(slug);
-  if (!post) return { title: 'Not found — CoinPay' };
+  if (!post) return { title: 'Not found — Tempest Touch' };
   const url = `${SITE_URL}/blog/${post.slug}`;
   const images = post.image_url ? [post.image_url] : ['/logo.svg'];
   return {
-    title: `${post.title} — CoinPay`,
+    title: `${post.title} — Tempest Touch`,
     description: post.meta_description || undefined,
     alternates: { canonical: url },
     openGraph: {
@@ -52,10 +52,10 @@ export default async function BlogPostPage({ params }: RouteParams) {
     datePublished: post.published_at,
     dateModified: post.updated_at,
     mainEntityOfPage: `${SITE_URL}/blog/${post.slug}`,
-    author: { '@type': 'Organization', name: 'CoinPay' },
+    author: { '@type': 'Organization', name: 'Tempest Touch' },
     publisher: {
       '@type': 'Organization',
-      name: 'CoinPay',
+      name: 'Tempest Touch',
       logo: { '@type': 'ImageObject', url: `${SITE_URL}/logo.svg` },
     },
     keywords: post.tags.join(', '),
@@ -108,7 +108,7 @@ export default async function BlogPostPage({ params }: RouteParams) {
         <hr className="my-12 border-slate-700/60" />
 
         <div className="rounded-lg border border-purple-500/30 bg-purple-600/5 p-6">
-          <h3 className="text-lg font-semibold text-white">Try CoinPay</h3>
+          <h3 className="text-lg font-semibold text-white">Try Tempest Touch</h3>
           <p className="mt-2 text-sm text-gray-300">
             Non-custodial crypto payments — multi-chain, Lightning-ready, and fast to integrate.
           </p>

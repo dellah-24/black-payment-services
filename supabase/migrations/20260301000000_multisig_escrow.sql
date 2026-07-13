@@ -1,6 +1,6 @@
 -- Multisig Escrow Support
 -- Adds 2-of-3 multisig escrow model alongside existing custodial escrow.
--- CoinPay never holds funds unilaterally — requires 2 of 3 signers.
+-- Tempest Touch never holds funds unilaterally — requires 2 of 3 signers.
 
 BEGIN;
 

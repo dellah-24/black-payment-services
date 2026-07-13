@@ -401,8 +401,8 @@ async function sendWebhook(
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'X-CoinPay-Signature': signature,
-        'User-Agent': 'CoinPay-Webhook/1.0',
+        'X-Tempest Touch-Signature': signature,
+        'User-Agent': 'Tempest Touch-Webhook/1.0',
       },
       body: payloadString,
     });

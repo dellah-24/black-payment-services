@@ -13,7 +13,7 @@ function getSigningSecret(): string {
 }
 
 function getIssuer(): string {
-  return process.env.NEXT_PUBLIC_APP_URL || 'https://coinpay.dev';
+  return process.env.NEXT_PUBLIC_APP_URL || 'https://tempesttouch.dev';
 }
 
 /**
@@ -136,3 +136,4 @@ export function validatePKCE(
 
   return false;
 }
+

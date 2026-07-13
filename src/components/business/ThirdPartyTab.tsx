@@ -94,7 +94,7 @@ export function ThirdPartyTab({ businessId }: ThirdPartyTabProps) {
         </div>
         <p className="text-xs text-gray-500 mb-2">
           Venmo, Cash App, and Zelle. Customers pay you directly with your handle and you mark the
-          invoice paid — no CoinPay fee, and no account linking required. Each is off until you save a handle.
+          invoice paid — no Tempest Touch fee, and no account linking required. Each is off until you save a handle.
           Set handles once in <a href="/settings/payment-methods" className="text-purple-400 hover:text-purple-300 underline">Settings → Payment Methods</a> and import them here.
         </p>
         {importMsg && <p className="text-xs text-emerald-400 mb-3">{importMsg}</p>}

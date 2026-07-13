@@ -1,4 +1,4 @@
--- OAuth2 clients (3rd party apps that want "Login with CoinPay")
+-- OAuth2 clients (3rd party apps that want "Login with Tempest Touch")
 CREATE TABLE oauth_clients (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   client_id TEXT UNIQUE NOT NULL DEFAULT 'cp_' || substr(md5(random()::text), 1, 24),

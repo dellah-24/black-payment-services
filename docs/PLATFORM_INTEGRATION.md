@@ -1,14 +1,14 @@
-# Platform Integration Guide — CoinPayPortal Trust Protocol (CPTL)
+# Platform Integration Guide — Tempest Touch Trust Protocol (CPTL)
 
 ## Overview
 
-External platforms (ugig.net, etc.) can submit reputation signals to CoinPayPortal's trust protocol. These signals contribute to a user's portable, cross-platform trust profile anchored by their DID.
+External platforms (ugig.net, etc.) can submit reputation signals to Tempest Touch's trust protocol. These signals contribute to a user's portable, cross-platform trust profile anchored by their DID.
 
 ## Architecture
 
 ```
 ┌─────────────┐     Platform Action API      ┌──────────────────┐
-│  ugig.net   │ ──── POST /api/reputation ──→ │  CoinPayPortal   │
+│  ugig.net   │ ──── POST /api/reputation ──→ │  Tempest Touch   │
 │  (platform) │      /platform-action         │  (trust engine)  │
 └─────────────┘                               └──────────────────┘
        │                                              │
@@ -18,7 +18,7 @@ External platforms (ugig.net, etc.) can submit reputation signals to CoinPayPort
 ┌─────────────┐                               ┌──────────────────┐
 │ User claims │  ← did:key:z6Mk...  →        │  GET /api/rep/   │
 │ DID on      │                               │  agent/{did}     │
-│ coinpayportal│                              │  (query profile) │
+│ tempesttouch│                              │  (query profile) │
 └─────────────┘                               └──────────────────┘
 ```
 
@@ -26,20 +26,20 @@ External platforms (ugig.net, etc.) can submit reputation signals to CoinPayPort
 
 ### 1. Register as Platform Issuer
 
-Contact CoinPayPortal to register. You'll receive:
+Contact Tempest Touch to register. You'll receive:
 - **Platform DID**: `did:web:yourplatform.com`
 - **API Key**: `cprt_yourplatform_<hex>`
 
 ### 2. Environment Variables
 
 ```env
-COINPAYPORTAL_API_URL=https://coinpayportal.com
-COINPAYPORTAL_API_KEY=cprt_yourplatform_...
+tempesttouch_API_URL=https://tempesttouch.com
+tempesttouch_API_KEY=cprt_yourplatform_...
 ```
 
 ### 3. User DID Linking
 
-Users claim a DID on [coinpayportal.com/reputation/did](https://coinpayportal.com/reputation/did), then paste it into your platform's profile settings.
+Users claim a DID on [tempesttouch.com/reputation/did](https://tempesttouch.com/reputation/did), then paste it into your platform's profile settings.
 
 ## API Reference
 

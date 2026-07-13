@@ -1,6 +1,6 @@
 -- System Wallet Support Migration
 -- This migration adds tables for system-owned HD wallets
--- The system (CoinPay) owns these wallets, NOT merchants
+-- The system (Tempest Touch) owns these wallets, NOT merchants
 -- This enables commission collection on every transaction
 
 -- Drop existing payment_addresses table if it exists (no production data yet)

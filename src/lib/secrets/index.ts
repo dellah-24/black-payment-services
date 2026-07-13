@@ -15,7 +15,7 @@
  *   initSecrets();
  *   
  *   // Later, when needed
- *   const mnemonic = getSecret('COINPAY_MNEMONIC');
+ *   const mnemonic = getSecret('TEMPESTTOUCH_MNEMONIC');
  */
 
 interface SecretEntry {
@@ -29,7 +29,7 @@ const secrets = new Map<string, SecretEntry>();
 
 // Secrets to load and clear from env
 const SECRET_KEYS = [
-  'COINPAY_MNEMONIC',
+  'TEMPESTTOUCH_MNEMONIC',
   'JWT_SECRET',
   'WEBHOOK_SECRET',
   'ENCRYPTION_KEY',
@@ -185,5 +185,5 @@ export function getEncryptionKey(): string {
  * Get wallet mnemonic. Returns undefined if not set.
  */
 export function getMnemonic(): string | undefined {
-  return getSecret('COINPAY_MNEMONIC') || process.env.COINPAY_MNEMONIC;
+  return getSecret('TEMPESTTOUCH_MNEMONIC') || process.env.TEMPESTTOUCH_MNEMONIC;
 }

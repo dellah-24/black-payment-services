@@ -126,7 +126,7 @@ function getBaseUrl(): string {
   if (typeof window !== 'undefined') {
     return window.location.origin;
   }
-  return process.env.NEXT_PUBLIC_APP_URL || (process.env.NODE_ENV === 'production' ? 'https://coinpayportal.com' : 'http://localhost:3000');
+  return process.env.NEXT_PUBLIC_APP_URL || (process.env.NODE_ENV === 'production' ? 'https://tempesttouch.com' : 'http://localhost:3000');
 }
 
 /** Reload wallets + active ID from registry into state */

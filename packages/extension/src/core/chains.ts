@@ -1,7 +1,7 @@
 /**
- * Chain metadata for the CoinPay extension.
+ * Chain metadata for the Tempest Touch extension.
  *
- * Mirrors the chains the CoinPay web wallet / `@profullstack/coinpay` SDK
+ * Mirrors the chains the Tempest Touch web wallet / `@profullstack/tempesttouch` SDK
  * derive by default. USDC variants are NOT separate keys — they live on the
  * same address as their base chain (verified against the SDK: `USDC_BASE`
  * reuses coinType 60 = the ETH address; `USDC_SOL` reuses the SOL path).

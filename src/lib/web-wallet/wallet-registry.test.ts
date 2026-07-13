@@ -59,7 +59,7 @@ describe('wallet-registry', () => {
     });
 
     it('should return empty object on corrupted JSON', () => {
-      localStorage.setItem('coinpay_wallets', '{bad json');
+      localStorage.setItem('tempesttouch_wallets', '{bad json');
       expect(getWalletRegistry()).toEqual({});
     });
   });
@@ -256,7 +256,7 @@ describe('wallet-registry', () => {
     it('should return true when old format exists (pre-migration)', () => {
       // Simulate old single-wallet format
       localStorage.setItem(
-        'coinpay_wallet',
+        'tempesttouch_wallet',
         JSON.stringify({ walletId: 'old', encrypted: {}, createdAt: '', chains: [] })
       );
       expect(hasAnyWallet()).toBe(true);
@@ -287,3 +287,4 @@ describe('wallet-registry', () => {
     });
   });
 });
+

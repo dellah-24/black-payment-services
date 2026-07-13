@@ -37,13 +37,13 @@ vi.mock('@simplewebauthn/server', () => ({
   generateAuthenticationOptions: vi.fn(async () => ({
     challenge: 'auth-challenge-base64',
     timeout: 60000,
-    rpId: 'coinpayportal.com',
+    rpId: 'tempesttouch.com',
     allowCredentials: [],
   })),
 }));
 
 vi.mock('@/lib/webauthn/config', () => ({
-  getRpId: vi.fn(() => 'coinpayportal.com'),
+  getRpId: vi.fn(() => 'tempesttouch.com'),
 }));
 
 const mockStoreChallenge = vi.fn();

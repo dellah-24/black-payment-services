@@ -1,6 +1,6 @@
 /**
- * Address derivation — reuses the audited `@profullstack/coinpay` SDK so the
- * extension's addresses match the CoinPay web wallet exactly (PRD P0-2).
+ * Address derivation — reuses the audited `@profullstack/tempesttouch` SDK so the
+ * extension's addresses match the Tempest Touch web wallet exactly (PRD P0-2).
  *
  * Parity recipe, verified against the SDK source:
  *   seed = bip39.mnemonicToSeedSync(mnemonic.trim())   // no passphrase
@@ -12,7 +12,7 @@
 
 import { mnemonicToSeedSync } from '@scure/bip39';
 // The SDK exposes `deriveAddress` via its `./wallet` subpath export.
-import { deriveAddress } from '@profullstack/coinpay/wallet';
+import { deriveAddress } from '@profullstack/tempesttouch/wallet';
 
 import { CHAINS, DEFAULT_CHAINS, type NativeChain } from './chains.js';
 

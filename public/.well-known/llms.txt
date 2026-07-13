@@ -1,7 +1,7 @@
 {
   "version": "1.0",
-  "site_name": "CoinPay",
-  "contact": "support@coinpayportal.com",
+  "site_name": "Tempest Touch",
+  "contact": "support@tempesttouch.com",
   "models": [
     "*"
   ],

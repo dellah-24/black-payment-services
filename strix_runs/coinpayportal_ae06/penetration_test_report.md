@@ -4,7 +4,7 @@
 
 # Executive Summary
 
-The penetration test of the CoinPay application highlighted a significant DNS configuration issue, resulting in persistent 502 errors during IDOR testing on the payment endpoints. This DNS resolution failure impeded testing and should be resolved to allow secure and effective vulnerability assessment.
+The penetration test of the Tempest Touch application highlighted a significant DNS configuration issue, resulting in persistent 502 errors during IDOR testing on the payment endpoints. This DNS resolution failure impeded testing and should be resolved to allow secure and effective vulnerability assessment.
 
 # Methodology
 
@@ -12,7 +12,7 @@ The testing methodology included configuring proxy scopes to capture API traffic
 
 # Technical Analysis
 
-The DNS resolution failure for the target domain api.coinpayportal.com prevented successful API endpoint testing. As the domain could not be resolved, all HTTP requests resulted in server-side 502 errors. This highlights a critical dependency on proper network and DNS configurations for reliable penetration testing efforts.
+The DNS resolution failure for the target domain api.tempesttouch.com prevented successful API endpoint testing. As the domain could not be resolved, all HTTP requests resulted in server-side 502 errors. This highlights a critical dependency on proper network and DNS configurations for reliable penetration testing efforts.
 
 # Recommendations
 

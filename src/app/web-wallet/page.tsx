@@ -68,7 +68,7 @@ function LandingView() {
         </div>
 
         <div>
-          <h1 className="text-3xl font-bold text-white">CoinPay Wallet</h1>
+          <h1 className="text-3xl font-bold text-white">TempestTouch Wallet</h1>
           <p className="mt-2 text-gray-400">
             Non-custodial multi-chain wallet. Your keys, your crypto.
           </p>
@@ -112,7 +112,7 @@ function DashboardView() {
     const original = document.title;
     document.title = totalUsd > 0
       ? `$${totalUsd.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} — Wallet`
-      : 'Wallet — CoinPay';
+      : 'Wallet — TempestTouch';
     return () => { document.title = original; };
   }, [totalUsd]);
   const [transactions, setTransactions] = useState<TransactionItem[]>([]);

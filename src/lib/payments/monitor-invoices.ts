@@ -40,7 +40,7 @@ export async function runInvoiceMonitorCycle(supabase: any, now: Date): Promise<
           if (!invoice.payment_address || !invoice.crypto_currency) continue;
 
           const metadata = (invoice.metadata && typeof invoice.metadata === 'object') ? invoice.metadata : {};
-          const linkedPaymentId = metadata.coinpay_payment_id;
+          const linkedPaymentId = metadata.tempesttouch_payment_id;
           if (linkedPaymentId) {
             const { data: linkedPayment } = await supabase
               .from('payments')
@@ -60,7 +60,7 @@ export async function runInvoiceMonitorCycle(supabase: any, now: Date): Promise<
                 .eq('id', invoice.id);
 
               stats.paid++;
-              console.log(`[Monitor] Invoice ${invoice.invoice_number} PAID via CoinPay payment ${linkedPaymentId}`);
+              console.log(`[Monitor] Invoice ${invoice.invoice_number} PAID via Tempest Touch payment ${linkedPaymentId}`);
             }
 
             // Linked invoices are forwarded by the normal payments monitor.
@@ -125,7 +125,7 @@ export async function runInvoiceMonitorCycle(supabase: any, now: Date): Promise<
                   merchantAmount: amount * (1 - feeRate),
                   clientName: invoice.clients?.name,
                   clientEmail: invoice.clients?.email,
-                  businessName: invoice.businesses?.name || 'CoinPay Merchant',
+                  businessName: invoice.businesses?.name || 'Tempest Touch Merchant',
                 });
 
                 await sendEmail({
@@ -168,13 +168,13 @@ export async function runInvoiceMonitorCycle(supabase: any, now: Date): Promise<
 
           const clientEmail = invoice.clients?.email;
           if (clientEmail) {
-            const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://coinpayportal.com';
+            const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://tempesttouch.com';
             const template = invoiceOverdueTemplate({
               invoiceNumber: invoice.invoice_number,
               amount: parseFloat(invoice.amount),
               currency: invoice.currency || 'USD',
               dueDate: invoice.due_date,
-              businessName: invoice.businesses?.name || 'CoinPay Merchant',
+              businessName: invoice.businesses?.name || 'Tempest Touch Merchant',
               paymentLink: `${appUrl}/invoices/${invoice.id}/pay`,
             });
 
@@ -339,3 +339,4 @@ export async function runInvoiceSchedulerCycle(supabase: any, now: Date): Promis
 /**
  * Start the background monitor
  */
+

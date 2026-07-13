@@ -8,14 +8,14 @@ export default function TermsPage() {
         <section className="mb-8">
           <h2 className="text-2xl font-bold mb-4 text-white">1. Acceptance of Terms</h2>
           <p className="text-gray-300">
-            By accessing and using CoinPay, you accept and agree to be bound by these Terms of Service.
+            By accessing and using TempestTouch, you accept and agree to be bound by these Terms of Service.
           </p>
         </section>
         
         <section className="mb-8">
           <h2 className="text-2xl font-bold mb-4 text-white">2. Service Description</h2>
           <p className="text-gray-300 mb-4">
-            CoinPay provides a non-custodial cryptocurrency payment gateway service. We facilitate 
+            TempestTouch provides a non-custodial cryptocurrency payment gateway service. We facilitate
             the acceptance of cryptocurrency payments but do not hold, custody, or control your funds.
           </p>
         </section>
@@ -23,9 +23,9 @@ export default function TermsPage() {
         <section className="mb-8">
           <h2 className="text-2xl font-bold mb-4 text-white">3. Lightning Network Wallet (Custodial)</h2>
           <p className="text-gray-300 mb-4">
-            CoinPay offers an optional Lightning Network wallet for sending and receiving instant 
+            TempestTouch offers an optional Lightning Network wallet for sending and receiving instant
             Bitcoin payments. <strong className="text-white">This Lightning wallet is custodial.</strong> Unlike 
-            on-chain wallets where you hold your own keys, Lightning funds are held on CoinPay&apos;s 
+            on-chain wallets where you hold your own keys, Lightning funds are held on TempestTouch&apos;s 
             server infrastructure.
           </p>
           <p className="text-gray-300 mb-4">
@@ -38,10 +38,10 @@ export default function TermsPage() {
             By enabling the Lightning wallet, you acknowledge and agree that:
           </p>
           <ul className="list-disc list-inside text-gray-300 space-y-2">
-            <li>CoinPay holds custody of your Lightning Network funds on your behalf</li>
+            <li>TempestTouch holds custody of your Lightning Network funds on your behalf</li>
             <li>Lightning funds are not protected by your wallet seed phrase — they cannot be recovered using your mnemonic alone</li>
-            <li>CoinPay may impose limits on Lightning wallet balances and transaction sizes</li>
-            <li>While we take reasonable measures to secure funds, CoinPay is not a bank and deposits are not insured</li>
+            <li>TempestTouch may impose limits on Lightning wallet balances and transaction sizes</li>
+            <li>While we take reasonable measures to secure funds, TempestTouch is not a bank and deposits are not insured</li>
             <li>You should not store large amounts in the Lightning wallet — withdraw to your on-chain wallet for long-term holding</li>
           </ul>
         </section>
@@ -49,7 +49,7 @@ export default function TermsPage() {
         <section className="mb-8">
           <h2 className="text-2xl font-bold mb-4 text-white">4. Fees</h2>
           <p className="text-gray-300 mb-4">
-            CoinPay charges a platform fee of 0.5–1% on processed payments, depending on your 
+            TempestTouch charges a platform fee of 0.5–1% on processed payments, depending on your
             subscription plan (0.5% for Professional, 1% for Starter). This fee is automatically 
             deducted when payments are forwarded to your wallet.
           </p>
@@ -68,12 +68,12 @@ export default function TermsPage() {
         <section className="mb-8">
           <h2 className="text-2xl font-bold mb-4 text-white">6. Limitation of Liability</h2>
           <p className="text-gray-300 mb-4">
-            CoinPay is provided &quot;as is&quot; and &quot;as available&quot; without warranties of any kind, 
+            Tempest Touch is provided &quot;as is&quot; and &quot;as available&quot; without warranties of any kind, 
             either express or implied, including but not limited to implied warranties of merchantability, 
             fitness for a particular purpose, and non-infringement.
           </p>
           <p className="text-gray-300 mb-4">
-            In no event shall CoinPay, its directors, employees, partners, agents, suppliers, or affiliates 
+            In no event shall TempestTouch, its directors, employees, partners, agents, suppliers, or affiliates
             be liable for any indirect, incidental, special, consequential, or punitive damages, including 
             without limitation loss of profits, data, use, goodwill, or other intangible losses, resulting from:
           </p>
@@ -91,7 +91,7 @@ export default function TermsPage() {
         <section className="mb-8">
           <h2 className="text-2xl font-bold mb-4 text-white">7. Indemnification</h2>
           <p className="text-gray-300">
-            You agree to defend, indemnify, and hold harmless CoinPay and its officers, directors, employees, 
+            You agree to defend, indemnify, and hold harmless TempestTouch and its officers, directors, employees,
             and agents from and against any claims, damages, obligations, losses, liabilities, costs, or debt 
             arising from: (a) your use of and access to the service; (b) your violation of any term of these 
             Terms of Service; (c) your violation of any third-party right, including any intellectual property 
@@ -139,8 +139,8 @@ export default function TermsPage() {
           <h2 className="text-2xl font-bold mb-4 text-white">11. Contact</h2>
           <p className="text-gray-300">
             For questions about these terms, contact{' '}
-            <a href="mailto:legal@coinpayportal.com" className="text-purple-600 hover:text-purple-700">
-              legal@coinpayportal.com
+            <a href="mailto:legal@tempesttouch.com" className="text-purple-600 hover:text-purple-700">
+              legal@tempesttouch.com
             </a>
           </p>
         </section>

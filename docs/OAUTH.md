@@ -1,6 +1,6 @@
 # OAuth 2.0 / OpenID Connect Provider
 
-CoinPay implements an OAuth 2.0 Authorization Code flow with PKCE support and OpenID Connect (OIDC) compatibility. Third-party applications can authenticate CoinPay merchants and access their profile, email, wallet, and DID data with consent.
+Tempest Touch implements an OAuth 2.0 Authorization Code flow with PKCE support and OpenID Connect (OIDC) compatibility. Third-party applications can authenticate Tempest Touch merchants and access their profile, email, wallet, and DID data with consent.
 
 ## Overview
 
@@ -16,7 +16,7 @@ CoinPay implements an OAuth 2.0 Authorization Code flow with PKCE support and Op
 ## Base URL
 
 ```
-https://coinpayportal.com
+https://tempesttouch.com
 ```
 
 ## Endpoints
@@ -66,7 +66,7 @@ GET /api/oauth/authorize
 
 ### 2. User approves consent
 
-The consent page shows the requesting app name, description, and requested scopes. On approval, CoinPay redirects back to `redirect_uri`:
+The consent page shows the requesting app name, description, and requested scopes. On approval, Tempest Touch redirects back to `redirect_uri`:
 
 ```
 https://yourapp.com/callback?code=<auth-code>&state=<state>
@@ -264,7 +264,7 @@ Common errors: `invalid_request`, `invalid_client`, `invalid_grant`, `unsupporte
 |---|---|---|
 | `JWT_SECRET` | Yes | Signing secret for JWTs (shared with regular auth) |
 | `OIDC_SIGNING_SECRET` | No | Override signing secret for OIDC tokens (falls back to `JWT_SECRET`) |
-| `NEXT_PUBLIC_APP_URL` | Yes | Public-facing URL (e.g., `https://coinpayportal.com`) |
+| `NEXT_PUBLIC_APP_URL` | Yes | Public-facing URL (e.g., `https://tempesttouch.com`) |
 | `APP_URL` | No | Server-side override for public URL |
 | `NEXT_PUBLIC_SUPABASE_URL` | Yes | Supabase project URL |
 | `SUPABASE_SERVICE_ROLE_KEY` | Yes | Supabase service role key |
@@ -278,11 +278,11 @@ Common errors: `invalid_request`, `invalid_client`, `invalid_grant`, `unsupporte
 
 ## Integration Example
 
-Here's a complete example integrating CoinPay OAuth into a Next.js app:
+Here's a complete example integrating Tempest Touch OAuth into a Next.js app:
 
 ```typescript
 // 1. Initiate OAuth flow
-// GET /api/auth/coinpay
+// GET /api/auth/tempesttouch
 import { randomBytes, createHash } from 'crypto';
 
 const state = randomBytes(32).toString('base64url');
@@ -292,9 +292,9 @@ const codeChallenge = createHash('sha256')
   .digest('base64url');
 
 // Store state + codeVerifier in a secure cookie
-const authorizeUrl = new URL('https://coinpayportal.com/api/oauth/authorize');
+const authorizeUrl = new URL('https://tempesttouch.com/api/oauth/authorize');
 authorizeUrl.searchParams.set('response_type', 'code');
-authorizeUrl.searchParams.set('client_id', process.env.COINPAY_CLIENT_ID!);
+authorizeUrl.searchParams.set('client_id', process.env.TEMPESTTOUCH_CLIENT_ID!);
 authorizeUrl.searchParams.set('redirect_uri', 'https://yourapp.com/api/callback/oauth');
 authorizeUrl.searchParams.set('scope', 'openid profile email');
 authorizeUrl.searchParams.set('state', state);
@@ -305,14 +305,14 @@ authorizeUrl.searchParams.set('code_challenge_method', 'S256');
 
 // 2. Handle callback
 // GET /api/callback/oauth?code=xxx&state=xxx
-const tokenRes = await fetch('https://coinpayportal.com/api/oauth/token', {
+const tokenRes = await fetch('https://tempesttouch.com/api/oauth/token', {
   method: 'POST',
   headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
   body: new URLSearchParams({
     grant_type: 'authorization_code',
     code: searchParams.get('code')!,
     redirect_uri: 'https://yourapp.com/api/callback/oauth',
-    client_id: process.env.COINPAY_CLIENT_ID!,
+    client_id: process.env.TEMPESTTOUCH_CLIENT_ID!,
     code_verifier: storedCodeVerifier,
   }),
 });
@@ -320,7 +320,7 @@ const tokenRes = await fetch('https://coinpayportal.com/api/oauth/token', {
 const tokens = await tokenRes.json();
 
 // 3. Fetch user profile
-const userRes = await fetch('https://coinpayportal.com/api/oauth/userinfo', {
+const userRes = await fetch('https://tempesttouch.com/api/oauth/userinfo', {
   headers: { Authorization: `Bearer ${tokens.access_token}` },
 });
 const user = await userRes.json();

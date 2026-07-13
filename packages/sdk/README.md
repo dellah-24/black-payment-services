@@ -1,8 +1,8 @@
-# @profullstack/coinpay
+# @profullstack/tempesttouch
 
-> CoinPay SDK & CLI — Accept cryptocurrency payments in your Node.js application.
+> Tempest Touch SDK & CLI — Accept cryptocurrency payments in your Node.js application.
 
-[![npm version](https://img.shields.io/npm/v/@profullstack/coinpay)](https://www.npmjs.com/package/@profullstack/coinpay)
+[![npm version](https://img.shields.io/npm/v/@profullstack/tempesttouch)](https://www.npmjs.com/package/@profullstack/tempesttouch)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)
 [![Node.js](https://img.shields.io/badge/node-%3E%3D20-brightgreen)](https://nodejs.org/)
 
@@ -17,7 +17,7 @@ Non-custodial, multi-chain payment processing for **Bitcoin**, **Ethereum**, **S
 - [Quick Start](#quick-start)
 - [Supported Blockchains](#supported-blockchains)
 - [API Reference](#api-reference)
-  - [CoinPayClient](#coinpayclient)
+  - [Tempest TouchClient](#tempesttouchclient)
   - [Payments](#payments)
   - [Payment Status Polling](#payment-status-polling)
   - [QR Codes](#qr-codes)
@@ -42,7 +42,7 @@ Non-custodial, multi-chain payment processing for **Bitcoin**, **Ethereum**, **S
 
 ```
 ┌──────────┐    1. Create payment     ┌──────────┐
-│  Your    │ ───────────────────────> │ CoinPay  │
+│  Your    │ ───────────────────────> │ Tempest Touch  │
 │  Server  │ <─────────────────────── │   API    │
 │          │    Address + QR code     │          │
 └────┬─────┘                          └────┬─────┘
@@ -56,10 +56,10 @@ Non-custodial, multi-chain payment processing for **Bitcoin**, **Ethereum**, **S
 └──────────┘                          └──────────┘
 ```
 
-1. **Your server** calls the CoinPay API to create a payment request
-2. **CoinPay** generates a unique payment address and QR code — display these to your customer
+1. **Your server** calls the Tempest Touch API to create a payment request
+2. **Tempest Touch** generates a unique payment address and QR code — display these to your customer
 3. **Customer** sends cryptocurrency to the address
-4. **CoinPay** monitors the blockchain and notifies you via webhook when payment is confirmed
+4. **Tempest Touch** monitors the blockchain and notifies you via webhook when payment is confirmed
 5. **Funds** are automatically forwarded to your configured wallet
 
 ---
@@ -68,13 +68,13 @@ Non-custodial, multi-chain payment processing for **Bitcoin**, **Ethereum**, **S
 
 ```bash
 # pnpm (recommended)
-pnpm add @profullstack/coinpay
+pnpm add @profullstack/tempesttouch
 
 # npm
-npm install @profullstack/coinpay
+npm install @profullstack/tempesttouch
 
 # Global CLI
-pnpm add -g @profullstack/coinpay
+pnpm add -g @profullstack/tempesttouch
 ```
 
 **Requirements:** Node.js ≥ 20. Zero runtime dependencies — uses built-in `fetch` and `crypto`.
@@ -85,7 +85,7 @@ pnpm add -g @profullstack/coinpay
 
 ### 1. Get Your API Key
 
-1. Sign up at [coinpayportal.com](https://coinpayportal.com)
+1. Sign up at [tempesttouch.com](https://tempesttouch.com)
 2. Create a business in your dashboard
 3. Configure wallet addresses for each crypto you want to accept
 4. Copy your API key (starts with `cp_live_`)
@@ -93,9 +93,9 @@ pnpm add -g @profullstack/coinpay
 ### 2. Create a Payment
 
 ```javascript
-import { CoinPayClient, Blockchain } from '@profullstack/coinpay';
+import { Tempest TouchClient, Blockchain } from '@profullstack/tempesttouch';
 
-const client = new CoinPayClient({
+const client = new Tempest TouchClient({
   apiKey: 'cp_live_your_api_key_here',
 });
 
@@ -116,7 +116,7 @@ console.log('QR Code:', payment.qr_code);
 ### 3. Handle Payment Confirmation
 
 ```javascript
-import { createWebhookHandler, WebhookEvent } from '@profullstack/coinpay';
+import { createWebhookHandler, WebhookEvent } from '@profullstack/tempesttouch';
 
 app.post('/webhook', createWebhookHandler({
   secret: 'your-webhook-secret',
@@ -147,7 +147,7 @@ app.post('/webhook', createWebhookHandler({
 Use the `Blockchain` constant to avoid typos:
 
 ```javascript
-import { Blockchain } from '@profullstack/coinpay';
+import { Blockchain } from '@profullstack/tempesttouch';
 
 Blockchain.BTC      // 'BTC'
 Blockchain.ETH      // 'ETH'
@@ -158,24 +158,24 @@ Blockchain.USDC_POL // 'USDC_POL'
 
 ## API Reference
 
-### CoinPayClient
+### Tempest TouchClient
 
 The main class for all API operations.
 
 ```javascript
-import { CoinPayClient } from '@profullstack/coinpay';
+import { Tempest TouchClient } from '@profullstack/tempesttouch';
 
-const client = new CoinPayClient({
+const client = new Tempest TouchClient({
   apiKey: 'cp_live_xxxxx',                     // Required
-  baseUrl: 'https://coinpayportal.com/api',    // Optional (default)
+  baseUrl: 'https://tempesttouch.com/api',    // Optional (default)
   timeout: 30000,                               // Optional: ms (default: 30s)
 });
 ```
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
-| `apiKey` | `string` | — | **Required.** Your CoinPay API key |
-| `baseUrl` | `string` | `https://coinpayportal.com/api` | API base URL |
+| `apiKey` | `string` | — | **Required.** Your Tempest Touch API key |
+| `baseUrl` | `string` | `https://tempesttouch.com/api` | API base URL |
 | `timeout` | `number` | `30000` | Request timeout in milliseconds |
 
 **Throws** `Error` if `apiKey` is missing or empty.
@@ -349,7 +349,7 @@ Returns the URL to the QR code image. **Synchronous** — no network request.
 
 ```javascript
 const url = client.getPaymentQRUrl('pay_abc123');
-// "https://coinpayportal.com/api/payments/pay_abc123/qr"
+// "https://tempesttouch.com/api/payments/pay_abc123/qr"
 
 // Use in HTML:
 // <img src={url} alt="Payment QR Code" />
@@ -452,7 +452,7 @@ await client.testWebhook('biz_123', 'payment.completed');
 Convenience functions that auto-create a client. Best for one-off operations.
 
 ```javascript
-import { createPayment, getPayment, listPayments } from '@profullstack/coinpay';
+import { createPayment, getPayment, listPayments } from '@profullstack/tempesttouch';
 
 // Create payment without instantiating a client
 const result = await createPayment({
@@ -495,7 +495,7 @@ import {
   PaymentStatus,
   FiatCurrency,
   WebhookEvent,
-} from '@profullstack/coinpay';
+} from '@profullstack/tempesttouch';
 ```
 
 #### `Blockchain`
@@ -556,64 +556,64 @@ import {
 
 ```bash
 # Global
-pnpm add -g @profullstack/coinpay
+pnpm add -g @profullstack/tempesttouch
 
 # Or use npx
-npx @profullstack/coinpay --help
+npx @profullstack/tempesttouch --help
 ```
 
 ### Configuration
 
 ```bash
-coinpay config set-key cp_live_xxxxx     # Save API key
-coinpay config set-url http://localhost:3000/api  # Custom URL
-coinpay config show                       # Display config
+tempesttouch config set-key cp_live_xxxxx     # Save API key
+tempesttouch config set-url http://localhost:3000/api  # Custom URL
+tempesttouch config show                       # Display config
 ```
 
 ### Payments
 
 ```bash
 # Create a payment
-coinpay payment create \
+tempesttouch payment create \
   --business-id biz_123 \
   --amount 100 \
   --blockchain BTC \
   --description "Order #12345"
 
 # Get payment details
-coinpay payment get pay_abc123
+tempesttouch payment get pay_abc123
 
 # List payments
-coinpay payment list --business-id biz_123 --status pending --limit 10
+tempesttouch payment list --business-id biz_123 --status pending --limit 10
 
 # List checkout tokens
-coinpay tokens list --business-id biz_123 --active-only
+tempesttouch tokens list --business-id biz_123 --active-only
 
 # Get QR code
-coinpay payment qr pay_abc123
+tempesttouch payment qr pay_abc123
 ```
 
 ### Businesses
 
 ```bash
-coinpay business list
-coinpay business get biz_123
-coinpay business create --name "My Store" --webhook-url https://mysite.com/webhook
-coinpay business update biz_123 --name "New Name"
+tempesttouch business list
+tempesttouch business get biz_123
+tempesttouch business create --name "My Store" --webhook-url https://mysite.com/webhook
+tempesttouch business update biz_123 --name "New Name"
 ```
 
 ### Exchange Rates
 
 ```bash
-coinpay rates get BTC
-coinpay rates list
+tempesttouch rates get BTC
+tempesttouch rates list
 ```
 
 ### Webhooks
 
 ```bash
-coinpay webhook logs biz_123
-coinpay webhook test biz_123 --event payment.completed
+tempesttouch webhook logs biz_123
+tempesttouch webhook test biz_123 --event payment.completed
 ```
 
 ---
@@ -622,7 +622,7 @@ coinpay webhook test biz_123 --event payment.completed
 
 ### Webhook Payload
 
-When a payment status changes, CoinPay sends a `POST` request to your webhook URL:
+When a payment status changes, Tempest Touch sends a `POST` request to your webhook URL:
 
 ```json
 {
@@ -647,20 +647,20 @@ When a payment status changes, CoinPay sends a `POST` request to your webhook UR
 
 ### Signature Verification
 
-Every webhook includes an `X-CoinPay-Signature` header in the format `t=<timestamp>,v1=<hmac-sha256>`. Always verify signatures before processing events.
+Every webhook includes an `X-Tempest Touch-Signature` header in the format `t=<timestamp>,v1=<hmac-sha256>`. Always verify signatures before processing events.
 
 #### Using the Middleware (Express)
 
 ```javascript
 import express from 'express';
-import { createWebhookHandler, WebhookEvent } from '@profullstack/coinpay';
+import { createWebhookHandler, WebhookEvent } from '@profullstack/tempesttouch';
 
 const app = express();
 
 app.post('/webhook',
   express.text({ type: 'application/json' }),
   createWebhookHandler({
-    secret: process.env.COINPAY_WEBHOOK_SECRET,
+    secret: process.env.TEMPESTTOUCH_WEBHOOK_SECRET,
     onEvent: async (event) => {
       switch (event.type) {
         case WebhookEvent.PAYMENT_COMPLETED:
@@ -681,12 +681,12 @@ app.post('/webhook',
 #### Manual Verification
 
 ```javascript
-import { verifyWebhookSignature, parseWebhookPayload } from '@profullstack/coinpay';
+import { verifyWebhookSignature, parseWebhookPayload } from '@profullstack/tempesttouch';
 
 const isValid = verifyWebhookSignature({
   payload: rawBody,                              // Raw request body string
-  signature: req.headers['x-coinpay-signature'], // Signature header
-  secret: process.env.COINPAY_WEBHOOK_SECRET,    // Your secret
+  signature: req.headers['x-tempesttouch-signature'], // Signature header
+  secret: process.env.TEMPESTTOUCH_WEBHOOK_SECRET,    // Your secret
   tolerance: 300,                                 // Optional: seconds (default: 300)
 });
 
@@ -699,7 +699,7 @@ if (isValid) {
 #### Generating Test Signatures
 
 ```javascript
-import { generateWebhookSignature } from '@profullstack/coinpay';
+import { generateWebhookSignature } from '@profullstack/tempesttouch';
 
 const signature = generateWebhookSignature({
   payload: JSON.stringify(testEvent),
@@ -766,16 +766,16 @@ try {
 ### E-commerce Checkout
 
 ```javascript
-import { CoinPayClient, createWebhookHandler, WebhookEvent } from '@profullstack/coinpay';
+import { Tempest TouchClient, createWebhookHandler, WebhookEvent } from '@profullstack/tempesttouch';
 
-const client = new CoinPayClient({ apiKey: process.env.COINPAY_API_KEY });
+const client = new Tempest TouchClient({ apiKey: process.env.TEMPESTTOUCH_API_KEY });
 
 // Checkout endpoint
 app.post('/checkout', async (req, res) => {
   const { orderId, amount, blockchain } = req.body;
 
   const { payment } = await client.createPayment({
-    businessId: process.env.COINPAY_BUSINESS_ID,
+    businessId: process.env.TEMPESTTOUCH_BUSINESS_ID,
     amount,
     blockchain,
     description: `Order #${orderId}`,
@@ -798,7 +798,7 @@ app.post('/checkout', async (req, res) => {
 // Webhook
 app.post('/webhook', express.text({ type: 'application/json' }),
   createWebhookHandler({
-    secret: process.env.COINPAY_WEBHOOK_SECRET,
+    secret: process.env.TEMPESTTOUCH_WEBHOOK_SECRET,
     onEvent: async (event) => {
       if (event.type === WebhookEvent.PAYMENT_COMPLETED) {
         const { orderId } = event.data.payment.metadata;
@@ -828,7 +828,7 @@ const { payment } = await client.createPayment({
 
 ```bash
 # Create payment
-curl -X POST https://coinpayportal.com/api/payments/create \
+curl -X POST https://tempesttouch.com/api/payments/create \
   -H "Authorization: Bearer cp_live_your_api_key" \
   -H "Content-Type: application/json" \
   -d '{
@@ -839,7 +839,7 @@ curl -X POST https://coinpayportal.com/api/payments/create \
   }'
 
 # Check payment status
-curl https://coinpayportal.com/api/payments/pay_abc123 \
+curl https://tempesttouch.com/api/payments/pay_abc123 \
   -H "Authorization: Bearer cp_live_your_api_key"
 ```
 
@@ -851,23 +851,23 @@ Full TypeScript support via `.d.ts` declaration files — no build step required
 
 ```typescript
 import {
-  CoinPayClient,
+  Tempest TouchClient,
   Blockchain,
   PaymentStatus,
   WebhookEvent,
-} from '@profullstack/coinpay';
+} from '@profullstack/tempesttouch';
 
 import type {
-  CoinPayClientOptions,
+  Tempest TouchClientOptions,
   PaymentParams,
   Payment,
   CreatePaymentResponse,
   WaitForPaymentOptions,
   VerifyWebhookParams,
   ParsedWebhookEvent,
-} from '@profullstack/coinpay';
+} from '@profullstack/tempesttouch';
 
-const client = new CoinPayClient({ apiKey: 'cp_live_xxxxx' });
+const client = new Tempest TouchClient({ apiKey: 'cp_live_xxxxx' });
 
 const { payment }: CreatePaymentResponse = await client.createPayment({
   businessId: 'biz_123',
@@ -880,8 +880,8 @@ const { payment }: CreatePaymentResponse = await client.createPayment({
 
 ```typescript
 // Import only what you need
-import { Blockchain, PaymentStatus } from '@profullstack/coinpay/payments';
-import { verifyWebhookSignature, WebhookEvent } from '@profullstack/coinpay/webhooks';
+import { Blockchain, PaymentStatus } from '@profullstack/tempesttouch/payments';
+import { verifyWebhookSignature, WebhookEvent } from '@profullstack/tempesttouch/webhooks';
 ```
 
 ---
@@ -890,8 +890,8 @@ import { verifyWebhookSignature, WebhookEvent } from '@profullstack/coinpay/webh
 
 | Variable | Description |
 |----------|-------------|
-| `COINPAY_API_KEY` | API key (overrides config file in CLI) |
-| `COINPAY_BASE_URL` | Custom API URL (for development) |
+| `TEMPESTTOUCH_API_KEY` | API key (overrides config file in CLI) |
+| `TEMPESTTOUCH_BASE_URL` | Custom API URL (for development) |
 
 ---
 
@@ -912,7 +912,7 @@ See the [`examples/`](./examples/) directory for runnable code:
 | [`09-error-handling.js`](./examples/09-error-handling.js) | Auth, validation, rate-limit, and timeout errors |
 
 ```bash
-COINPAY_API_KEY=cp_live_xxx COINPAY_BUSINESS_ID=biz_xxx node examples/01-quick-start.js
+TEMPESTTOUCH_API_KEY=cp_live_xxx TEMPESTTOUCH_BUSINESS_ID=biz_xxx node examples/01-quick-start.js
 ```
 
 ---
@@ -933,10 +933,10 @@ Tests use [Vitest](https://vitest.dev/) with mocked `fetch` — no API key neede
 
 ## Support
 
-- **Docs:** [docs.coinpayportal.com](https://docs.coinpayportal.com)
-- **Dashboard:** [coinpayportal.com](https://coinpayportal.com)
-- **Email:** support@coinpayportal.com
-- **Issues:** [github.com/profullstack/coinpayportal/issues](https://github.com/profullstack/coinpayportal/issues)
+- **Docs:** [docs.tempesttouch.com](https://docs.tempesttouch.com)
+- **Dashboard:** [tempesttouch.com](https://tempesttouch.com)
+- **Email:** support@tempesttouch.com
+- **Issues:** [github.com/profullstack/tempesttouch/issues](https://github.com/profullstack/tempesttouch/issues)
 
 ---
 

@@ -172,7 +172,7 @@ describe('client-crypto', () => {
     });
 
     it('should handle corrupted localStorage data', () => {
-      localStorage.setItem('coinpay_wallet', 'not-valid-json');
+      localStorage.setItem('tempesttouch_wallet', 'not-valid-json');
       expect(loadWalletFromStorage()).toBeNull();
     });
 
@@ -199,3 +199,4 @@ describe('client-crypto', () => {
     });
   });
 });
+

@@ -50,14 +50,14 @@ describe('LightningAddress', () => {
 
   it('shows existing address with copy button', async () => {
     mockGetLightningAddress.mockResolvedValueOnce({
-      lightning_address: 'alice@coinpayportal.com',
+      lightning_address: 'alice@tempesttouch.com',
       username: 'alice',
     });
 
     render(<LightningAddress walletId="w1" />);
 
     await waitFor(() => {
-      expect(screen.getByText('alice@coinpayportal.com')).toBeInTheDocument();
+      expect(screen.getByText('alice@tempesttouch.com')).toBeInTheDocument();
     });
     expect(screen.getByText('Click to copy')).toBeInTheDocument();
   });
@@ -89,7 +89,7 @@ describe('LightningAddress', () => {
 
     // Mock registration
     mockSetLightningAddress.mockResolvedValueOnce({
-      lightning_address: 'bob@coinpayportal.com',
+      lightning_address: 'bob@tempesttouch.com',
       username: 'bob',
     });
 

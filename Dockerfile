@@ -40,7 +40,7 @@ WORKDIR /app
 # Pin pnpm to a known-good version (avoid `pnpm@latest` surprises on Railway).
 RUN corepack enable && corepack prepare pnpm@10.32.1 --activate
 # Copy the whole repo before install: the root package.json depends on the
-# workspace package @profullstack/coinpay (packages/*), so pnpm needs those
+# workspace package @profullstack/tempesttouch (packages/*), so pnpm needs those
 # manifests present at install time. Coinpay's Railway build uses
 # --no-frozen-lockfile (the lockfile drifts); match it.
 COPY . .

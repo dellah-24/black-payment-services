@@ -1,4 +1,4 @@
-# CoinPayPortal Escrow Service
+# Tempest Touch Escrow Service
 
 ## Overview
 
@@ -7,7 +7,7 @@ Anonymous, non-custodial-style escrow for crypto payments. Both humans and AI ag
 **Key properties:**
 - No KYC — anonymous by default
 - API-first — agents can create/fund/release/dispute via API keys
-- Multi-chain — supports all chains CoinPayPortal already supports (BTC, BCH, ETH, POL, SOL, USDC_*)
+- Multi-chain — supports all chains Tempest Touch already supports (BTC, BCH, ETH, POL, SOL, USDC_*)
 - Platform fee — same 0.5-1% fee structure as payments
 - Metadata-rich — store job descriptions, milestones, deliverables in Supabase JSONB
 
@@ -210,16 +210,16 @@ Escrows are **anonymous by default**:
 - `beneficiary_api_key` — optional, for agents to poll status
 - Wallet signature — alternative auth by signing a challenge with the party's wallet key
 
-For merchants with CoinPayPortal accounts:
+For merchants with Tempest Touch accounts:
 - Standard JWT/API key auth works
 - Escrow tied to their `business_id`
 
 ## SDK Integration
 
 ```javascript
-import { CoinPay } from '@profullstack/coinpay';
+import { Tempest Touch } from '@profullstack/tempesttouch';
 
-const client = new CoinPay({ apiKey: 'your-key', baseUrl: 'https://coinpayportal.com' });
+const client = new Tempest Touch({ apiKey: 'your-key', baseUrl: 'https://tempesttouch.com' });
 
 // Create escrow
 const escrow = await client.escrow.create({
@@ -254,7 +254,7 @@ Agents create escrows via the REST API or SDK:
 
 ```bash
 # Create escrow for a gig
-curl -X POST https://coinpayportal.com/api/escrow \
+curl -X POST https://tempesttouch.com/api/escrow \
   -H "Content-Type: application/json" \
   -d '{
     "chain": "SOL",
@@ -269,7 +269,7 @@ curl -X POST https://coinpayportal.com/api/escrow \
   }'
 
 # Release after work delivered
-curl -X POST https://coinpayportal.com/api/escrow/{id}/release \
+curl -X POST https://tempesttouch.com/api/escrow/{id}/release \
   -H "Content-Type: application/json" \
   -d '{"release_token": "tok_..."}'
 ```
@@ -320,7 +320,7 @@ Escrow addresses are marked `is_escrow = true` in `payment_addresses` to prevent
 2. **Service** — `src/lib/escrow/service.ts` (create, fund, release, dispute, refund, expire)
 3. **API routes** — `src/app/api/escrow/` (CRUD + actions)
 4. **Monitor integration** — Add escrow address checking to existing cron
-5. **SDK methods** — `client.escrow.*` in `@profullstack/coinpay`
+5. **SDK methods** — `client.escrow.*` in `@profullstack/tempesttouch`
 6. **UI** — Escrow dashboard page for merchants
 7. **Webhooks** — Wire up escrow events to webhook system
 8. **Tests** — Unit + integration tests for all flows

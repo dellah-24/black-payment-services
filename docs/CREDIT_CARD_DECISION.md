@@ -2,7 +2,7 @@
 
 **Date**: January 22, 2025
 **Status**: Pending Checkout.com Approval
-**Decision Makers**: CoinPay Team
+**Decision Makers**: Tempest Touch Team
 
 > **Update (Jan 22, 2025)**: Adyen rejected our application. Checkout.com is now our only option for the marketplace/PayFac model.
 
@@ -10,7 +10,7 @@
 
 ## Executive Summary
 
-After comprehensive research into credit card processing options for CoinPay, we have decided to pursue **Checkout.com Marketplaces** as our primary provider, with **Adyen for Platforms** as a backup option. Both providers require a sales conversation before sandbox access can be granted.
+After comprehensive research into credit card processing options for Tempest Touch, we have decided to pursue **Checkout.com Marketplaces** as our primary provider, with **Adyen for Platforms** as a backup option. Both providers require a sales conversation before sandbox access can be granted.
 
 ---
 
@@ -163,9 +163,9 @@ Detailed implementation plan available in: [`/plans/checkout-com-implementation.
 
 ```mermaid
 graph TB
-    subgraph CoinPay Platform
+    subgraph Tempest Touch Platform
         UI[Merchant Dashboard]
-        API[CoinPay API]
+        API[Tempest Touch API]
         
         subgraph Payment Methods
             Crypto[Crypto Payments]
@@ -250,5 +250,5 @@ New endpoints:
 
 - [Credit Card Processing Research](/plans/credit-card-processing-research.md)
 - [Checkout.com Implementation Plan](/plans/checkout-com-implementation.md)
-- [CoinPay Architecture](/docs/ARCHITECTURE.md)
-- [CoinPay Database Schema](/docs/DATABASE.md)
+- [Tempest Touch Architecture](/docs/ARCHITECTURE.md)
+- [Tempest Touch Database Schema](/docs/DATABASE.md)

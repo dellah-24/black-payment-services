@@ -58,12 +58,12 @@ export default { buildRssXml, buildSitemapBlogEntries };
 `);
 }
 
-// Fix @profullstack/coinpay stub - restore actual package.json from packages/sdk
-const coinpayDir = path.join(root, 'node_modules/@profullstack/coinpay');
+// Fix @profullstack/tempesttouch stub - restore actual package.json from packages/sdk
+const tempesttouchDir = path.join(root, 'node_modules/@profullstack/tempesttouch');
 const sdkPkgPath = path.join(root, 'packages/sdk/package.json');
-if (fs.existsSync(coinpayDir) && fs.existsSync(sdkPkgPath)) {
+if (fs.existsSync(tempesttouchDir) && fs.existsSync(sdkPkgPath)) {
   const sdkPkg = JSON.parse(fs.readFileSync(sdkPkgPath, 'utf8'));
-  fs.writeFileSync(path.join(coinpayDir, 'package.json'), JSON.stringify(sdkPkg, null, 2));
+  fs.writeFileSync(path.join(tempesttouchDir, 'package.json'), JSON.stringify(sdkPkg, null, 2));
 }
 
 console.log('Stub packages fixed successfully');

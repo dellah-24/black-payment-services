@@ -2,7 +2,7 @@
 /**
  * Webhook signature contract test — locks the wire format together so
  * server (sendPaymentWebhook), the SDK (verifyWebhookSignature), and
- * any merchant verifier (e.g. d0rz's verifyCoinpayWebhook) can never
+ * any merchant verifier (e.g. d0rz's verifytempesttouchWebhook) can never
  * drift apart silently.
  *
  * Background: in the d0rz incident the server was signing with the
@@ -13,7 +13,7 @@
  *
  * Wire format (do not change without bumping the version + telling
  * every downstream merchant):
- *   header: X-CoinPay-Signature: t=<unix_seconds>,v1=<hex_hmac>
+  *   header: X-TempestTouch-Signature: t=<unix_seconds>,v1=<hex_hmac>
  *   hmac body: `${timestamp}.${rawBody}`
  *   algorithm: HMAC-SHA256
  *   timestamp tolerance: 300 seconds
@@ -23,7 +23,7 @@ import { describe, it, expect } from 'vitest';
 import { createHmac } from 'crypto';
 import { signWebhookPayload } from './service';
 
-// Inlined copy of the d0rz verifier (lib/coinpay-client.ts), so this
+// Inlined copy of the d0rz verifier (lib/tempesttouch-client.ts), so this
 // test fails the moment the contract drifts even if d0rz isn't checked
 // in alongside.
 function verifyAsD0rz(rawBody: string, signatureHeader: string | null, secret: string): boolean {
@@ -119,7 +119,7 @@ describe('webhook signature contract — server ↔ SDK ↔ d0rz', () => {
     expect(ok).toBe(true);
   });
 
-  it('d0rz verifier (verifyCoinpayWebhook) accepts a server-signed payload', () => {
+  it('d0rz verifier (verifytempesttouchWebhook) accepts a server-signed payload', () => {
     const ts = Math.floor(Date.now() / 1000);
     const sig = signWebhookPayload(SAMPLE_PAYLOAD, SECRET, ts);
     const ok = verifyAsD0rz(JSON.stringify(SAMPLE_PAYLOAD), sig, SECRET);
@@ -168,8 +168,8 @@ describe('webhook signature contract — server ↔ SDK ↔ d0rz', () => {
 
   it('reproduces the exact d0rz incident shape (raw plaintext secret, payment.confirmed)', () => {
     // This is the byte-for-byte payload that production now sends to
-    // d0rz/api/webhooks/coinpay/crypto. If this assertion ever fails,
-    // every CoinPay merchant who verifies HMAC will start rejecting
+    // d0rz/api/webhooks/tempesttouch/crypto. If this assertion ever fails,
+    // every TempestTouch merchant who verifies HMAC will start rejecting
     // events. Treat any change to this shape as a breaking API change.
     const ts = Math.floor(Date.now() / 1000);
     const sig = signWebhookPayload(SAMPLE_PAYLOAD, SECRET, ts);
@@ -180,3 +180,4 @@ describe('webhook signature contract — server ↔ SDK ↔ d0rz', () => {
     expect(verifyAsSDK(body, sig, SECRET)).toBe(true);
   });
 });
+

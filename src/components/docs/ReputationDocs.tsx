@@ -78,7 +78,7 @@ Content-Type: application/json
         <CodeBlock title="Response">
 {`{
   "success": true,
-  "did": "did:coinpay:abc123...",
+  "did": "did:tempesttouch:abc123...",
   "displayName": "Agent Smith",
   "createdAt": "2026-01-15T10:00:00Z"
 }`}
@@ -93,7 +93,7 @@ Authorization: Bearer <token>`}
         <CodeBlock title="Response">
 {`{
   "success": true,
-  "did": "did:coinpay:abc123...",
+  "did": "did:tempesttouch:abc123...",
   "displayName": "Agent Smith",
   "linkedDids": [],
   "createdAt": "2026-01-15T10:00:00Z"
@@ -114,7 +114,7 @@ Content-Type: application/json
   "escrowId": "esc_abc123",
   "taskDescription": "Frontend bug fix",
   "rating": 5,
-  "counterpartyDid": "did:coinpay:xyz789..."
+  "counterpartyDid": "did:tempesttouch:xyz789..."
 }`}
         </CodeBlock>
         <CodeBlock title="Response">
@@ -129,12 +129,12 @@ Content-Type: application/json
 
       <ApiEndpoint method="GET" path="/api/reputation/agent/[did]/reputation" description="Query the reputation score for a specific DID.">
         <CodeBlock title="Request">
-{`GET /api/reputation/agent/did:coinpay:abc123.../reputation`}
+{`GET /api/reputation/agent/did:tempesttouch:abc123.../reputation`}
         </CodeBlock>
         <CodeBlock title="Response">
 {`{
   "success": true,
-  "did": "did:coinpay:abc123...",
+  "did": "did:tempesttouch:abc123...",
   "score": 4.8,
   "totalTasks": 42,
   "successRate": 0.95,
@@ -182,7 +182,7 @@ Authorization: Bearer <token>`}
     {
       "id": "cred_ghi789",
       "credential_type": "TaskCompletionCredential",
-      "issuer_did": "did:web:coinpayportal.com",
+      "issuer_did": "did:web:tempesttouch.com",
       "revoked": false,
       "issued_at": "2026-02-10T14:30:00Z"
     }
@@ -201,8 +201,8 @@ Authorization: Bearer <token>`}
   "credential": {
     "id": "cred_ghi789",
     "type": "TaskCompletionCredential",
-    "issuer": "did:coinpay:system",
-    "subject": "did:coinpay:abc123...",
+    "issuer": "did:tempesttouch:system",
+    "subject": "did:tempesttouch:abc123...",
     "issuanceDate": "2026-02-10T14:30:00Z",
     "proof": { "type": "Ed25519Signature2020", "...": "..." }
   }
@@ -224,7 +224,7 @@ Content-Type: application/json
   "success": true,
   "valid": true,
   "revoked": false,
-  "issuer": "did:coinpay:system",
+  "issuer": "did:tempesttouch:system",
   "expiresAt": null
 }`}
         </CodeBlock>
@@ -250,13 +250,13 @@ Content-Type: application/json
       <ApiEndpoint method="GET" path="/api/reputation/badge/[did]" description="Get an embeddable SVG reputation badge (shields.io style). Returns an SVG image showing acceptance rate and task count. Green for good, yellow for moderate, red for poor.">
         <CodeBlock title="Usage">
 {`<!-- Embed in HTML -->
-<img src="https://coinpayportal.com/api/reputation/badge/did:key:z6Mk..." alt="Reputation" />
+<img src="https://tempesttouch.com/api/reputation/badge/did:key:z6Mk..." alt="Reputation" />
 
 <!-- Embed in Markdown (GitHub README, etc.) -->
-![Reputation](https://coinpayportal.com/api/reputation/badge/did:key:z6Mk...)
+![Reputation](https://tempesttouch.com/api/reputation/badge/did:key:z6Mk...)
 
 <!-- Get badge URL via CLI -->
-coinpay reputation badge did:key:z6Mk...`}
+tempesttouch reputation badge did:key:z6Mk...`}
         </CodeBlock>
       </ApiEndpoint>
 

@@ -4,7 +4,7 @@
 
 ## Executive Summary
 
-This document analyzes three approaches to adding credit card support to CoinPay with full control over the merchant experience, enabling a 1% commission model with multi-business support.
+This document analyzes three approaches to adding credit card support to Tempest Touch with full control over the merchant experience, enabling a 1% commission model with multi-business support.
 
 **Your Requirements:**
 - One account managing multiple businesses/sub-merchants
@@ -26,7 +26,7 @@ You register directly with Visa/Mastercard as a Payment Facilitator, partner wit
 
 ```mermaid
 graph TB
-    subgraph Your Platform - CoinPay
+    subgraph Your Platform - Tempest Touch
         Dashboard[Merchant Dashboard]
         API[Your Payment API]
         Onboarding[KYC/Onboarding System]
@@ -104,7 +104,7 @@ Partner with a company that provides the PayFac infrastructure (sponsor bank rel
 
 ```mermaid
 graph TB
-    subgraph Your Platform - CoinPay
+    subgraph Your Platform - Tempest Touch
         Dashboard[Merchant Dashboard]
         API[Your API Layer]
         Onboarding[Your Onboarding UX]
@@ -230,7 +230,7 @@ Work directly with an acquiring bank/processor like Worldpay, Fiserv, or Global 
 
 ```mermaid
 graph TB
-    subgraph Your Platform - CoinPay
+    subgraph Your Platform - Tempest Touch
         Dashboard[Merchant Dashboard]
         API[Your Payment API]
         Onboarding[Merchant Management]
@@ -351,7 +351,7 @@ graph TB
 
 ---
 
-## Recommendation for CoinPay
+## Recommendation for Tempest Touch
 
 Based on your requirements:
 - Multi-business management ✓
@@ -388,13 +388,13 @@ Unless you're planning to process $100M+/year and have significant capital, the 
 
 ---
 
-## Implementation Architecture for CoinPay
+## Implementation Architecture for Tempest Touch
 
 If you proceed with PayFac-as-a-Service, here's how it would integrate:
 
 ```mermaid
 graph TB
-    subgraph CoinPay Platform
+    subgraph Tempest Touch Platform
         UI[Merchant Dashboard]
         BizMgmt[Business Management]
         PayAPI[Payment API]

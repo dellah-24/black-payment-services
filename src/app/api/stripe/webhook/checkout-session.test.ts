@@ -131,7 +131,7 @@ describe('Stripe Webhook - checkout.session.completed', () => {
       amount_total: 10000,
       currency: 'usd',
       metadata: {
-        coinpay_payment_id: 'pay_123',
+        tempesttouch_payment_id: 'pay_123',
         business_id: 'biz_123',
         merchant_id: 'merch_123',
         platform_fee_amount: '100',
@@ -175,14 +175,14 @@ describe('Stripe Webhook - checkout.session.completed', () => {
     );
   });
 
-  it('should skip checkout.session.completed without coinpay_payment_id', async () => {
+  it('should skip checkout.session.completed without tempesttouch_payment_id', async () => {
     const session = {
       id: 'cs_external_123',
       payment_intent: 'pi_ext_456',
       amount_total: 5000,
       currency: 'usd',
       metadata: {
-        // No coinpay_payment_id
+        // No tempesttouch_payment_id
         some_other_field: 'value',
       },
     };
@@ -239,7 +239,7 @@ describe('Stripe Webhook - checkout.session.completed', () => {
       amount_total: 10000,
       currency: 'usd',
       metadata: {
-        coinpay_invoice_id: 'inv_123',
+        tempesttouch_invoice_id: 'inv_123',
         business_id: 'biz_123',
         merchant_id: 'merch_123',
         platform_fee_amount: '100',
@@ -285,7 +285,7 @@ describe('Stripe Webhook - checkout.session.completed', () => {
       amount_total: 10000,
       currency: 'usd',
       metadata: {
-        coinpay_payment_id: 'pay_dash',
+        tempesttouch_payment_id: 'pay_dash',
         business_id: 'b198c6dc-4c3b-4a54-994c-a750c1a580cd',
         merchant_id: 'merch_d0rz',
         platform_fee_amount: '100',
@@ -333,7 +333,7 @@ describe('Stripe Webhook - checkout.session.completed', () => {
       amount_total: 10000,
       currency: 'usd',
       metadata: {
-        coinpay_payment_id: 'pay_dash',
+        tempesttouch_payment_id: 'pay_dash',
         business_id: 'b198c6dc-4c3b-4a54-994c-a750c1a580cd',
         merchant_id: 'merch_d0rz',
         platform_fee_amount: '100',
@@ -373,7 +373,7 @@ describe('Stripe Webhook - checkout.session.completed', () => {
       currency: 'usd',
       last_payment_error: { message: 'Your card was declined.' },
       metadata: {
-        coinpay_payment_id: 'pay_failed',
+        tempesttouch_payment_id: 'pay_failed',
         business_id: 'b198c6dc-4c3b-4a54-994c-a750c1a580cd',
         merchant_id: 'merch_d0rz',
       },
@@ -487,3 +487,4 @@ describe('Stripe Webhook - checkout.session.completed', () => {
     expect(response.status).toBe(200);
   });
 });
+

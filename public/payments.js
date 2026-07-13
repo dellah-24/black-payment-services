@@ -2,14 +2,14 @@
   "use strict";
 
   var script = document.currentScript;
-  var scriptUrl = new URL((script && script.src) || "https://coinpayportal.com/payments.js");
+  var scriptUrl = new URL((script && script.src) || "https://tempesttouch.com/payments.js");
   var apiBase = scriptUrl.origin;
   var merchantId = script && script.getAttribute("data-merchant-id");
   var forcedTheme = script && script.getAttribute("data-theme");
   var defaultAmount = script && script.getAttribute("data-amount");
   var defaultCurrency = script && script.getAttribute("data-currency");
   var defaultDescription = script && script.getAttribute("data-description");
-  var buttonText = (script && script.getAttribute("data-button-text")) || "Pay with CoinPay";
+  var buttonText = (script && script.getAttribute("data-button-text")) || "Pay with Tempest Touch";
 
   var configPromise = null;
   var pollTimer = null;
@@ -27,7 +27,7 @@
     return fetch(apiBase + path, options).then(function (response) {
       return response.json().then(function (data) {
         if (!response.ok || data.success === false) {
-          throw new Error(data.error || "CoinPay request failed");
+          throw new Error(data.error || "Tempest Touch request failed");
         }
         return data;
       });
@@ -35,7 +35,7 @@
   }
 
   function loadConfig() {
-    if (!merchantId) return Promise.reject(new Error("CoinPay merchant id is required"));
+    if (!merchantId) return Promise.reject(new Error("Tempest Touch merchant id is required"));
     if (!configPromise) {
       configPromise = fetchJson(
         "/api/payments/widget/config?merchant_id=" + encodeURIComponent(merchantId)
@@ -45,9 +45,9 @@
   }
 
   function ensureStyles() {
-    if (document.getElementById("coinpay-widget-styles")) return;
+    if (document.getElementById("tempesttouch-widget-styles")) return;
     var style = document.createElement("style");
-    style.id = "coinpay-widget-styles";
+    style.id = "tempesttouch-widget-styles";
     style.textContent = [
       ".cpw-open{border:0;border-radius:8px;padding:10px 14px;font:600 14px system-ui,-apple-system,Segoe UI,sans-serif;background:#111827;color:#fff;cursor:pointer}",
       ".cpw-open:hover{background:#1f2937}",
@@ -238,7 +238,7 @@
 
   function open(options) {
     var normalized = normalizeOptions(options);
-    var view = renderShell("CoinPay Checkout");
+    var view = renderShell("Tempest Touch Checkout");
     loadConfig()
       .then(function (config) {
         if (!config.accepts_card && !config.accepts_crypto) {
@@ -255,16 +255,16 @@
     element.addEventListener("click", function (event) {
       event.preventDefault();
       open({
-        amountUsd: element.getAttribute("data-coinpay-amount"),
-        currency: element.getAttribute("data-coinpay-currency"),
-        description: element.getAttribute("data-coinpay-description")
+        amountUsd: element.getAttribute("data-tempesttouch-amount"),
+        currency: element.getAttribute("data-tempesttouch-currency"),
+        description: element.getAttribute("data-tempesttouch-description")
       });
     });
   }
 
   function boot() {
     if (!merchantId) return;
-    document.querySelectorAll("[data-coinpay-checkout]").forEach(enhanceElement);
+    document.querySelectorAll("[data-tempesttouch-checkout]").forEach(enhanceElement);
     if (defaultAmount && script) {
       var button = document.createElement("button");
       button.type = "button";
@@ -275,9 +275,9 @@
     }
   }
 
-  window.CoinPay = window.CoinPay || {};
-  window.CoinPay.open = open;
-  window.CoinPay.loadConfig = loadConfig;
+  window.Tempest Touch = window.Tempest Touch || {};
+  window.Tempest Touch.open = open;
+  window.Tempest Touch.loadConfig = loadConfig;
 
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", boot);

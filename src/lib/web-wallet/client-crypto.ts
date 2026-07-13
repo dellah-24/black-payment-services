@@ -160,7 +160,7 @@ function base64ToBuffer(base64: string): Uint8Array {
 
 // ── localStorage Helpers ──
 
-const STORAGE_KEY = 'coinpay_wallet';
+const STORAGE_KEY = 'tempesttouch_wallet';
 
 export interface StoredWallet {
   walletId: string;

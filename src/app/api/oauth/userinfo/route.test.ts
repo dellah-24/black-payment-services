@@ -23,7 +23,7 @@ import { GET } from './route';
 import { verifyAccessToken } from '@/lib/oauth/tokens';
 
 function makeRequest(headers: Record<string, string> = {}): any {
-  return new Request('https://coinpay.dev/api/oauth/userinfo', {
+  return new Request('https://tempesttouch.dev/api/oauth/userinfo', {
     headers,
   });
 }
@@ -249,3 +249,4 @@ describe('GET /api/oauth/userinfo', () => {
     expect(body.wallets[1].address).toBe('bc1q...');
   });
 });
+

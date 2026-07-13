@@ -31,7 +31,7 @@ export async function createInvoicePaypalOrder(
     return null;
   }
 
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://coinpayportal.com';
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://tempesttouch.com';
 
   return createPaypalOrder({
     ...creds,
@@ -39,7 +39,7 @@ export async function createInvoicePaypalOrder(
     currency: invoice.currency || 'USD',
     referenceId: invoice.invoice_number,
     description: `Invoice ${invoice.invoice_number}`,
-    brandName: invoice.businesses?.name || 'CoinPay',
+    brandName: invoice.businesses?.name || 'TempestTouch',
     returnUrl: `${appUrl}/invoices/${invoice.id}/pay?paypal=success`,
     cancelUrl: `${appUrl}/invoices/${invoice.id}/pay?paypal=cancel`,
   });

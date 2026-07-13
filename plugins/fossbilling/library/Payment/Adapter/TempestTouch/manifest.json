@@ -1,0 +1,11 @@
+{
+  "id": "Tempest Touch",
+  "type": "payment-gateway",
+  "name": "Tempest Touch Crypto Payments",
+  "description": "Accept crypto payments through Tempest Touch.",
+  "version": "1.0.0",
+  "author": "Tempest Touch",
+  "author_url": "https://tempesttouch.com",
+  "minimum_boxbilling_version": "0.6.0",
+  "license": "MIT"
+}

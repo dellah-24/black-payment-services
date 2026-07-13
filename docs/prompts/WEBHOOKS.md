@@ -1,19 +1,19 @@
-# Handle CoinPay Webhooks
+# Handle Tempest Touch Webhooks
 
-You are implementing a webhook receiver for CoinPay events. This is required for any payment, escrow, or subscription integration.
+You are implementing a webhook receiver for Tempest Touch events. This is required for any payment, escrow, or subscription integration.
 
 ## Goal
 
-Receive signed webhook deliveries from CoinPay, verify them, and update local state idempotently.
+Receive signed webhook deliveries from Tempest Touch, verify them, and update local state idempotently.
 
 ## Environment variables
 
 ```
-COINPAY_WEBHOOK_SECRET=whsec_...
+TEMPESTTOUCH_WEBHOOK_SECRET=whsec_...
 ```
 
 Where to find it:
-- `https://coinpayportal.com/businesses/<your-business-id>` → **Webhooks** tab (or `?mode=webhooks`) → create an endpoint pointing at your `https://example-business.com/api/coinpay/webhook` URL → copy the **Signing Secret**.
+- `https://tempesttouch.com/businesses/<your-business-id>` → **Webhooks** tab (or `?mode=webhooks`) → create an endpoint pointing at your `https://example-business.com/api/tempesttouch/webhook` URL → copy the **Signing Secret**.
 - Each endpoint has its own secret. If you rotate it in the portal, update `.env` and redeploy.
 
 ## Events
@@ -22,7 +22,7 @@ Where to find it:
 
 | Event | Card rail | Crypto rail | Action |
 | --- | --- | --- | --- |
-| `payment.confirmed` | Fires after Stripe Checkout completes — funds in your CoinPay-connected Stripe account | Fires when the chain has enough confirmations — funds NOT yet in your merchant wallet | Fulfill if rail is card; safe to fulfill if rail is crypto (CoinPay forwards next) |
+| `payment.confirmed` | Fires after Stripe Checkout completes — funds in your Tempest Touch-connected Stripe account | Fires when the chain has enough confirmations — funds NOT yet in your merchant wallet | Fulfill if rail is card; safe to fulfill if rail is crypto (Tempest Touch forwards next) |
 | `payment.forwarded` | Not fired for card | Fires when crypto funds are forwarded to your merchant wallet — includes the on-chain payout txid | Fulfill (this is the canonical "merchant has the money" event for crypto) |
 
 A handler that only switches on `payment.confirmed` will silently miss every crypto payment — `payment.forwarded` is the only signal that fires for the crypto path on some chain/wallet configs. Make both events terminal `"complete"` states and dedupe by `payment.id` so it doesn't matter which lands first.
@@ -38,9 +38,9 @@ Other events:
 
 Each delivery includes:
 
-- `x-coinpay-signature: t=<timestamp>,v1=<hex_hmac>`
-- `x-coinpay-event: <event_name>`
-- `x-coinpay-delivery: <unique_id>` — use for dedupe
+- `x-tempesttouch-signature: t=<timestamp>,v1=<hex_hmac>`
+- `x-tempesttouch-event: <event_name>`
+- `x-tempesttouch-delivery: <unique_id>` — use for dedupe
 
 ## Verification (Node)
 
@@ -78,8 +78,8 @@ function verifyWebhookSignature(rawBody, signatureHeader, secret) {
 ```js
 export async function POST(req) {
   const rawBody = await req.text(); // MUST be the raw body, not parsed JSON
-  const signature = req.headers.get('x-coinpay-signature');
-  const secret = process.env.COINPAY_WEBHOOK_SECRET;
+  const signature = req.headers.get('x-tempesttouch-signature');
+  const secret = process.env.TEMPESTTOUCH_WEBHOOK_SECRET;
 
   if (!verifyWebhookSignature(rawBody, signature, secret)) {
     return new Response('Invalid signature', { status: 401 });
@@ -113,8 +113,8 @@ export async function POST(req) {
 
 - The signature is computed over the **raw** request body. Do not re-stringify parsed JSON — many frameworks (Next.js, Express with `express.json()`) lose the exact bytes. Capture the raw body.
 - Reject deliveries older than 5 minutes (replay protection).
-- Always idempotent: dedupe by `x-coinpay-delivery` or `event.id`.
-- **Return 2xx quickly — do not `await` slow IO inside the handler.** CoinPay's outbound delivery uses 3 retries with a 30s timeout each (up to 93s). If your handler awaits PDF rendering, email sending, or any third-party API, you can blow CoinPay's retry budget — which in turn ripples back to Stripe (whose webhook to CoinPay also has a 30s budget for card payments) and silently breaks the whole chain. Grant the credit / mark the order paid synchronously, then `void` the slow work:
+- Always idempotent: dedupe by `x-tempesttouch-delivery` or `event.id`.
+- **Return 2xx quickly — do not `await` slow IO inside the handler.** Tempest Touch's outbound delivery uses 3 retries with a 30s timeout each (up to 93s). If your handler awaits PDF rendering, email sending, or any third-party API, you can blow Tempest Touch's retry budget — which in turn ripples back to Stripe (whose webhook to Tempest Touch also has a 30s budget for card payments) and silently breaks the whole chain. Grant the credit / mark the order paid synchronously, then `void` the slow work:
 
   ```js
   await markOrderPaid(event.data.payment_id); // fast: DB update

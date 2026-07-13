@@ -17,7 +17,7 @@ class StatusMapper
     ];
 
     /**
-     * Map a CoinPayPortal event type to a FOSSBilling action.
+     * Map a Tempest TouchPortal event type to a FOSSBilling action.
      *
      * @return 'mark_paid'|'pending'|'ignore'|'warn'
      */

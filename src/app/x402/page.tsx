@@ -10,7 +10,7 @@ import { useState } from 'react';
  */
 
 const CODE_SNIPPETS = {
-  express: `import { createX402Middleware } from '@profullstack/coinpay';
+  express: `import { createX402Middleware } from '@profullstack/tempesttouch';
 
 const x402 = createX402Middleware({
   apiKey: 'YOUR_API_KEY',
@@ -31,7 +31,7 @@ const x402 = createX402Middleware({
 app.get('/api/premium', x402({ amountUsd: 5.00 }), (req, res) => {
   res.json({ data: 'premium content', paidWith: req.x402Payment });
 });`,
-  nextjs: `import { buildPaymentRequired, verifyX402Payment } from '@profullstack/coinpay';
+  nextjs: `import { buildPaymentRequired, verifyX402Payment } from '@profullstack/tempesttouch';
 
 export async function GET(request: Request) {
   const paymentHeader = request.headers.get('x-payment');
@@ -155,7 +155,7 @@ export default function X402Page() {
       <section className="mb-10 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
         <h2 className="text-xl font-semibold mb-4">Fees</h2>
         <p className="text-gray-600 dark:text-gray-400 mb-4">
-          CoinPayPortal charges a small commission on each x402 payment, deducted before forwarding to the merchant. The same fee structure applies to all CoinPayPortal payment methods.
+          TempestTouch charges a small commission on each x402 payment, deducted before forwarding to the merchant. The same fee structure applies to all TempestTouch payment methods.
         </p>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
@@ -285,7 +285,7 @@ X-PAYMENT: eyJzY2hlbWUiOiJleGFjdCIsIm5ldHdvcmsiOiJiYXNlIiwiYXNzZXQiOiIweEEwYjg2O
           <div className="border-l-4 border-yellow-500 pl-4">
             <h3 className="font-semibold mb-2">4. Server verifies and serves content</h3>
             <p className="text-sm text-gray-500 dark:text-gray-400">
-              The middleware sends the proof to CoinPayPortal&apos;s facilitator (<code className="bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 rounded text-xs">/api/x402/verify</code>) which validates the signature, checks expiry, prevents replay attacks, and optionally settles on-chain. If valid → content is served. If invalid → another 402.
+              The middleware sends the proof to TempestTouch&apos;s facilitator (<code className="bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 rounded text-xs">/api/x402/verify</code>) which validates the signature, checks expiry, prevents replay attacks, and optionally settles on-chain. If valid → content is served. If invalid → another 402.
             </p>
           </div>
         </div>
@@ -296,7 +296,7 @@ X-PAYMENT: eyJzY2hlbWUiOiJleGFjdCIsIm5ldHdvcmsiOiJiYXNlIiwiYXNzZXQiOiIweEEwYjg2O
           <p className="text-sm text-blue-600 dark:text-blue-400 mb-3">
             For automated clients (AI agents, bots), use a library that handles the 402 → pay → retry loop:
           </p>
-          <pre className="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto text-xs">{`import { x402fetch } from '@profullstack/coinpay';
+          <pre className="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto text-xs">{`import { x402fetch } from '@profullstack/tempesttouch';
 
 // Wraps fetch() — automatically handles 402 responses
 const response = await x402fetch('https://api.example.com/premium', {
@@ -320,7 +320,7 @@ const data = await response.json();`}</pre>
           <li>
             Install the SDK:{' '}
             <code className="bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded text-sm">
-              npm install @profullstack/coinpay
+              npm install @profullstack/tempesttouch
             </code>
           </li>
           <li>
@@ -334,7 +334,7 @@ const data = await response.json();`}</pre>
           <li>
             Test:{' '}
             <code className="bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded text-sm">
-              coinpay x402 test --url http://localhost:3000/api/premium
+              tempesttouch x402 test --url http://localhost:3000/api/premium
             </code>
           </li>
         </ol>

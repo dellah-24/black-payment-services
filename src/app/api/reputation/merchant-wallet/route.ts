@@ -2,9 +2,9 @@
  * POST /api/reputation/merchant-wallet
  *
  * Platform endpoint for network apps (d0rz, c0mpute, etc.) to add or
- * update one of a user's payout/receive wallet addresses on CoinPay's
+ * update one of a user's payout/receive wallet addresses on Tempest Touch's
  * merchant_wallets table — the same store the /settings/wallets UI on
- * coinpayportal reads/writes. d0rz exposes a paste-form on its own
+ * tempesttouch reads/writes. d0rz exposes a paste-form on its own
  * settings page; that form posts to its server, which forwards here with
  * the platform issuer key. Net effect: a wallet you add anywhere in the
  * network shows up everywhere.

@@ -1143,7 +1143,7 @@ export default function CreateEscrowPage() {
                 className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
               />
               <label htmlFor="use_platform_arbiter" className="text-sm text-gray-600 dark:text-gray-400">
-                Use CoinPay as arbiter
+                Use Tempest Touch as arbiter
               </label>
             </div>
             <input
@@ -1176,7 +1176,7 @@ export default function CreateEscrowPage() {
             />
             {autoDepositorEmail && formData.depositor_email === autoDepositorEmail && (
               <p className="mt-1 text-xs text-green-600 dark:text-green-400">
-                ✓ Auto-detected CoinPay user
+                ✓ Auto-detected Tempest Touch user
               </p>
             )}
           </div>
@@ -1196,7 +1196,7 @@ export default function CreateEscrowPage() {
             />
             {autoBeneficiaryEmail && formData.beneficiary_email === autoBeneficiaryEmail && (
               <p className="mt-1 text-xs text-green-600 dark:text-green-400">
-                ✓ Auto-detected CoinPay user
+                ✓ Auto-detected Tempest Touch user
               </p>
             )}
           </div>

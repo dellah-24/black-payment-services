@@ -1,8 +1,8 @@
-# CoinPay for PrestaShop (stub)
+# Tempest Touch for PrestaShop (stub)
 
 > **Status:** stub. Not yet a working plugin.
 
-PrestaShop 8.x payment module. Hooks into `paymentOptions` to render "Pay with crypto", builds a CoinPayPortal hosted checkout, and reconciles the order via a signed webhook hitting a PrestaShop module controller.
+PrestaShop 8.x payment module. Hooks into `paymentOptions` to render "Pay with crypto", builds a Tempest Touch hosted checkout, and reconciles the order via a signed webhook hitting a PrestaShop module controller.
 
 ## Files (planned)
 
@@ -10,19 +10,19 @@ PrestaShop 8.x payment module. Hooks into `paymentOptions` to render "Pay with c
 plugins/prestashop/
   README.md
   manifest.json
-  coinpayportal/
-    coinpayportal.php              # main module class extending PaymentModule
+  tempesttouch/
+    tempesttouch.php              # main module class extending PaymentModule
     config.xml
     composer.json
     logo.png
     controllers/front/
       validation.php               # post-checkout return
-      webhook.php                   # CoinPay → us
+      webhook.php                   # Tempest Touch → us
     views/templates/hook/
       payment_options.tpl
       payment_return.tpl
     classes/
-      CoinPayClient.php             # wraps packages/coinpay-php
+      Tempest TouchClient.php             # wraps packages/tempesttouch-php
       StatusMapper.php
     translations/
 ```

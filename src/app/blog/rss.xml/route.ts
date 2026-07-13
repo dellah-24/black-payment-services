@@ -8,9 +8,9 @@ export const dynamic = 'force-dynamic';
 export async function GET() {
   const posts = await listPosts(50);
   const xml = buildRssXml({
-    title: 'CoinPay Blog',
+    title: 'Tempest Touch Blog',
     description:
-      'Crypto payments, Lightning, and merchant-side updates from the CoinPay team.',
+      'Crypto payments, Lightning, and merchant-side updates from the Tempest Touch team.',
     siteUrl: SITE_URL,
     language: 'en-us',
     hubUrl: webSubHubUrl(),

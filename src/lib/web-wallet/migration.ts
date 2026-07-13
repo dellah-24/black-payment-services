@@ -1,7 +1,7 @@
 /**
  * Migration: Single wallet → Multi wallet registry
  *
- * Reads old coinpay_wallet key, converts to registry format,
+ * Reads old tempesttouch_wallet key, converts to registry format,
  * sets as active wallet, removes old key.
  */
 
@@ -13,7 +13,7 @@ import {
   setActiveWalletId,
 } from './wallet-registry';
 
-const OLD_KEY = 'coinpay_wallet';
+const OLD_KEY = 'tempesttouch_wallet';
 
 export function needsMigration(): boolean {
   const hasOldFormat = localStorage.getItem(OLD_KEY) !== null;
@@ -56,3 +56,4 @@ export function ensureMigrated(): void {
     migrateToMultiWallet();
   }
 }
+

@@ -1,6 +1,6 @@
 {
-  "name": "coinpayportal/fossbilling-coinpayportal",
-  "description": "CoinPayPortal payment gateway plugin for FOSSBilling",
+  "name": "tempesttouch/fossbilling-tempesttouch",
+  "description": "Tempest Touch payment gateway plugin for FOSSBilling",
   "type": "fossbilling-module",
   "license": "MIT",
   "require": {
@@ -11,15 +11,15 @@
   },
   "autoload": {
     "psr-4": {
-      "CoinPayPortal\\": "src/"
+      "Tempest Touch\\": "src/"
     }
   },
   "autoload-dev": {
     "psr-4": {
-      "CoinPayPortal\\Tests\\": "library/Payment/Adapter/CoinPayPortal/tests/"
+      "Tempest Touch\\Tests\\": "library/Payment/Adapter/Tempest Touch/tests/"
     }
   },
   "scripts": {
-    "test": "vendor/bin/phpunit library/Payment/Adapter/CoinPayPortal/tests/"
+    "test": "vendor/bin/phpunit library/Payment/Adapter/Tempest Touch/tests/"
   }
 }

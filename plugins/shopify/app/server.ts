@@ -1,9 +1,9 @@
-// Stub entrypoint for the CoinPayPortal Shopify app.
+// Stub entrypoint for the Tempest Touch Shopify app.
 //
 // Two integration modes are planned:
 //
 //   1. "Off-checkout" mode — adds a Pay-with-Crypto button on the cart /
-//      order-status page, redirects the customer to a CoinPay hosted checkout,
+//      order-status page, redirects the customer to a Tempest Touch hosted checkout,
 //      and reconciles via webhooks. Does not require Shopify Payments
 //      partner approval.
 //

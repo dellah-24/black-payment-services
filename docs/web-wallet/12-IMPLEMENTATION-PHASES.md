@@ -1,4 +1,4 @@
-# CoinPayPortal Wallet Mode - Implementation Phases
+# Tempest Touch Wallet Mode - Implementation Phases
 
 ## 1. Overview
 

@@ -18,7 +18,7 @@ const baseBusiness: Business = {
   id: 'b198c6dc-4c3b-4a54-994c-a750c1a580cd',
   merchant_id: '5d79f032-b9ec-42b6-a34a-577c9ab9688d',
   name: 'd0rz.com',
-  webhook_url: 'https://d0rz.com/api/webhooks/coinpay/crypto',
+  webhook_url: 'https://d0rz.com/api/webhooks/tempesttouch/crypto',
   webhook_secret: 'whsecret_test',
   webhook_events: [],
   active: true,
@@ -39,7 +39,7 @@ describe('WebhooksTab', () => {
     // that sendPaymentWebhook reads. Whatever shows here is what every
     // payment event (crypto AND card) will be POSTed to.
     const input = (await screen.findByPlaceholderText('https://example.com/webhook')) as HTMLInputElement;
-    expect(input.value).toBe('https://d0rz.com/api/webhooks/coinpay/crypto');
+    expect(input.value).toBe('https://d0rz.com/api/webhooks/tempesttouch/crypto');
   });
 
   it('queries /api/webhooks?business_id=...&limit=20 on mount for the deliveries panel', async () => {
@@ -63,7 +63,7 @@ describe('WebhooksTab', () => {
           {
             id: 'log_1',
             event: 'payment.confirmed',
-            webhook_url: 'https://d0rz.com/api/webhooks/coinpay/crypto',
+            webhook_url: 'https://d0rz.com/api/webhooks/tempesttouch/crypto',
             status_code: 200,
             response_status: 200,
             success: true,
@@ -76,7 +76,7 @@ describe('WebhooksTab', () => {
           {
             id: 'log_2',
             event: 'payment.confirmed',
-            webhook_url: 'https://d0rz.com/api/webhooks/coinpay/crypto',
+            webhook_url: 'https://d0rz.com/api/webhooks/tempesttouch/crypto',
             status_code: 401,
             response_status: 401,
             success: false,
@@ -128,3 +128,4 @@ describe('WebhooksTab', () => {
     });
   });
 });
+

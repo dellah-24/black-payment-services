@@ -1,8 +1,8 @@
-# CoinPay Security Documentation
+# Tempest Touch Security Documentation
 
 ## Overview
 
-Security is paramount in CoinPay as we handle cryptocurrency transactions and private keys. This document outlines our security architecture, best practices, and threat mitigation strategies.
+Security is paramount in Tempest Touch as we handle cryptocurrency transactions and private keys. This document outlines our security architecture, best practices, and threat mitigation strategies.
 
 ## Security Principles
 
@@ -156,16 +156,16 @@ function generateToken(merchantId: string, email: string): string {
     process.env.JWT_SECRET!,
     {
       expiresIn: '24h',
-      issuer: 'coinpayportal.com',
-      audience: 'coinpayportal-api'
+      issuer: 'tempesttouch.com',
+      audience: 'tempesttouch-api'
     }
   );
 }
 
 function verifyToken(token: string): TokenPayload {
   return jwt.verify(token, process.env.JWT_SECRET!, {
-    issuer: 'coinpayportal.com',
-    audience: 'coinpayportal-api'
+    issuer: 'tempesttouch.com',
+    audience: 'tempesttouch-api'
   }) as TokenPayload;
 }
 ```
@@ -416,9 +416,9 @@ async function deliverWebhook(
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'X-CoinPay-Signature': signature,
-      'X-CoinPay-Timestamp': Date.now().toString(),
-      'User-Agent': 'CoinPay-Webhook/1.0'
+      'X-Tempest Touch-Signature': signature,
+      'X-Tempest Touch-Timestamp': Date.now().toString(),
+      'User-Agent': 'Tempest Touch-Webhook/1.0'
     },
     body: JSON.stringify(payload),
     signal: AbortSignal.timeout(10000) // 10 second timeout
@@ -477,7 +477,7 @@ const supabase = createClient(
     },
     global: {
       headers: {
-        'x-application-name': 'coinpayportal'
+        'x-application-name': 'tempesttouch'
       }
     }
   }
@@ -551,7 +551,7 @@ async function getSecret(secretName: string): Promise<string> {
 
 // Use in production
 const encryptionKey = process.env.NODE_ENV === 'production'
-  ? await getSecret('coinpayportal/encryption-key')
+  ? await getSecret('tempesttouch/encryption-key')
   : process.env.ENCRYPTION_KEY!;
 ```
 
@@ -631,9 +631,9 @@ async function logSecurityEvent(event: SecurityEvent): Promise<void> {
 
 ## Security Contacts
 
-- Security Issues: security@coinpayportal.com
-- Bug Bounty: https://coinpayportal.com/security/bounty
-- PGP Key: Available at https://coinpayportal.com/security/pgp
+- Security Issues: security@tempesttouch.com
+- Bug Bounty: https://tempesttouch.com/security/bounty
+- PGP Key: Available at https://tempesttouch.com/security/pgp
 
 ## References
 

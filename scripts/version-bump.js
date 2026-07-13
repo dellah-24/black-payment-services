@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Unified version bump for the whole CoinPay monorepo.
+ * Unified version bump for the whole Tempest Touch monorepo.
  *
  * One command, one version everywhere: root package.json, the JS SDK, the
  * SDK CLI, the shared PHP client, the WooCommerce plugin, the WHMCS plugin,
@@ -21,7 +21,7 @@
  *   4. Commits the bump (with --no-verify, because the pre-commit hook runs
  *      the full Next.js build — too slow to gate every release bump).
  *   5. Pushes the commit to origin.
- *   6. Updates the global `coinpay` CLI install.
+ *   6. Updates the global `tempesttouch` CLI install.
  *
  * What it does NOT do:
  *   - Create or push git tags. Tagging is still manual because pushing a
@@ -83,44 +83,44 @@ const TARGETS = [
     label: 'SDK package.json',
     pattern: /("version"\s*:\s*")(\d+\.\d+\.\d+)(")/,
   },
-  // Note: packages/sdk/bin/coinpay.js reads its VERSION from package.json at
+  // Note: packages/sdk/bin/tempesttouch.js reads its VERSION from package.json at
   // runtime, so there's no string literal to bump here.
   {
-    file: 'packages/coinpay-php/src/Client.php',
+    file: 'packages/tempesttouch-php/src/Client.php',
     label: 'shared PHP client USER_AGENT',
-    pattern: /(USER_AGENT\s*=\s*'coinpay-php\/)(\d+\.\d+\.\d+)(')/,
+    pattern: /(USER_AGENT\s*=\s*'tempesttouch-php\/)(\d+\.\d+\.\d+)(')/,
   },
   {
-    file: 'plugins/woocommerce/coinpay-woocommerce/coinpay-woocommerce.php',
+    file: 'plugins/woocommerce/tempesttouch-woocommerce/tempesttouch-woocommerce.php',
     label: 'WooCommerce plugin header Version',
     pattern: /(\*\s+Version:\s+)(\d+\.\d+\.\d+)(\b)/,
   },
   {
-    file: 'plugins/woocommerce/coinpay-woocommerce/coinpay-woocommerce.php',
-    label: 'COINPAY_WC_VERSION constant',
-    pattern: /(define\('COINPAY_WC_VERSION',\s*')(\d+\.\d+\.\d+)('\);)/,
+    file: 'plugins/woocommerce/tempesttouch-woocommerce/tempesttouch-woocommerce.php',
+    label: 'TEMPESTTOUCH_WC_VERSION constant',
+    pattern: /(define\('TEMPESTTOUCH_WC_VERSION',\s*')(\d+\.\d+\.\d+)('\);)/,
   },
   {
-    file: 'plugins/woocommerce/coinpay-woocommerce/readme.txt',
+    file: 'plugins/woocommerce/tempesttouch-woocommerce/readme.txt',
     label: 'readme.txt Stable tag',
     pattern: /(Stable tag:\s*)(\d+\.\d+\.\d+)(\b)/,
   },
   {
-    file: 'plugins/whmcs/modules/gateways/coinpay.php',
+    file: 'plugins/whmcs/modules/gateways/tempesttouch.php',
     label: 'WHMCS plugin_version metadata',
     pattern: /('plugin_version'\s*=>\s*')(\d+\.\d+\.\d+)(')/,
   },
   {
     file: 'scripts/build-plugin-zips.sh',
     label: 'build-plugin-zips.sh default version',
-    pattern: /(COINPAY_PLUGIN_VERSION:-)(\d+\.\d+\.\d+)(\})/,
+    pattern: /(TEMPESTTOUCH_PLUGIN_VERSION:-)(\d+\.\d+\.\d+)(\})/,
   },
 ];
 
 // Files committed at the end. Vendored PHP copies are added dynamically after sync.
 const COMMITTED_FILES = new Set(TARGETS.map((t) => t.file).concat([
-  'plugins/woocommerce/coinpay-woocommerce/lib/CoinPay/Client.php',
-  'plugins/whmcs/modules/gateways/coinpay/lib/CoinPay/Client.php',
+  'plugins/woocommerce/tempesttouch-woocommerce/lib/Tempest Touch/Client.php',
+  'plugins/whmcs/modules/gateways/tempesttouch/lib/Tempest Touch/Client.php',
 ]));
 
 function applyEdit(edit, newVersion) {
@@ -179,7 +179,7 @@ try {
   run('./scripts/sync-plugin-sdk.sh');
 
   // Publish the JS SDK to npm.
-  console.log('\n📤 Publishing @profullstack/coinpay to npm...');
+  console.log('\n📤 Publishing @profullstack/tempesttouch to npm...');
   run('npm publish --access public --ignore-scripts', { cwd: resolve(rootDir, 'packages/sdk') });
 
   // Commit everything together. --no-verify because the pre-commit hook
@@ -188,7 +188,7 @@ try {
   // we'll see it there.
   console.log('\n📝 Committing bump...');
   run(`git add -- ${[...COMMITTED_FILES].join(' ')}`);
-  run(`git commit --no-verify -m "chore: bump CoinPay to ${newVersion}"`);
+  run(`git commit --no-verify -m "chore: bump Tempest Touch to ${newVersion}"`);
 
   // Push commit to origin master. Tags are still manual.
   console.log('\n🚀 Pushing to origin...');
@@ -197,12 +197,12 @@ try {
   // Keep the globally installed CLI current.
   console.log('\n🔄 Updating global CLI install...');
   try {
-    run(`sudo npm install -g @profullstack/coinpay@${newVersion}`);
+    run(`sudo npm install -g @profullstack/tempesttouch@${newVersion}`);
   } catch (err) {
     console.warn(`(non-fatal) Global install skipped: ${err.message}`);
   }
 
-  console.log(`\n✅ CoinPay ${newVersion} published and committed.`);
+  console.log(`\n✅ Tempest Touch ${newVersion} published and committed.`);
   if (drift.length > 0) {
     console.log('\nNote: the following files were out of sync and have been aligned:');
     for (const d of drift) {
@@ -210,7 +210,7 @@ try {
     }
   }
   console.log('\nTo release the plugins, tag and push when ready:');
-  console.log(`  git tag -a plugins-v${newVersion} -m "CoinPay plugins v${newVersion}"`);
+  console.log(`  git tag -a plugins-v${newVersion} -m "Tempest Touch plugins v${newVersion}"`);
   console.log(`  git push origin plugins-v${newVersion}`);
 } catch (err) {
   console.error(`\n❌ ${err.message}`);

@@ -4,8 +4,8 @@
 │                                                                              │
 │  Penetration test initiated                                                  │
 │                                                                              │
-│  Target  /home/ubuntu/src/coinpayportal                                      │
-│  Output  strix_runs/coinpayportal_f90b                                       │
+│  Target  /home/ubuntu/src/tempesttouchportal                                      │
+│  Output  strix_runs/tempesttouchportal_f90b                                       │
 │                                                                              │
 │  Vulnerabilities will be displayed in real-time.                             │
 │                                                                              │

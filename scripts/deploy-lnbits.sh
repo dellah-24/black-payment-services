@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# CoinPay LNbits Deploy / Upgrade Script
+# Tempest Touch LNbits Deploy / Upgrade Script
 # Idempotent — safe to run on every deploy.
 #
 # Flow: stop lnbits → backup db → git pull → upgrade deps → start lnbits
@@ -16,7 +16,7 @@ BACKUP_DIR="/opt/lnbits-backups"
 MAX_BACKUPS=10
 
 echo "═══════════════════════════════════════════"
-echo "  CoinPay LNbits Deploy"
+echo "  Tempest Touch LNbits Deploy"
 echo "  $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
 echo "═══════════════════════════════════════════"
 

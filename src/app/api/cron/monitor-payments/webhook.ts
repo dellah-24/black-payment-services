@@ -80,8 +80,8 @@ export async function sendWebhook(
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'X-CoinPay-Signature': signature,
-        'User-Agent': 'CoinPay-Webhook/1.0',
+        'X-tempesttouch-Signature': signature,
+        'User-Agent': 'tempesttouch-Webhook/1.0',
       },
       body: payloadString,
     });
@@ -105,3 +105,4 @@ export async function sendWebhook(
     console.error(`Failed to send webhook for payment ${payment.id}:`, error);
   }
 }
+

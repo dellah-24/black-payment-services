@@ -1,4 +1,4 @@
--- CoinPayPortal Reputation Protocol (CPR) - Phase 1
+-- Tempest TouchPortal Reputation Protocol (CPR) - Phase 1
 -- Migration: 20260213_reputation_protocol.sql
 
 -- 1. Reputation Issuers — registered platforms that can submit receipts
@@ -49,7 +49,7 @@ CREATE TABLE IF NOT EXISTS reputation_credentials (
   window_start timestamptz,
   window_end timestamptz,
   issued_at timestamptz DEFAULT now(),
-  issuer_did text DEFAULT 'did:web:coinpayportal.com',
+  issuer_did text DEFAULT 'did:web:tempesttouchportal.com',
   signature text,
   revoked boolean DEFAULT false,
   revoked_at timestamptz
@@ -68,7 +68,7 @@ CREATE TABLE IF NOT EXISTS reputation_revocations (
   revoked_at timestamptz DEFAULT now()
 );
 
--- Seed CoinPayPortal as default issuer
+-- Seed Tempest TouchPortal as default issuer
 INSERT INTO reputation_issuers (did, name, domain, active)
-VALUES ('did:web:coinpayportal.com', 'CoinPayPortal', 'coinpayportal.com', true)
+VALUES ('did:web:tempesttouchportal.com', 'Tempest TouchPortal', 'tempesttouchportal.com', true)
 ON CONFLICT (did) DO NOTHING;

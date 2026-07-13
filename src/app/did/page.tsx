@@ -36,7 +36,7 @@ const PILLARS = [
   {
     icon: '🌐',
     title: 'Portable Reputation',
-    body: 'Your DID and reputation are not locked to CoinPayPortal. Reputation queries are public API. If we shut down tomorrow, your history survives.',
+    body: 'Your DID and reputation are not locked to Tempest Touch. Reputation queries are public API. If we shut down tomorrow, your history survives.',
   },
 ];
 
@@ -190,7 +190,7 @@ export default function DidLandingPage() {
               <thead className="bg-gray-900/60">
                 <tr>
                   <th className="text-left p-4 font-semibold">Feature</th>
-                  <th className="p-4 font-semibold text-violet-300">CoinPayPortal DID</th>
+                  <th className="p-4 font-semibold text-violet-300">Tempest Touch DID</th>
                   <th className="p-4 font-semibold text-gray-400">OAuth</th>
                   <th className="p-4 font-semibold text-gray-400">API Keys</th>
                 </tr>

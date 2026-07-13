@@ -1,8 +1,8 @@
 # Web Wallet API Reference
 
-The CoinPay Web Wallet is a **non-custodial** multi-chain wallet. Private keys never leave the client. The server stores only public keys and coordinates transactions.
+The Tempest Touch Web Wallet is a **non-custodial** multi-chain wallet. Private keys never leave the client. The server stores only public keys and coordinates transactions.
 
-**Base URL:** `https://coinpayportal.com/api/web-wallet`
+**Base URL:** `https://tempesttouch.com/api/web-wallet`
 
 ---
 
@@ -146,7 +146,7 @@ Import an existing wallet with proof of ownership.
 {
   "identity_public_key": "04a1b2c3d4...",
   "proof_signature": "3045022100...",
-  "proof_message": "CoinPay wallet import: 2025-01-15T10:30:00Z",
+  "proof_message": "Tempest Touch wallet import: 2025-01-15T10:30:00Z",
   "label": "Imported Wallet",
   "addresses": [
     {
@@ -181,7 +181,7 @@ Request an authentication challenge.
   "ok": true,
   "data": {
     "challenge_id": "ch_123",
-    "challenge": "coinpay:auth:550e8400...:1705312500:a1b2c3d4e5f6",
+    "challenge": "tempesttouch:auth:550e8400...:1705312500:a1b2c3d4e5f6",
     "expires_at": "2025-01-15T10:35:00.000Z"
   }
 }

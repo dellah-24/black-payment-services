@@ -11,10 +11,10 @@ Allow users to manage multiple wallets from the same browser with a wallet selec
 ## Current Architecture
 
 ### localStorage Keys
-- `coinpay_wallet_id` — current wallet UUID
-- `coinpay_wallet_encrypted` — AES-encrypted seed phrase (password-protected)
-- `coinpay_wallet_public_keys` — ed25519 + secp256k1 public keys
-- `coinpay_wallet_addresses` — derived chain addresses (BTC, ETH, SOL, etc.)
+- `tempesttouch_wallet_id` — current wallet UUID
+- `tempesttouch_wallet_encrypted` — AES-encrypted seed phrase (password-protected)
+- `tempesttouch_wallet_public_keys` — ed25519 + secp256k1 public keys
+- `tempesttouch_wallet_addresses` — derived chain addresses (BTC, ETH, SOL, etc.)
 
 ### Auth Flow
 1. User creates/imports wallet → seed encrypted with password → stored in localStorage
@@ -32,7 +32,7 @@ Allow users to manage multiple wallets from the same browser with a wallet selec
 Replace single-wallet keys with a wallet registry:
 
 ```
-coinpay_wallets = {
+tempesttouch_wallets = {
   "wallet-uuid-1": {
     id: "wallet-uuid-1",
     label: "Main Wallet",
@@ -49,15 +49,15 @@ coinpay_wallets = {
   }
 }
 
-coinpay_active_wallet = "wallet-uuid-1"
+tempesttouch_active_wallet = "wallet-uuid-1"
 ```
 
 ### Migration
 
 On first load with old format:
-1. Read existing `coinpay_wallet_*` keys
-2. Convert to new `coinpay_wallets` registry format
-3. Set `coinpay_active_wallet` to existing wallet ID
+1. Read existing `tempesttouch_wallet_*` keys
+2. Convert to new `tempesttouch_wallets` registry format
+3. Set `tempesttouch_active_wallet` to existing wallet ID
 4. Remove old keys
 5. Seamless — user sees no change
 
@@ -92,7 +92,7 @@ On first load with old format:
 
 1. User selects different wallet from dropdown
 2. If wallet is locked → show unlock modal (password)
-3. On unlock → set `coinpay_active_wallet` to new ID
+3. On unlock → set `tempesttouch_active_wallet` to new ID
 4. Refresh dashboard with new wallet's data
 5. Auth token is per-wallet (JWT contains wallet_id)
 

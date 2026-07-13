@@ -21,13 +21,13 @@ const SUPPORTED_CRYPTOS = new Set([
 ]);
 
 /**
- * Resolve (or silently provision) the CoinPay merchant + business that owns
+ * Resolve (or silently provision) the Tempest Touch merchant + business that owns
  * invoices issued on behalf of an external-platform user (e.g. ugig.net).
  *
  * Idempotent: re-calling with the same (platform, did) returns the same rows.
  *
  * The merchant created here is marked `auth_provider='platform'` and gets a
- * non-loggable random password hash — the user can never sign into CoinPay
+ * non-loggable random password hash — the user can never sign into Tempest Touch
  * directly; the platform is their auth surface.
  */
 export async function resolveOrProvisionPayee(

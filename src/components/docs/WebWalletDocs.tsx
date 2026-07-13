@@ -48,21 +48,21 @@ export function WebWalletDocs() {
           <h4 className="text-lg font-semibold text-white mb-3">SDK (npm)</h4>
           <CodeBlock title="Install" language="bash">
 {`# Payment gateway SDK + CLI
-npm install -g @profullstack/coinpay
+npm install -g @profullstack/tempesttouch
 
 # Configure
-coinpay config set apiKey YOUR_API_KEY
-coinpay config set apiUrl https://coinpayportal.com`}
+tempesttouch config set apiKey YOUR_API_KEY
+tempesttouch config set apiUrl https://tempesttouch.com`}
           </CodeBlock>
         </div>
         <div>
           <h4 className="text-lg font-semibold text-white mb-3">Wallet CLI (from source)</h4>
           <CodeBlock title="Install" language="bash">
-{`git clone https://github.com/profullstack/coinpayportal
-cd coinpayportal && pnpm install
+{`git clone https://github.com/profullstack/tempesttouch
+cd tempesttouch && pnpm install
 
 # Create a wallet
-pnpm coinpay-wallet create --chains BTC,ETH,SOL`}
+pnpm tempesttouch-wallet create --chains BTC,ETH,SOL`}
           </CodeBlock>
         </div>
       </div>
@@ -81,7 +81,7 @@ pnpm coinpay-wallet create --chains BTC,ETH,SOL`}
           { cmd: 'derive-missing', args: '<wallet-id> [--chains BTC,ETH,...]', desc: 'Derive addresses for newly supported chains' },
         ].map((c) => (
           <div key={c.cmd} className="flex items-start gap-4 p-3 rounded-lg bg-slate-800/50">
-            <code className="text-purple-400 font-mono text-sm whitespace-nowrap shrink-0">coinpay-wallet {c.cmd}</code>
+            <code className="text-purple-400 font-mono text-sm whitespace-nowrap shrink-0">tempesttouch-wallet {c.cmd}</code>
             <div className="min-w-0">
               <code className="text-gray-500 text-xs break-all">{c.args}</code>
               <p className="text-gray-300 text-sm mt-0.5">{c.desc}</p>
@@ -93,11 +93,11 @@ pnpm coinpay-wallet create --chains BTC,ETH,SOL`}
       <div className="mb-8 p-4 bg-slate-800/50 rounded-lg">
         <h4 className="text-white font-semibold text-sm mb-2">Environment Variables</h4>
         <div className="space-y-1 text-sm text-gray-300">
-          <p><code className="text-purple-400">NEXT_PUBLIC_API_URL</code> — API base URL (default: <code>https://coinpayportal.com</code>). The legacy <code>COINPAY_API_URL</code> is also supported by the CLI.</p>
-          <p><code className="text-purple-400">COINPAY_AUTH_TOKEN</code> — JWT token for read-only operations</p>
-          <p><code className="text-purple-400">COINPAY_MNEMONIC</code> — Mnemonic phrase (required for <code>send</code> and <code>derive-missing</code>)</p>
+          <p><code className="text-purple-400">NEXT_PUBLIC_API_URL</code> — API base URL (default: <code>https://tempesttouch.com</code>). The legacy <code>TEMPESTTOUCH_API_URL</code> is also supported by the CLI.</p>
+          <p><code className="text-purple-400">TEMPESTTOUCH_AUTH_TOKEN</code> — JWT token for read-only operations</p>
+          <p><code className="text-purple-400">TEMPESTTOUCH_MNEMONIC</code> — Mnemonic phrase (required for <code>send</code> and <code>derive-missing</code>)</p>
         </div>
-        <p className="text-gray-500 text-xs mt-2">Or use a config file: <code>~/.coinpayrc.json</code></p>
+        <p className="text-gray-500 text-xs mt-2">Or use a config file: <code>~/.tempesttouchrc.json</code></p>
       </div>
 
       {/* Auth Flow */}
@@ -136,11 +136,11 @@ Nonce: random string (e.g. crypto.randomUUID().slice(0,8))
           The fastest way to integrate is with the <strong className="text-white">SDK</strong>. One call creates a wallet with addresses for all supported chains — ready to send and receive immediately.
         </p>
         <CodeBlock title="Node.js SDK — Create Wallet (All Chains)" language="javascript">
-{`import { Wallet } from '@coinpayportal/wallet-sdk';
+{`import { Wallet } from '@tempesttouch/wallet-sdk';
 
 // Creates wallet + derives addresses for the full supported set
 const wallet = await Wallet.create({
-  baseUrl: 'https://coinpayportal.com',
+  baseUrl: 'https://tempesttouch.com',
   chains: ['BTC', 'BCH', 'ETH', 'POL', 'SOL', 'DOGE', 'XRP', 'ADA', 'BNB', 'USDC_ETH', 'USDC_POL', 'USDC_SOL', 'USDT_ETH', 'USDT_POL', 'USDT_SOL'],
 });
 
@@ -169,15 +169,15 @@ const newAddr = await wallet.deriveAddress('BTC');`}
           <span className="text-amber-400 font-semibold">🔄 New Chains Added?</span>
         </div>
         <p className="text-amber-300 text-sm mb-3">
-          When CoinPayPortal adds support for new coins, existing wallets won&apos;t have addresses for them. 
+          When TempestTouch adds support for new coins, existing wallets won&apos;t have addresses for them. 
           Use <code className="text-amber-200">deriveMissingChains()</code> to automatically derive addresses for any missing chains.
         </p>
         <CodeBlock title="Node.js SDK — Derive Missing Chains" language="javascript">
-{`import { Wallet } from '@coinpayportal/wallet-sdk';
+{`import { Wallet } from '@tempesttouch/wallet-sdk';
 
 // Load your existing wallet from seed
 const wallet = await Wallet.fromSeed(process.env.WALLET_MNEMONIC, {
-  baseUrl: 'https://coinpayportal.com',
+  baseUrl: 'https://tempesttouch.com',
   chains: ['BTC', 'ETH'], // minimal chains for auth
 });
 
@@ -195,8 +195,8 @@ console.log('New addresses:', newAddresses);
           <h4 className="text-white font-semibold text-sm mb-2">CLI Command (for bots)</h4>
           <CodeBlock title="Terminal" language="bash">
 {`# Check and derive missing chains
-export COINPAY_MNEMONIC="your twelve word seed phrase here"
-pnpm coinpay-wallet derive-missing <wallet-id>
+export TEMPESTTOUCH_MNEMONIC="your twelve word seed phrase here"
+pnpm tempesttouch-wallet derive-missing <wallet-id>
 
 # Output:
 # Missing chains: BCH, POL, SOL, DOGE, XRP, ADA, BNB, USDC_ETH, USDC_POL, USDC_SOL, USDT_ETH, USDT_POL, USDT_SOL
@@ -261,7 +261,7 @@ pnpm coinpay-wallet derive-missing <wallet-id>
 {`{
   "identity_public_key": "04a1b2c3d4...",
   "proof_signature": "3045022100...",
-  "proof_message": "CoinPay wallet import: 2025-01-15T10:30:00Z",
+  "proof_message": "TempestTouch wallet import: 2025-01-15T10:30:00Z",
   "label": "Imported Wallet",
   "addresses": [
     { "chain": "ETH", "address": "0x...", "public_key": "04...", "derivation_path": "m/44'/60'/0'/0/0" }
@@ -277,7 +277,7 @@ pnpm coinpay-wallet derive-missing <wallet-id>
   "ok": true,
   "data": {
     "challenge_id": "ch_123",
-    "challenge": "coinpay:auth:550e8400...:1705312500:a1b2c3d4e5f6",
+    "challenge": "tempesttouch:auth:550e8400...:1705312500:a1b2c3d4e5f6",
     "expires_at": "2025-01-15T10:35:00.000Z"
   }
 }`}
@@ -535,7 +535,7 @@ pnpm coinpay-wallet derive-missing <wallet-id>
           All chain addresses are auto-generated — no manual setup needed.
         </p>
         <CodeBlock title="npm install" language="bash">
-{`npm install @coinpayportal/wallet-sdk`}
+{`npm install @tempesttouch/wallet-sdk`}
         </CodeBlock>
       </div>
     </DocSection>

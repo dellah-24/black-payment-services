@@ -1,5 +1,5 @@
 -- Portable reputation events: turn did_reputation_events into a signed,
--- cross-app event log that any platform (CoinPayPortal, uGig, c0mpute,
+-- cross-app event log that any platform (Tempest TouchPortal, uGig, c0mpute,
 -- d0rz, CrawlProof, …) can write to and any consumer can verify.
 --
 -- source_did identifies the platform that emitted the event — the

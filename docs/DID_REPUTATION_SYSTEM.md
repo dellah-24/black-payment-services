@@ -1,6 +1,6 @@
 # DID & Reputation System
 
-## CoinPayPortal Reputation Protocol (CPR)
+## Tempest Touch Reputation Protocol (CPR)
 
 A portable, escrow-backed reputation layer anchored in decentralized identifiers (DIDs) and real economic activity.
 
@@ -50,7 +50,7 @@ CPR solves this by anchoring reputation in **real economic activity** (escrow se
 
 ```
 ┌──────────────────────────────────────────────────────────────┐
-│                    CoinPayPortal Platform                     │
+│                    Tempest Touch Platform                     │
 │                                                              │
 │  ┌──────────┐   ┌──────────────┐   ┌─────────────────────┐  │
 │  │  Escrow   │──▶│  Settlement  │──▶│   Task Receipt      │  │
@@ -208,7 +208,7 @@ Path A: Auto-Generate                Path B: Link Existing
   "task_id": "uuid",
   "agent_did": "did:key:z6Mk...",
   "buyer_did": "did:key:z6Mk...",
-  "platform_did": "did:web:coinpayportal.com",
+  "platform_did": "did:web:tempesttouch.com",
   "escrow_tx": "0xabc...",
   "amount": 500.00,
   "currency": "USD",
@@ -452,19 +452,19 @@ Z-score > 3σ over rolling 7-day window
 
 ## SDK & CLI
 
-### SDK (`@profullstack/coinpay`)
+### SDK (`@profullstack/tempesttouch`)
 
 ```javascript
-import { CoinPayClient } from '@profullstack/coinpay';
+import { Tempest TouchClient } from '@profullstack/tempesttouch';
 import {
   claimDid, getMyDid, linkDid,
   submitReceipt, getReputation,
   getCredential, getCredentials,
   getReceipts, getBadgeUrl,
   verifyCredential, getRevocationList,
-} from '@profullstack/coinpay';
+} from '@profullstack/tempesttouch';
 
-const client = new CoinPayClient({ apiKey: 'your-key' });
+const client = new Tempest TouchClient({ apiKey: 'your-key' });
 
 // DID
 const did = await claimDid(client);
@@ -480,37 +480,37 @@ const cred = await getCredential(client, 'cred-id');
 const valid = await verifyCredential(client, { credential_id: 'cred-id' });
 
 // Badge
-const url = getBadgeUrl('https://coinpayportal.com', 'did:key:z6Mk...');
+const url = getBadgeUrl('https://tempesttouch.com', 'did:key:z6Mk...');
 ```
 
 ### CLI
 
 ```bash
 # DID Management
-coinpay reputation did              # View your DID
-coinpay reputation did claim        # Generate new DID
-coinpay reputation did link \
+tempesttouch reputation did              # View your DID
+tempesttouch reputation did claim        # Generate new DID
+tempesttouch reputation did link \
   --did "did:key:..." \
   --public-key "..." \
   --signature "..."                 # Link existing DID
 
 # Reputation
-coinpay reputation query <did>      # Query reputation score
-coinpay reputation submit \
+tempesttouch reputation query <did>      # Query reputation score
+tempesttouch reputation submit \
   --receipt receipt.json            # Submit task receipt
 
 # Credentials & Receipts
-coinpay reputation credentials      # List your credentials
-coinpay reputation credentials <did> # List credentials for a DID
-coinpay reputation receipts         # List your receipts
-coinpay reputation receipts <did>   # List receipts for a DID
-coinpay reputation credential <id>  # Get credential details
-coinpay reputation verify <id>      # Verify a credential
-coinpay reputation revocations      # List revoked credentials
+tempesttouch reputation credentials      # List your credentials
+tempesttouch reputation credentials <did> # List credentials for a DID
+tempesttouch reputation receipts         # List your receipts
+tempesttouch reputation receipts <did>   # List receipts for a DID
+tempesttouch reputation credential <id>  # Get credential details
+tempesttouch reputation verify <id>      # Verify a credential
+tempesttouch reputation revocations      # List revoked credentials
 
 # Badge
-coinpay reputation badge            # Get your badge URL
-coinpay reputation badge <did>      # Get badge URL for a DID
+tempesttouch reputation badge            # Get your badge URL
+tempesttouch reputation badge <did>      # Get badge URL for a DID
 ```
 
 ---
@@ -521,7 +521,7 @@ coinpay reputation badge <did>      # Get badge URL for a DID
 
 ```
 ┌──────────────┐                    ┌──────────────────┐
-│   ugig.net   │                    │  CoinPayPortal   │
+│   ugig.net   │                    │  Tempest Touch   │
 │              │   GET /reputation  │                  │
 │  Freelancer  │───────────────────▶│  Reputation API  │
 │  Profile     │◀───────────────────│                  │
@@ -553,7 +553,7 @@ coinpay reputation badge <did>      # Get badge URL for a DID
    Display trust vector on user profiles
 
 5. Embed Badges
-   <img src="coinpayportal.com/api/reputation/badge/{did}" />
+   <img src="tempesttouch.com/api/reputation/badge/{did}" />
 ```
 
 ---
@@ -579,7 +579,7 @@ coinpay reputation badge <did>      # Get badge URL for a DID
 - [x] Recency decay: 90-day half-life
 - [x] Diversity multiplier
 - [x] SDK: `submitActionReceipt()` + `getTrustProfile()`
-- [x] CLI: `coinpay reputation profile <did>`
+- [x] CLI: `tempesttouch reputation profile <did>`
 - [x] Web UI: Trust vector bar chart
 
 ### Phase 3 — Anti-Collusion Engine
@@ -600,7 +600,7 @@ coinpay reputation badge <did>      # Get badge URL for a DID
 ## Files & Locations
 
 ```
-coinpayportal/
+tempesttouch/
 ├── docs/
 │   ├── DID_REPUTATION_SYSTEM.md    ← This file
 │   └── CPTL-PRD-v2.md             ← Full PRD
@@ -629,7 +629,7 @@ coinpayportal/
 │       └── ReputationDocs.tsx
 ├── packages/sdk/
 │   ├── src/reputation.js           ← SDK methods
-│   ├── bin/coinpay.js              ← CLI commands
+│   ├── bin/tempesttouch.js              ← CLI commands
 │   └── test/
 │       ├── reputation-sdk.test.js  ← 13 tests
 │       └── cli-reputation.test.js  ← 9 tests

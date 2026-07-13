@@ -2,7 +2,7 @@
 
 ## Enable Debug Logging
 
-Go to **System → Payment Gateways → CoinPayPortal → Manage** and set **Debug Logging** to **Yes**. Then check your PHP error log (usually `/var/log/php/error.log` or your web server's error log).
+Go to **System → Payment Gateways → Tempest Touch → Manage** and set **Debug Logging** to **Yes**. Then check your PHP error log (usually `/var/log/php/error.log` or your web server's error log).
 
 Disable debug logging in production once your issue is resolved.
 
@@ -17,7 +17,7 @@ The customer sees this message when the plugin cannot create a checkout session.
 **Check:**
 - API key is correct and not expired.
 - Merchant ID is correct.
-- API Base URL is reachable from your server (`curl https://api.coinpayportal.com/v1/checkouts` should not time out).
+- API Base URL is reachable from your server (`curl https://api.tempesttouch.com/v1/checkouts` should not time out).
 - Sandbox mode matches your API key (sandbox key ≠ live key).
 - Debug logging is enabled and the PHP error log shows the specific API error.
 
@@ -26,16 +26,16 @@ The customer sees this message when the plugin cannot create a checkout session.
 ### Webhook not received / invoice not marked paid
 
 **Check:**
-1. The webhook URL (`https://YOUR-DOMAIN.COM/ipn/CoinPayPortal`) is registered in your CoinPayPortal merchant dashboard.
-2. The webhook URL is publicly reachable — test with `curl -X POST https://YOUR-DOMAIN.COM/ipn/CoinPayPortal`.
-3. The **Webhook Secret** in FOSSBilling matches exactly what's in your CoinPayPortal dashboard.
-4. Debug logging shows `[CoinPayPortal] Webhook received event=...` in the error log.
+1. The webhook URL (`https://YOUR-DOMAIN.COM/ipn/Tempest Touch`) is registered in your Tempest Touch merchant dashboard.
+2. The webhook URL is publicly reachable — test with `curl -X POST https://YOUR-DOMAIN.COM/ipn/Tempest Touch`.
+3. The **Webhook Secret** in FOSSBilling matches exactly what's in your Tempest Touch dashboard.
+4. Debug logging shows `[Tempest Touch] Webhook received event=...` in the error log.
 
 ---
 
 ### "Webhook signature verification failed"
 
-The `X-CoinPayPortal-Signature` header did not match.
+The `X-Tempest Touch-Signature` header did not match.
 
 **Check:**
 - Webhook Secret is copied correctly (no extra spaces or newlines).
@@ -81,12 +81,12 @@ sudo yum install php-curl
 If you see "Template not found: pay" the `templates/` directory was not copied correctly. Verify:
 
 ```
-library/Payment/Adapter/CoinPayPortal/templates/pay.phtml
-library/Payment/Adapter/CoinPayPortal/templates/error.phtml
+library/Payment/Adapter/Tempest Touch/templates/pay.phtml
+library/Payment/Adapter/Tempest Touch/templates/error.phtml
 ```
 
 ---
 
 ## Getting Help
 
-Open an issue at [github.com/profullstack/coinpayportal](https://github.com/profullstack/coinpayportal/issues) or contact [support@coinpayportal.com](mailto:support@coinpayportal.com).
+Open an issue at [github.com/profullstack/tempesttouch](https://github.com/profullstack/tempesttouch/issues) or contact [support@tempesttouch.com](mailto:support@tempesttouch.com).

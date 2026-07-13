@@ -4,7 +4,7 @@
 
 # Executive Summary
 
-The security assessment of the CoinPay Portal identified several security concerns. Notably, multiple API endpoints are improperly handling user inputs in database queries, leading to potential SQL injection vulnerabilities. While no immediate authentication bypass issues were confirmed, the review highlighted areas needing improvement in token lifecycle management and the secure handling of JWT tokens.
+The security assessment of the Tempest Touch Portal identified several security concerns. Notably, multiple API endpoints are improperly handling user inputs in database queries, leading to potential SQL injection vulnerabilities. While no immediate authentication bypass issues were confirmed, the review highlighted areas needing improvement in token lifecycle management and the secure handling of JWT tokens.
 
 # Methodology
 

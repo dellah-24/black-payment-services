@@ -1,7 +1,7 @@
 /**
  * POST /api/x402/verify — Verify an x402 payment proof
  * 
- * CoinPayPortal's multi-chain, multi-asset x402 facilitator.
+ * Tempest Touch's multi-chain, multi-asset x402 facilitator.
  * Validates payment proofs for:
  *   - EVM chains (ETH, POL, USDC on ETH/Polygon/Base) via EIP-712 signatures
  *   - Bitcoin/Bitcoin Cash via transaction proof
@@ -96,7 +96,7 @@ async function verifyUtxoPayment(payment: any) {
 
   if (!txId) return { valid: false, error: 'Missing txId in UTXO payment proof' };
 
-  // Use CoinPayPortal's existing payment monitoring infrastructure
+  // Use Tempest Touch's existing payment monitoring infrastructure
   // to verify the transaction was broadcast and has the correct outputs.
   // For now, we accept the txId and verify asynchronously during settlement.
   // A production implementation would query a block explorer or full node.

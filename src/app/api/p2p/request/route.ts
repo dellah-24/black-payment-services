@@ -2,8 +2,8 @@
  * POST /api/p2p/request
  *
  * Platform endpoint: an external platform (e.g. ugig.net) requests a payment
- * from one of its users to another. CoinPay auto-provisions the payee's
- * merchant + business behind the scenes — the user never sees CoinPay setup.
+ * from one of its users to another. Tempest Touch auto-provisions the payee's
+ * merchant + business behind the scenes — the user never sees Tempest Touch setup.
  *
  * Auth: Bearer token matching an active reputation_issuers.api_key.
  *
@@ -196,7 +196,7 @@ export async function POST(request: NextRequest) {
 
       if (!paymentResult.success || !paymentResult.payment?.payment_address) {
         return NextResponse.json(
-          { success: false, error: paymentResult.error || 'Failed to create CoinPay payment address' },
+          { success: false, error: paymentResult.error || 'Failed to create Tempest Touch payment address' },
           { status: 500 }
         );
       }
@@ -213,7 +213,7 @@ export async function POST(request: NextRequest) {
             p2p: true,
             platform: platform.name,
             payer_did: payer.did || null,
-            coinpay_payment_id: paymentResult.payment.id,
+            tempesttouch_payment_id: paymentResult.payment.id,
           },
         })
         .eq('id', invoice.id);
@@ -224,7 +224,7 @@ export async function POST(request: NextRequest) {
       try {
         const amountCents = Math.round(amount_usd * 100);
         const platformFeeAmount = Math.round(amountCents * feeRate);
-        const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://coinpayportal.com';
+        const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://tempesttouch.com';
         const stripe = await getStripe();
         const session = await stripe.checkout.sessions.create({
           line_items: [
@@ -242,7 +242,7 @@ export async function POST(request: NextRequest) {
             application_fee_amount: platformFeeAmount,
             transfer_data: { destination: payout.stripe_account_id },
             metadata: {
-              coinpay_invoice_id: invoice.id,
+              tempesttouch_invoice_id: invoice.id,
               business_id: businessId,
               merchant_id: merchantId,
             },
@@ -250,7 +250,7 @@ export async function POST(request: NextRequest) {
           success_url: `${appUrl}/invoices/${invoice.id}/pay?status=success`,
           cancel_url: `${appUrl}/invoices/${invoice.id}/pay`,
           metadata: {
-            coinpay_invoice_id: invoice.id,
+            tempesttouch_invoice_id: invoice.id,
             business_id: businessId,
             merchant_id: merchantId,
             platform_fee_amount: String(platformFeeAmount),
@@ -268,7 +268,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://coinpayportal.com';
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://tempesttouch.com';
     return NextResponse.json(
       {
         success: true,
@@ -289,3 +289,4 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: false, error: 'Internal server error' }, { status: 500 });
   }
 }
+

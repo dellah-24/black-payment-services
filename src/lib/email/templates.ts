@@ -44,7 +44,7 @@ function wrapTemplate(content: string): string {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CoinPay Notification</title>
+  <title>TempestTouch Notification</title>
   <style>
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
@@ -145,11 +145,11 @@ function wrapTemplate(content: string): string {
 <body>
   <div class="container">
     <div class="header">
-      <div class="logo">CoinPay</div>
+      <div class="logo">TempestTouch</div>
     </div>
     ${content}
     <div class="footer">
-      <p>This is an automated notification from CoinPay.</p>
+      <p>This is an automated notification from TempestTouch.</p>
       <p>
         <a href="${process.env.NEXT_PUBLIC_APP_URL}/dashboard">View Dashboard</a> |
         <a href="${process.env.NEXT_PUBLIC_APP_URL}/settings">Manage Notifications</a>

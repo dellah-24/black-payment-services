@@ -1,8 +1,8 @@
-# CoinPay API Reference
+# Tempest Touch API Reference
 
-Complete reference for the CoinPay REST API. All endpoints return JSON. Authenticate with either a **JWT token** (dashboard) or **API key** (server-to-server).
+Complete reference for the Tempest Touch REST API. All endpoints return JSON. Authenticate with either a **JWT token** (dashboard) or **API key** (server-to-server).
 
-**Base URL:** `https://coinpayportal.com/api`
+**Base URL:** `https://tempesttouch.com/api`
 
 ---
 
@@ -178,7 +178,7 @@ List all businesses for the authenticated merchant.
       "merchant_id": "550e8400...",
       "name": "My Online Store",
       "description": "E-commerce store",
-      "webhook_url": "https://mystore.com/webhooks/coinpay",
+      "webhook_url": "https://mystore.com/webhooks/tempesttouch",
       "active": true,
       "created_at": "2025-01-15T10:30:00.000Z"
     }
@@ -199,7 +199,7 @@ Create a new business.
 {
   "name": "My Online Store",
   "description": "E-commerce store accepting crypto",
-  "webhook_url": "https://mystore.com/webhooks/coinpay"
+  "webhook_url": "https://mystore.com/webhooks/tempesttouch"
 }
 ```
 
@@ -241,7 +241,7 @@ Get a specific business.
     "id": "biz_123",
     "merchant_id": "550e8400...",
     "name": "My Online Store",
-    "webhook_url": "https://mystore.com/webhooks/coinpay",
+    "webhook_url": "https://mystore.com/webhooks/tempesttouch",
     "active": true,
     "created_at": "2025-01-15T10:30:00.000Z"
   }
@@ -691,7 +691,7 @@ Get the payment QR code as a PNG image. Returns binary image data.
 **Usage:**
 ```html
 <!-- Direct use in HTML -->
-<img src="https://coinpayportal.com/api/payments/pay_123/qr" alt="Payment QR" />
+<img src="https://tempesttouch.com/api/payments/pay_123/qr" alt="Payment QR" />
 ```
 
 **Headers:**
@@ -770,7 +770,7 @@ Get webhook delivery logs for the authenticated merchant's businesses.
       "id": "whlog_123",
       "business_id": "biz_123",
       "event_type": "payment.confirmed",
-      "url": "https://mystore.com/webhooks/coinpay",
+      "url": "https://mystore.com/webhooks/tempesttouch",
       "status_code": 200,
       "response_body": "{\"received\":true}",
       "created_at": "2025-01-15T10:35:00.000Z"
@@ -814,20 +814,20 @@ Get webhook delivery logs for the authenticated merchant's businesses.
 
 ### Webhook Signature Verification
 
-Every webhook includes an `X-CoinPay-Signature` header:
+Every webhook includes an `X-Tempest Touch-Signature` header:
 
 ```
-X-CoinPay-Signature: t=1705312500,v1=5257a869e7ecebeda32affa62cdca3fa51cad7e77a0e56ff536d0ce8e108d8bd
+X-Tempest Touch-Signature: t=1705312500,v1=5257a869e7ecebeda32affa62cdca3fa51cad7e77a0e56ff536d0ce8e108d8bd
 ```
 
 Verify it with:
 
 ```javascript
-import { verifyWebhookSignature } from '@profullstack/coinpay';
+import { verifyWebhookSignature } from '@profullstack/tempesttouch';
 
 const isValid = verifyWebhookSignature({
   payload: rawRequestBody,    // raw string, not parsed JSON
-  signature: req.headers['x-coinpay-signature'],
+  signature: req.headers['x-tempesttouch-signature'],
   secret: process.env.WEBHOOK_SECRET,
   tolerance: 300,             // reject if >5 min old
 });
@@ -1204,7 +1204,7 @@ See [Web Wallet API Reference](./web-wallet-api.md) for the complete specificati
 
 ## x402 Facilitator
 
-CoinPayPortal serves as a multi-chain, multi-asset **x402 facilitator** — enabling HTTP 402 payment-gated APIs across Bitcoin, Ethereum, Polygon, Base, Solana, Lightning, and Stripe.
+Tempest Touch serves as a multi-chain, multi-asset **x402 facilitator** — enabling HTTP 402 payment-gated APIs across Bitcoin, Ethereum, Polygon, Base, Solana, Lightning, and Stripe.
 
 For a complete integration walkthrough, see [x402 Integration Guide](../X402_INTEGRATION.md).
 
@@ -1213,7 +1213,7 @@ For a complete integration walkthrough, see [x402 Integration Guide](../X402_INT
 1. **Client requests a paid resource** → server responds with `HTTP 402` and an `accepts` array listing supported payment methods
 2. **Client picks a method** (e.g. USDC on Base) and constructs a signed payment proof
 3. **Client retries the request** with an `X-Payment` header containing the base64-encoded proof
-4. **Server calls `POST /api/x402/verify`** to validate the proof via CoinPayPortal's facilitator
+4. **Server calls `POST /api/x402/verify`** to validate the proof via Tempest Touch's facilitator
 5. **Server delivers the resource** and later calls `POST /api/x402/settle` to claim funds on-chain
 
 ---
@@ -1313,7 +1313,7 @@ The merchant's middleware sends the proof to `POST /api/x402/verify`. If valid, 
 Use `x402fetch()` to automate the entire 402 → pay → retry loop:
 
 ```js
-import { x402fetch } from '@profullstack/coinpay';
+import { x402fetch } from '@profullstack/tempesttouch';
 
 const response = await x402fetch('https://api.example.com/premium', {
   paymentMethods: {
@@ -1331,7 +1331,7 @@ const data = await response.json();
 
 ### Fees
 
-CoinPayPortal takes a commission on each x402 payment, deducted before forwarding to the merchant:
+Tempest Touch takes a commission on each x402 payment, deducted before forwarding to the merchant:
 
 | Plan | Commission | Merchant Receives |
 |------|-----------|-------------------|

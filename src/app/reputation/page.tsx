@@ -540,7 +540,7 @@ function ReputationPageInner() {
                 <p className="text-gray-500 dark:text-gray-400 text-sm">
                   A DID is your portable identity. Claim one to start building escrow-backed reputation
                   that you can use on ugig.net, freelance marketplaces, and any platform that supports the
-                  CoinPayPortal Reputation Protocol.
+                  TempestTouch Reputation Protocol.
                 </p>
               </div>
               <Link

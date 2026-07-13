@@ -3,7 +3,7 @@
  *
  * Encrypts the seed phrase using OpenPGP symmetric encryption (AES-256)
  * and triggers a browser download. The resulting .gpg file can be
- * decrypted with: gpg --decrypt wallet_coinpayportal_<id>_seedphrase.txt.gpg
+ * decrypted with: gpg --decrypt wallet_tempesttouch_<id>_seedphrase.txt.gpg
  *
  * IMPORTANT: Everything runs client-side. The seed phrase never leaves
  * the browser. No server calls are made.
@@ -31,11 +31,11 @@ export async function downloadEncryptedSeedPhrase(
   const safeLabel = walletLabel
     ? '_' + walletLabel.replace(/[^a-zA-Z0-9_-]/g, '_').slice(0, 32)
     : '';
-  const filename = `wallet_coinpayportal_${walletId}${safeLabel}_seedphrase.txt`;
+  const filename = `wallet_tempesttouch_${walletId}${safeLabel}_seedphrase.txt`;
 
   // Create the plaintext content
   const content = [
-    '# CoinPayPortal Wallet Seed Phrase Backup',
+    '# TempestTouch Wallet Seed Phrase Backup',
     `# Wallet ID: ${walletId}`,
     ...(walletLabel ? [`# Wallet Label: ${walletLabel}`] : []),
     `# Created: ${new Date().toISOString()}`,

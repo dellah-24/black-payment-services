@@ -2,7 +2,7 @@
 
 ## Overview
 
-CoinPayPortal Wallet Mode supports the **Lightning Network** via **BOLT12 offers**, powered by Greenlight (CLN-as-a-service by Blockstream). This enables instant, low-fee Bitcoin payments alongside the existing on-chain wallet.
+Tempest Touch Wallet Mode supports the **Lightning Network** via **BOLT12 offers**, powered by Greenlight (CLN-as-a-service by Blockstream). This enables instant, low-fee Bitcoin payments alongside the existing on-chain wallet.
 
 ---
 
@@ -175,7 +175,7 @@ Lightning payments have minimal fees:
 | Node provisioning | Free |
 | Offer creation | Free |
 | Receiving payments | 0 base fee + proportional routing fee (~0.01%) |
-| Greenlight hosting | Included in CoinPay platform fee |
+| Greenlight hosting | Included in Tempest Touch platform fee |
 
 Lightning fees are orders of magnitude lower than on-chain transaction fees, making it ideal for small/frequent payments.
 
@@ -183,7 +183,7 @@ Lightning fees are orders of magnitude lower than on-chain transaction fees, mak
 
 ## Security Considerations
 
-- **Non-custodial:** Your seed derives the node keys. CoinPay cannot spend your funds.
+- **Non-custodial:** Your seed derives the node keys. Tempest Touch cannot spend your funds.
 - **Deterministic:** Same seed always produces the same node identity.
 - **BOLT12 privacy:** Offers use onion messages — payers don't learn your IP or node location.
 - **No channel management:** Greenlight handles channel liquidity automatically.

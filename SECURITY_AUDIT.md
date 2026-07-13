@@ -1,4 +1,4 @@
-# CoinPayPortal Security Audit
+# Tempest Touch Security Audit
 
 **Audit Date:** 2025-02-02  
 **Auditor:** Automated Security Review (Phase 5)  
@@ -25,7 +25,7 @@
 
 ## Executive Summary
 
-CoinPayPortal is a non-custodial multi-chain wallet. The architecture is fundamentally sound: **private keys and seed phrases never leave the client**. The server stores only public keys and addresses. Key areas of strength include:
+Tempest Touch is a non-custodial multi-chain wallet. The architecture is fundamentally sound: **private keys and seed phrases never leave the client**. The server stores only public keys and addresses. Key areas of strength include:
 
 - ✅ Non-custodial design — server never sees private keys
 - ✅ AES-256-GCM encryption of seed phrases at rest (in localStorage)
@@ -88,7 +88,7 @@ Key areas requiring attention:
 | IV generation | ✅ PASS | 12-byte random IV per encryption (correct for GCM) |
 | Web Crypto API | ✅ PASS | Uses browser-native `crypto.subtle` |
 
-**Finding MEDIUM:** Encrypted seed stored in `localStorage` under key `coinpay_wallet`. While the encryption is strong, localStorage is accessible to any JavaScript running on the same origin. If an XSS vulnerability is introduced, the encrypted blob can be exfiltrated. An offline brute-force attack on the password would then be possible (mitigated by 600k PBKDF2 iterations).
+**Finding MEDIUM:** Encrypted seed stored in `localStorage` under key `tempesttouch_wallet`. While the encryption is strong, localStorage is accessible to any JavaScript running on the same origin. If an XSS vulnerability is introduced, the encrypted blob can be exfiltrated. An offline brute-force attack on the password would then be possible (mitigated by 600k PBKDF2 iterations).
 
 **Recommendation:** Consider adding a warning to users about keeping their password strong. Consider IndexedDB with origin-bound encryption as a future enhancement. The current approach is standard for web-based wallets (MetaMask uses similar patterns).
 
@@ -148,7 +148,7 @@ Key areas requiring attention:
 
 | Item | Status | Notes |
 |------|--------|-------|
-| Challenge generation | ✅ PASS | `coinpayportal:auth:<timestamp>:<random_hex>` with 16-byte random |
+| Challenge generation | ✅ PASS | `tempesttouch:auth:<timestamp>:<random_hex>` with 16-byte random |
 | Challenge storage | ⚠️ NOTE | Challenges stored in DB with expiration |
 | Signature verification | ✅ PASS | `verifyChallengeSignature()` uses secp256k1 verify |
 
@@ -513,7 +513,7 @@ Private keys and seed phrases are handled exclusively in:
 
 ## Conclusion
 
-The CoinPayPortal wallet has a **fundamentally sound security architecture**. The non-custodial design is correctly implemented — private keys never touch the server. The cryptographic implementations use well-audited libraries (`@noble/curves`, `@scure/bip39`, `tweetnacl`) and follow best practices.
+The Tempest Touch wallet has a **fundamentally sound security architecture**. The non-custodial design is correctly implemented — private keys never touch the server. The cryptographic implementations use well-audited libraries (`@noble/curves`, `@scure/bip39`, `tweetnacl`) and follow best practices.
 
 The most significant gaps are in **web security headers** (CSP, HSTS, X-Frame-Options), which are straightforward to add. The in-memory rate limiting is adequate for single-server deployments but should be replaced with Redis for production scale.
 

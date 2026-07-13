@@ -4,13 +4,13 @@
 
 ## General
 
-### What is CoinPay?
+### What is Tempest Touch?
 
-CoinPay is a **non-custodial** cryptocurrency payment gateway. Merchants can accept crypto payments from customers, and funds are automatically forwarded to the merchant's own wallet. CoinPay also includes a multi-chain web wallet for end users.
+Tempest Touch is a **non-custodial** cryptocurrency payment gateway. Merchants can accept crypto payments from customers, and funds are automatically forwarded to the merchant's own wallet. Tempest Touch also includes a multi-chain web wallet for end users.
 
 ### What does "non-custodial" mean?
 
-CoinPay never holds your funds. Payments flow through temporary addresses and are automatically forwarded to your merchant wallet. Private keys for forwarding addresses are encrypted server-side and only used for the forwarding transaction.
+Tempest Touch never holds your funds. Payments flow through temporary addresses and are automatically forwarded to your merchant wallet. Private keys for forwarding addresses are encrypted server-side and only used for the forwarding transaction.
 
 ### Which blockchains are supported?
 
@@ -43,7 +43,7 @@ CoinPay never holds your funds. Payments flow through temporary addresses and ar
 
 ### How do I get started?
 
-1. **Register** at [coinpayportal.com/signup](https://coinpayportal.com/signup)
+1. **Register** at [tempesttouch.com/signup](https://tempesttouch.com/signup)
 2. **Create a business** from the dashboard
 3. **Add wallet addresses** for chains you want to accept
 4. **Get your API key** from business settings
@@ -85,7 +85,7 @@ Yes. The API works with any HTTP client. The SDK is a convenience wrapper — al
 
 ### Can I issue refunds?
 
-CoinPay doesn't have built-in refund functionality. Refunds must be handled directly between you and your customer:
+Tempest Touch doesn't have built-in refund functionality. Refunds must be handled directly between you and your customer:
 
 1. Get the customer's wallet address
 2. Send the refund from your merchant wallet
@@ -105,7 +105,7 @@ The Web Wallet is **non-custodial**. Your private keys are generated in your bro
 
 ### What if I lose my seed phrase?
 
-**You lose access to your wallet permanently.** There is no recovery mechanism. CoinPay cannot access your funds or reset your wallet.
+**You lose access to your wallet permanently.** There is no recovery mechanism. Tempest Touch cannot access your funds or reset your wallet.
 
 Back up your seed phrase:
 - Write it on paper (not digital)
@@ -126,7 +126,7 @@ This proves you own the wallet without ever revealing your private key.
 
 ### Can I use the Web Wallet with the payment gateway?
 
-They're separate systems but on the same platform. The Web Wallet is for personal crypto management (send/receive/hold). The payment gateway is for merchants accepting payments. You can use both with the same CoinPay account.
+They're separate systems but on the same platform. The Web Wallet is for personal crypto management (send/receive/hold). The payment gateway is for merchants accepting payments. You can use both with the same Tempest Touch account.
 
 ---
 
@@ -144,11 +144,11 @@ They're separate systems but on the same platform. The Web Wallet is for persona
 ### How do webhooks work?
 
 1. Configure a webhook URL on your business
-2. When a payment event occurs, CoinPay sends a POST request to your URL
-3. The request includes an `X-CoinPay-Signature` header (HMAC-SHA256)
+2. When a payment event occurs, Tempest Touch sends a POST request to your URL
+3. The request includes an `X-Tempest Touch-Signature` header (HMAC-SHA256)
 4. Your server verifies the signature and processes the event
 5. Return HTTP 200 to acknowledge receipt
-6. If your server returns non-2xx, CoinPay retries the webhook
+6. If your server returns non-2xx, Tempest Touch retries the webhook
 
 ### What's the payment lifecycle?
 
@@ -171,15 +171,15 @@ pending → detected → confirmed → forwarding → forwarded
 ### How does payment forwarding work?
 
 1. Customer sends crypto to a **temporary payment address** (unique per payment)
-2. CoinPay detects the funds and marks the payment as confirmed
-3. CoinPay splits the payment: merchant amount + platform fee
+2. Tempest Touch detects the funds and marks the payment as confirmed
+3. Tempest Touch splits the payment: merchant amount + platform fee
 4. The merchant's share is sent to their configured wallet address
-5. The platform fee is sent to the CoinPay fee collection wallet
+5. The platform fee is sent to the Tempest Touch fee collection wallet
 6. Both transactions are recorded
 
-### Can I self-host CoinPay?
+### Can I self-host Tempest Touch?
 
-CoinPay is open source and designed for self-hosting:
+Tempest Touch is open source and designed for self-hosting:
 
 - **Vercel** for the Next.js frontend + API
 - **Railway** for always-on deployment (no cold starts)
@@ -197,7 +197,7 @@ CoinPay is open source and designed for self-hosting:
 | Web Wallet balance queries per IP | 60/minute |
 | Web Wallet broadcast per IP | 10/minute |
 
-### Does CoinPay support webhooks for the Web Wallet?
+### Does Tempest Touch support webhooks for the Web Wallet?
 
 Yes. Web Wallet users can register webhooks for:
 - `transaction.incoming` — New incoming transaction

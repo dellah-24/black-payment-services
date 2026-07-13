@@ -1,34 +1,34 @@
 ---
-name: coinpayportal
+name: tempesttouch
 version: 3.0.0
 description: Non-custodial payments, escrow, and wallets for AI agents. Send, receive, and hold funds in escrow across BTC, ETH, SOL, POL, BCH, and USDC.
-homepage: https://coinpayportal.com
+homepage: https://tempesttouch.com
 ---
 
 ```bash
-curl -s https://coinpayportal.com/skill.md
+curl -s https://tempesttouch.com/skill.md
 ```
 
-# CoinPayPortal — Payments, Escrow & Wallets
+# Tempest Touch — Payments, Escrow & Wallets
 
 Non-custodial crypto infrastructure for AI agents and humans. Create wallets, send payments, hold funds in escrow, and receive payments across BTC, ETH, SOL, POL, BCH, and USDC — no KYC required.
 
-**Base URL:** `https://coinpayportal.com/api/web-wallet`
-**npm:** `@profullstack/coinpay`
+**Base URL:** `https://tempesttouch.com/api/web-wallet`
+**npm:** `@profullstack/tempesttouch`
 
 ## SDK Installation
 
 ```bash
-npm install @profullstack/coinpay
+npm install @profullstack/tempesttouch
 # or
-pnpm add @profullstack/coinpay
+pnpm add @profullstack/tempesttouch
 ```
 
 ```typescript
-import { CoinPaySDK } from '@profullstack/coinpay';
+import { Tempest TouchSDK } from '@profullstack/tempesttouch';
 
-const sdk = new CoinPaySDK({
-  baseUrl: 'https://coinpayportal.com',
+const sdk = new Tempest TouchSDK({
+  baseUrl: 'https://tempesttouch.com',
   apiKey: 'your-api-key' // for merchant API
 });
 
@@ -47,7 +47,7 @@ The SDK provides typed interfaces for the merchant payment API. For the web-wall
 ### 1. Create a Wallet
 
 ```bash
-curl -X POST https://coinpayportal.com/api/web-wallet/create \
+curl -X POST https://tempesttouch.com/api/web-wallet/create \
   -H "Content-Type: application/json" \
   -d '{
     "public_key_secp256k1": "<your-compressed-secp256k1-pubkey-hex>",
@@ -92,7 +92,7 @@ Sign the message bytes with secp256k1, hex-encode the 64-byte compact signature.
 ### 3. Check Balances
 
 ```bash
-curl https://coinpayportal.com/api/web-wallet/<wallet_id>/balances \
+curl https://tempesttouch.com/api/web-wallet/<wallet_id>/balances \
   -H "Authorization: Wallet <wallet_id>:<signature>:<timestamp>:<nonce>"
 ```
 
@@ -115,7 +115,7 @@ Three-step flow: **prepare** (server) → **sign** (local) → **broadcast** (se
 
 **Step 1 — Prepare:**
 ```bash
-curl -X POST https://coinpayportal.com/api/web-wallet/<wallet_id>/prepare-tx \
+curl -X POST https://tempesttouch.com/api/web-wallet/<wallet_id>/prepare-tx \
   -H "Authorization: Wallet <wallet_id>:<sig>:<ts>:<nonce>" \
   -H "Content-Type: application/json" \
   -d '{
@@ -133,7 +133,7 @@ Returns `tx_id` and `unsigned_tx` data.
 
 **Step 3 — Broadcast:**
 ```bash
-curl -X POST https://coinpayportal.com/api/web-wallet/<wallet_id>/broadcast \
+curl -X POST https://tempesttouch.com/api/web-wallet/<wallet_id>/broadcast \
   -H "Authorization: Wallet <wallet_id>:<sig>:<ts>:<nonce>" \
   -H "Content-Type: application/json" \
   -d '{
@@ -150,7 +150,7 @@ Returns `tx_hash`, `explorer_url`, and initial `status` ("confirming").
 Pull external deposits and update transaction confirmations from the blockchain:
 
 ```bash
-curl -X POST https://coinpayportal.com/api/web-wallet/<wallet_id>/sync-history \
+curl -X POST https://tempesttouch.com/api/web-wallet/<wallet_id>/sync-history \
   -H "Authorization: Wallet <wallet_id>:<sig>:<ts>:<nonce>" \
   -H "Content-Type: application/json" \
   -d '{ "chain": "BTC" }'
@@ -165,7 +165,7 @@ A background daemon also runs server-side, automatically finalizing pending/conf
 Register a webhook URL to get notified of transaction status changes:
 
 ```bash
-curl -X PATCH https://coinpayportal.com/api/web-wallet/<wallet_id>/settings \
+curl -X PATCH https://tempesttouch.com/api/web-wallet/<wallet_id>/settings \
   -H "Authorization: Wallet <wallet_id>:<sig>:<ts>:<nonce>" \
   -H "Content-Type: application/json" \
   -d '{ "webhook_url": "https://your-server.com/webhook" }'
@@ -239,36 +239,36 @@ The wallet CLI provides command-line access to all wallet operations:
 
 ```bash
 # Install / setup
-cd coinpayportal
-echo '{ "apiUrl": "https://coinpayportal.com" }' > ~/.coinpayrc.json
+cd tempesttouch
+echo '{ "apiUrl": "https://tempesttouch.com" }' > ~/.tempesttouchrc.json
 
 # Create a new wallet (outputs wallet_id + mnemonic)
-pnpm coinpay-wallet create --words 12 --chains BTC,ETH,SOL
+pnpm tempesttouch-wallet create --words 12 --chains BTC,ETH,SOL
 
 # Import from mnemonic
-pnpm coinpay-wallet import "word1 word2 ... word12" --chains BTC,ETH,SOL,POL,BCH
+pnpm tempesttouch-wallet import "word1 word2 ... word12" --chains BTC,ETH,SOL,POL,BCH
 
 # Check balances
-pnpm coinpay-wallet balance <wallet-id>
+pnpm tempesttouch-wallet balance <wallet-id>
 
 # List addresses
-pnpm coinpay-wallet address <wallet-id> --chain ETH
+pnpm tempesttouch-wallet address <wallet-id> --chain ETH
 
 # Send transaction
-pnpm coinpay-wallet send <wallet-id> \
+pnpm tempesttouch-wallet send <wallet-id> \
   --from 0xYourAddr --to 0xRecipient --chain ETH --amount 0.1 --priority medium
 
 # Transaction history
-pnpm coinpay-wallet history <wallet-id> --chain BTC --limit 10
+pnpm tempesttouch-wallet history <wallet-id> --chain BTC --limit 10
 
 # Sync on-chain deposits
-pnpm coinpay-wallet sync <wallet-id> --chain SOL
+pnpm tempesttouch-wallet sync <wallet-id> --chain SOL
 ```
 
 **Environment variables:**
-- `COINPAY_API_URL` — API base URL (default: `http://localhost:8080`)
-- `COINPAY_AUTH_TOKEN` — JWT token for read-only operations
-- `COINPAY_MNEMONIC` — Mnemonic phrase (required for `send`)
+- `TEMPESTTOUCH_API_URL` — API base URL (default: `http://localhost:8080`)
+- `TEMPESTTOUCH_AUTH_TOKEN` — JWT token for read-only operations
+- `TEMPESTTOUCH_MNEMONIC` — Mnemonic phrase (required for `send`)
 
 ## Escrow Service
 
@@ -277,7 +277,7 @@ Create trustless escrows to hold funds until both parties are satisfied. No acco
 ### Create Escrow
 
 ```bash
-curl -X POST https://coinpayportal.com/api/escrow \
+curl -X POST https://tempesttouch.com/api/escrow \
   -H "Content-Type: application/json" \
   -d '{
     "chain": "ETH",
@@ -327,7 +327,7 @@ Save both tokens — they are only returned once. Depositor gets `release_token`
 ### Release Funds
 
 ```bash
-curl -X POST https://coinpayportal.com/api/escrow/<id>/release \
+curl -X POST https://tempesttouch.com/api/escrow/<id>/release \
   -H "Content-Type: application/json" \
   -d '{ "release_token": "esc_abc123..." }'
 ```
@@ -335,7 +335,7 @@ curl -X POST https://coinpayportal.com/api/escrow/<id>/release \
 ### Refund
 
 ```bash
-curl -X POST https://coinpayportal.com/api/escrow/<id>/refund \
+curl -X POST https://tempesttouch.com/api/escrow/<id>/refund \
   -H "Content-Type: application/json" \
   -d '{ "release_token": "esc_abc123..." }'
 ```
@@ -343,7 +343,7 @@ curl -X POST https://coinpayportal.com/api/escrow/<id>/refund \
 ### Dispute
 
 ```bash
-curl -X POST https://coinpayportal.com/api/escrow/<id>/dispute \
+curl -X POST https://tempesttouch.com/api/escrow/<id>/dispute \
   -H "Content-Type: application/json" \
   -d '{
     "token": "esc_def456...",
@@ -385,14 +385,14 @@ const settled = await client.waitForEscrow(escrow.id, 'settled');
 ### Escrow CLI
 
 ```bash
-coinpay escrow create --chain SOL --amount 10 \
+tempesttouch escrow create --chain SOL --amount 10 \
   --depositor Alice... --beneficiary Bob...
-coinpay escrow get <id>
-coinpay escrow list --status funded
-coinpay escrow release <id> --token esc_abc...
-coinpay escrow refund <id> --token esc_abc...
-coinpay escrow dispute <id> --token esc_def... --reason "..."
-coinpay escrow events <id>
+tempesttouch escrow get <id>
+tempesttouch escrow list --status funded
+tempesttouch escrow release <id> --token esc_abc...
+tempesttouch escrow refund <id> --token esc_abc...
+tempesttouch escrow dispute <id> --token esc_def... --reason "..."
+tempesttouch escrow events <id>
 ```
 
 ### Fees
@@ -408,7 +408,7 @@ AI agents can create business accounts to get reduced escrow fees (0.5% vs 1%) a
 ### Create Business
 
 ```bash
-curl -X POST https://coinpayportal.com/api/businesses \
+curl -X POST https://tempesttouch.com/api/businesses \
   -H "x-api-key: <your-api-key>" \
   -H "Content-Type: application/json" \
   -d '{
@@ -423,14 +423,14 @@ Returns business `id` and `api_key`. Use the `business_id` when creating escrows
 ### List Businesses
 
 ```bash
-curl https://coinpayportal.com/api/businesses \
+curl https://tempesttouch.com/api/businesses \
   -H "x-api-key: <your-api-key>"
 ```
 
 ### Create Escrow with Business
 
 ```bash
-curl -X POST https://coinpayportal.com/api/escrow \
+curl -X POST https://tempesttouch.com/api/escrow \
   -H "x-api-key: <your-api-key>" \
   -H "Content-Type: application/json" \
   -d '{

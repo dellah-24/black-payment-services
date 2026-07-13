@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const LNBITS_URL = process.env.LNBITS_URL || 'https://ln.coinpayportal.com';
+const LNBITS_URL = process.env.LNBITS_URL || 'https://ln.tempesttouch.com';
 
 async function proxy(request: NextRequest, method: 'GET' | 'POST', path: string[]) {
   const search = request.nextUrl.searchParams.toString();

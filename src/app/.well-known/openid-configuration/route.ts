@@ -5,7 +5,7 @@
 import { NextResponse } from 'next/server';
 
 export async function GET() {
-  const issuer = process.env.NEXT_PUBLIC_APP_URL || 'https://coinpay.dev';
+  const issuer = process.env.NEXT_PUBLIC_APP_URL || 'https://tempesttouch.dev';
 
   return NextResponse.json({
     issuer,
@@ -33,3 +33,4 @@ export async function GET() {
     ],
   });
 }
+

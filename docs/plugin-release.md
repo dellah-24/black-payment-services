@@ -1,6 +1,6 @@
 # Plugin Release & Distribution
 
-How CoinPay's WooCommerce and WHMCS plugins get from `master` to merchants.
+How Tempest Touch's WooCommerce and WHMCS plugins get from `master` to merchants.
 
 ## TL;DR
 
@@ -11,7 +11,7 @@ pnpm version:patch                  # or :minor, :major
 
 # 2. Tag and push the plugin release tag (the bump itself doesn't create tags).
 NEW=$(node -p "require('./package.json').version")
-git tag -a "plugins-v${NEW}" -m "CoinPay plugins v${NEW}"
+git tag -a "plugins-v${NEW}" -m "Tempest Touch plugins v${NEW}"
 git push origin "plugins-v${NEW}"
 
 # 3. GitHub Actions does the rest (GitHub Release + optional WP.org deploy).
@@ -26,13 +26,13 @@ git push origin "plugins-v${NEW}"
 |------|---------|
 | `package.json` | top-level `"version"` |
 | `packages/sdk/package.json` | JS SDK `"version"` |
-| `packages/coinpay-php/src/Client.php` | `USER_AGENT` constant |
-| `plugins/woocommerce/coinpay-woocommerce/coinpay-woocommerce.php` | plugin-header `Version:` + `COINPAY_WC_VERSION` constant |
-| `plugins/woocommerce/coinpay-woocommerce/readme.txt` | `Stable tag:` |
-| `plugins/whmcs/modules/gateways/coinpay.php` | `'plugin_version'` metadata |
-| `scripts/build-plugin-zips.sh` | `COINPAY_PLUGIN_VERSION` default |
+| `packages/tempesttouch-php/src/Client.php` | `USER_AGENT` constant |
+| `plugins/woocommerce/tempesttouch-woocommerce/tempesttouch-woocommerce.php` | plugin-header `Version:` + `TEMPESTTOUCH_WC_VERSION` constant |
+| `plugins/woocommerce/tempesttouch-woocommerce/readme.txt` | `Stable tag:` |
+| `plugins/whmcs/modules/gateways/tempesttouch.php` | `'plugin_version'` metadata |
+| `scripts/build-plugin-zips.sh` | `TEMPESTTOUCH_PLUGIN_VERSION` default |
 
-Then it runs `scripts/sync-plugin-sdk.sh` to propagate the shared PHP client into each plugin's vendored `lib/CoinPay/` directory.
+Then it runs `scripts/sync-plugin-sdk.sh` to propagate the shared PHP client into each plugin's vendored `lib/Tempest Touch/` directory.
 
 The script reads the target version from the root `package.json` (source of truth) and **sets** every other file to that same version — it doesn't require the files to be pre-aligned. A `[from X — was drifted]` note is printed for any file that was out of sync, so misalignment gets called out but automatically corrected.
 
@@ -44,10 +44,10 @@ Side effects when not in dry-run:
 
 1. Rewrites the 7 target files.
 2. Runs `sync-plugin-sdk.sh`.
-3. Publishes `@profullstack/coinpay` to npm.
+3. Publishes `@profullstack/tempesttouch` to npm.
 4. Commits with `--no-verify` (the pre-commit hook runs the full Next.js build, too slow for a version bump).
 5. Pushes the commit to `origin`.
-6. `sudo npm install -g @profullstack/coinpay@<new>` to update the global CLI (non-fatal if it fails).
+6. `sudo npm install -g @profullstack/tempesttouch@<new>` to update the global CLI (non-fatal if it fails).
 
 It does **not** create or push git tags — tags are deliberately manual because `plugins-v*` triggers the release workflow.
 
@@ -94,7 +94,7 @@ The same version is applied to both WooCommerce and WHMCS zips. If they need to 
 
 WordPress.org requires a plugin to be reviewed and accepted before `10up/action-wordpress-plugin-deploy` will work. Before the first automated deploy:
 
-1. Submit `coinpay-woocommerce` at https://wordpress.org/plugins/developers/add/
+1. Submit `tempesttouch-woocommerce` at https://wordpress.org/plugins/developers/add/
 2. Wait for reviewer acceptance (1-2 weeks typical).
 3. Once approved, set `WP_ORG_DEPLOY_ENABLED=true` and add the SVN credentials.
 
@@ -104,7 +104,7 @@ Until that's done the WP.org deploy job is skipped and only the GitHub Release a
 
 ```bash
 ./scripts/sync-plugin-sdk.sh        # sync vendored client into each plugin
-./scripts/build-plugin-zips.sh      # write dist/coinpay-{woocommerce,whmcs}-<version>.zip
+./scripts/build-plugin-zips.sh      # write dist/tempesttouch-{woocommerce,whmcs}-<version>.zip
 ```
 
-Set `COINPAY_PLUGIN_VERSION=0.1.1 ./scripts/build-plugin-zips.sh` to name the zips differently.
+Set `TEMPESTTOUCH_PLUGIN_VERSION=0.1.1 ./scripts/build-plugin-zips.sh` to name the zips differently.

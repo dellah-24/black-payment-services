@@ -10,7 +10,7 @@
  *     → ChainAdapter (evm-safe / btc-multisig / solana-multisig)
  *       → On-chain multisig implementation
  *
- * Core Rule: CoinPay can never move funds alone.
+ * Core Rule: Tempest Touch can never move funds alone.
  */
 
 import type { SupabaseClient } from '@supabase/supabase-js';

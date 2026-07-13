@@ -59,7 +59,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'RESEND_API_KEY is not configured' }, { status: 500 });
   }
 
-  const from = process.env.EMAIL_FROM ?? 'noreply@coinpayportal.com';
+  const from = process.env.EMAIL_FROM ?? 'noreply@tempesttouch.com';
   const emailer = createEmailer({ resendApiKey });
 
   const result = await emailer.sendBulk({

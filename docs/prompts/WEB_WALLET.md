@@ -1,6 +1,6 @@
-# Embed the CoinPay Non-Custodial Web Wallet
+# Embed the Tempest Touch Non-Custodial Web Wallet
 
-You are integrating CoinPay's non-custodial web wallet so users can hold, send, and receive crypto from your app — without you ever touching their keys.
+You are integrating Tempest Touch's non-custodial web wallet so users can hold, send, and receive crypto from your app — without you ever touching their keys.
 
 ## Goal
 
@@ -8,32 +8,32 @@ Give a user a wallet that lives in the browser (keys derived locally, never sent
 
 ## Environment variables
 
-The web wallet is non-custodial and runs entirely in the browser, so it does **not** need an API key. Only set these if you also call the CoinPay REST API server-side from the same project:
+The web wallet is non-custodial and runs entirely in the browser, so it does **not** need an API key. Only set these if you also call the Tempest Touch REST API server-side from the same project:
 
 ```
-NEXT_PUBLIC_COINPAY_API_URL=https://coinpayportal.com
+NEXT_PUBLIC_TEMPESTTOUCH_API_URL=https://tempesttouch.com
 # Optional, server-side only — never expose:
-COINPAY_API_KEY=sk_live_...
+TEMPESTTOUCH_API_KEY=sk_live_...
 ```
 
 Where to find them:
-- `NEXT_PUBLIC_COINPAY_API_URL` — `https://coinpayportal.com` in production.
-- `COINPAY_API_KEY` (optional) — `https://coinpayportal.com/businesses/<your-business-id>` → **API Keys** tab.
+- `NEXT_PUBLIC_TEMPESTTOUCH_API_URL` — `https://tempesttouch.com` in production.
+- `TEMPESTTOUCH_API_KEY` (optional) — `https://tempesttouch.com/businesses/<your-business-id>` → **API Keys** tab.
 
 ## Steps
 
 1. **Install:**
 
    ```bash
-   npm install @coinpay/wallet
+   npm install @tempesttouch/wallet
    ```
 
 2. **Initialize the wallet** client-side:
 
    ```js
-   import { CoinPayWallet } from '@coinpay/wallet';
+   import { Tempest TouchWallet } from '@tempesttouch/wallet';
 
-   const wallet = new CoinPayWallet();
+   const wallet = new Tempest TouchWallet();
    await wallet.unlock(); // prompts user for PIN / passphrase / passkey
    const address = await wallet.getAddress('base'); // chain id
    ```

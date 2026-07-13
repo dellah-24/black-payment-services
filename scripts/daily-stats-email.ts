@@ -1,12 +1,12 @@
 #!/usr/bin/env npx tsx
 /**
- * Daily Stats Email for CoinPayPortal
+ * Daily Stats Email for Tempest Touch
  *
  * Gathers platform stats and emails a daily report.
- * Run via cron: 0 8 * * * cd /home/ubuntu/src/coinpayportal && npx tsx scripts/daily-stats-email.ts
+ * Run via cron: 0 8 * * * cd /home/ubuntu/src/tempesttouch && npx tsx scripts/daily-stats-email.ts
  *
  * Usage:
- *   npx tsx scripts/daily-stats-email.ts                    # send to default (hello@coinpayportal.com)
+ *   npx tsx scripts/daily-stats-email.ts                    # send to default (hello@tempesttouch.com)
  *   npx tsx scripts/daily-stats-email.ts --to me@example.com
  *   npx tsx scripts/daily-stats-email.ts --dry-run          # print to stdout, don't send
  */
@@ -19,7 +19,7 @@ dotenv.config({ path: path.resolve(process.cwd(), ".env.local") });
 dotenv.config({ path: path.resolve(process.cwd(), ".env.prod") });
 dotenv.config();
 
-const DEFAULT_TO = "hello@coinpayportal.com";
+const DEFAULT_TO = "hello@tempesttouch.com";
 const DRY_RUN = process.argv.includes("--dry-run");
 const toArg = process.argv.findIndex((a) => a === "--to");
 const TO_EMAIL = toArg >= 0 && process.argv[toArg + 1] ? process.argv[toArg + 1] : DEFAULT_TO;
@@ -199,7 +199,7 @@ async function buildReport(): Promise<{ subject: string; html: string; text: str
 
   // ── Text version ──
   const text = `
-CoinPayPortal Daily Report — ${dateStr}
+Tempest Touch Daily Report — ${dateStr}
 ${"=".repeat(50)}
 
 MERCHANTS
@@ -273,7 +273,7 @@ SPAM DETECTION
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width"></head>
 <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; color: #1a1a2e; background: #f8f9fa;">
   <div style="background: #1a1a2e; color: white; padding: 20px 24px; border-radius: 12px 12px 0 0;">
-    <h1 style="margin: 0; font-size: 20px;">📊 CoinPayPortal Daily Report</h1>
+    <h1 style="margin: 0; font-size: 20px;">📊 Tempest Touch Daily Report</h1>
     <p style="margin: 4px 0 0; opacity: 0.7; font-size: 14px;">${dateStr}</p>
   </div>
 
@@ -373,14 +373,14 @@ SPAM DETECTION
   </div>
 
   <p style="text-align: center; font-size: 12px; color: #999; margin-top: 16px;">
-    Sent by CoinPayPortal Stats · <a href="https://coinpayportal.com" style="color: #7c3aed;">coinpayportal.com</a>
+    Sent by Tempest Touch Stats · <a href="https://tempesttouch.com" style="color: #7c3aed;">tempesttouch.com</a>
   </p>
 </body>
 </html>
 `.trim();
 
   return {
-    subject: `📊 CoinPayPortal Daily — ${dateStr} | ${totalMerchants} merchants, ${totalWalletTxs} txs, $${totalVolume.toFixed(0)} vol`,
+    subject: `📊 Tempest Touch Daily — ${dateStr} | ${totalMerchants} merchants, ${totalWalletTxs} txs, $${totalVolume.toFixed(0)} vol`,
     html,
     text,
   };
@@ -397,7 +397,7 @@ async function sendViaMailgun(to: string, subject: string, html: string) {
   }
 
   const form = new URLSearchParams();
-  form.append("from", `CoinPayPortal Stats <stats@${domain}>`);
+  form.append("from", `Tempest Touch Stats <stats@${domain}>`);
   form.append("to", to);
   form.append("subject", subject);
   form.append("html", html);

@@ -4,4 +4,4 @@ Disallow: /api/
 Disallow: /admin/
 Disallow: /dashboard/
 
-Sitemap: https://coinpayportal.com/sitemap.xml
+Sitemap: https://tempesttouch.com/sitemap.xml

@@ -131,7 +131,7 @@ describe('Web Wallet Route Handlers', () => {
       mockCreateAuthChallenge.mockResolvedValue({
         success: true,
         data: {
-          challenge: 'coinpayportal:auth:1234:abc',
+          challenge: 'tempesttouch:auth:1234:abc',
           expires_at: '2026-01-31T01:00:00Z',
           challenge_id: 'c-id',
         },
@@ -143,7 +143,7 @@ describe('Web Wallet Route Handlers', () => {
 
       expect(res.status).toBe(200);
       expect(body.success).toBe(true);
-      expect(body.data.challenge).toMatch(/coinpayportal:auth:/);
+      expect(body.data.challenge).toMatch(/tempesttouch:auth:/);
       expect(body.data.challenge_id).toBe('c-id');
       expect(body.timestamp).toBeTruthy();
     });

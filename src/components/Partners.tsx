@@ -68,7 +68,7 @@ export function Partners() {
         </div>
 
         <p className="text-center text-gray-600 text-sm mt-10">
-          Powered by CoinPayPortal
+          Powered by TempestTouch
         </p>
       </div>
 

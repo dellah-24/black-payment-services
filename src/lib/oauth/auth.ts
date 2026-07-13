@@ -1,6 +1,6 @@
 /**
  * Shared OAuth authentication utility
- * Supports both JWT Bearer tokens and CoinPay API keys (cp_live_* / cp_test_*)
+ * Supports both JWT Bearer tokens and TempestTouch API keys (cp_live_* / cp_test_*)
  */
 import { NextRequest } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
@@ -20,7 +20,7 @@ function getSupabase() {
 /**
  * Extract authenticated user from request.
  * Checks (in order):
- *   1. x-api-key header (CoinPay business API key)
+ *   1. x-api-key header (TempestTouch business API key)
  *   2. Authorization: Bearer <api_key>
  *   3. Authorization: Bearer <jwt>
  */
@@ -65,13 +65,13 @@ export async function getAuthUser(request: NextRequest): Promise<{ id: string } 
 }
 
 /**
- * Resolve a CoinPay API key to its owning merchant.
+ * Resolve a TempestTouch API key to its owning merchant.
  * Uses the same getBusinessByApiKey as the main auth module for consistency.
  */
 async function resolveApiKey(apiKey: string): Promise<{ id: string } | null> {
   // Quick format check; the full validation happens in getBusinessByApiKey.
   if (!isApiKey(apiKey)) {
-    console.warn('[OAuth Auth] API key does not use a CoinPay prefix');
+    console.warn('[OAuth Auth] API key does not use a TempestTouch prefix');
     return null;
   }
 

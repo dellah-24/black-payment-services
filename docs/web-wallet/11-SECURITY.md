@@ -1,4 +1,4 @@
-# CoinPayPortal Wallet Mode - Security Model
+# Tempest Touch Wallet Mode - Security Model
 
 ## 1. Overview
 
@@ -116,7 +116,7 @@ const cspHeader = {
     "script-src 'self'",
     "style-src 'self' 'unsafe-inline'",
     "img-src 'self' data: blob:",
-    "connect-src 'self' https://api.coinpayportal.com",
+    "connect-src 'self' https://api.tempesttouch.com",
     "frame-ancestors 'none'",
     "form-action 'self'"
   ].join('; ')
@@ -579,9 +579,9 @@ interface SecurityAdvisory {
 
 ## 9. Security Contacts
 
-- **Security Issues**: security@coinpayportal.com
-- **Bug Bounty**: https://coinpayportal.com/security/bounty
-- **PGP Key**: https://coinpayportal.com/security/pgp
+- **Security Issues**: security@tempesttouch.com
+- **Bug Bounty**: https://tempesttouch.com/security/bounty
+- **PGP Key**: https://tempesttouch.com/security/pgp
 
 ### 9.1 Responsible Disclosure
 

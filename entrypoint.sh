@@ -23,7 +23,7 @@ ExitPolicy reject *:*
 EOF
 
 # Perms. The onion keys live on the existing Railway volume mounted at
-# /mnt/files (coinpay allows only one volume/service) so the .onion is stable.
+# /mnt/files (tempesttouch allows only one volume/service) so the .onion is stable.
 mkdir -p /mnt/files/tor/hidden_service /var/lib/tor /var/log/tor
 chown -R debian-tor:debian-tor /mnt/files/tor /var/lib/tor /var/log/tor
 chmod 700 /mnt/files/tor/hidden_service || true

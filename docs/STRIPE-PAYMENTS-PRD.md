@@ -1,11 +1,11 @@
-# CoinPayPortal Card Gateway + Card Escrow + DID Reputation Integration
+# Tempest Touch Card Gateway + Card Escrow + DID Reputation Integration
 ## Full Product Requirements Document (PRD)
 
 ---
 
 ## 1. Executive Summary
 
-CoinPayPortal currently provides:
+Tempest Touch currently provides:
 - Crypto payment gateway
 - Non-custodial crypto payments
 - Escrow-style crypto release
@@ -13,12 +13,12 @@ CoinPayPortal currently provides:
 - DID-based portable reputation layer
 - Unified webhook system
 
-This project extends CoinPayPortal to support:
+This project extends Tempest Touch to support:
 1. Credit & Debit Card payments via Stripe Connect Express
 2. Optional Card Escrow Mode
 3. Full integration of card activity into DID reputation scoring
 
-Stripe will act purely as payment infrastructure. CoinPayPortal remains the product, API layer, risk engine, and identity layer.
+Stripe will act purely as payment infrastructure. Tempest Touch remains the product, API layer, risk engine, and identity layer.
 
 ---
 
@@ -26,7 +26,7 @@ Stripe will act purely as payment infrastructure. CoinPayPortal remains the prod
 
 ### 2.1 Primary Goals
 - Add card payment rail
-- Maintain unified CoinPay API
+- Maintain unified Tempest Touch API
 - Maintain tiered fee model
 - Introduce optional card escrow
 - Feed all card activity into DID reputation engine
@@ -44,14 +44,14 @@ Stripe will act purely as payment infrastructure. CoinPayPortal remains the prod
 
 ## 3. Product Positioning
 
-CoinPayPortal becomes:
+Tempest Touch becomes:
 
 > A multi-rail payments infrastructure (Crypto + Card)
 > With identity-based trust scoring via DID
 > With optional escrow logic
 > With risk-aware automation
 
-Stripe processes payments. CoinPayPortal manages trust and logic.
+Stripe processes payments. Tempest Touch manages trust and logic.
 
 ---
 
@@ -68,15 +68,15 @@ Stripe processes payments. CoinPayPortal manages trust and logic.
 
 #### Card Gateway Mode
 ```
-Customer → CoinPay Checkout → Stripe Destination Charge
+Customer → Tempest Touch Checkout → Stripe Destination Charge
 → Stripe deducts processing fee
-→ CoinPay deducts platform fee
+→ Tempest Touch deducts platform fee
 → Merchant receives payout
 ```
 
 #### Card Escrow Mode
 ```
-Customer → CoinPay Checkout → Stripe PaymentIntent (platform-owned)
+Customer → Tempest Touch Checkout → Stripe PaymentIntent (platform-owned)
 → Funds land in platform balance
 → Escrow record created
 → Manual or timed release
@@ -107,7 +107,7 @@ Customer → CoinPay Checkout → Stripe PaymentIntent (platform-owned)
 
 Every merchant and user has:
 ```
-did:coinpay:<unique_identifier>
+did:tempesttouch:<unique_identifier>
 ```
 
 All card events generate DID reputation entries.
@@ -349,7 +349,7 @@ Admin must be able to:
 - Sanctions
 - Tax reporting (if configured)
 
-**CoinPay must:**
+**Tempest Touch must:**
 - Disclose Stripe processing
 - Disclose escrow reversal risk
 - Disclose clawback policy
@@ -405,7 +405,7 @@ If dispute_ratio > 1.5%:
 
 ## 19. Long-Term Vision
 
-CoinPayPortal evolves into:
+Tempest Touch evolves into:
 
 > A DID-powered trust-weighted payment layer
 > Multi-rail commerce infrastructure

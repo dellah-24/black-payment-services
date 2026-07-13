@@ -11,7 +11,7 @@
  */
 
 // generateMnemonic / validateMnemonic come from the SDK's ./wallet subpath.
-import { generateMnemonic, validateMnemonic } from '@profullstack/coinpay/wallet';
+import { generateMnemonic, validateMnemonic } from '@profullstack/tempesttouch/wallet';
 
 import { deriveAllAddresses, seedFromMnemonic, type DerivedAddress } from './derivation.js';
 import { DEFAULT_CHAINS, type NativeChain } from './chains.js';

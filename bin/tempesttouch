@@ -1,0 +1,1294 @@
+#!/usr/bin/env node
+
+/**
+ * Tempest Touch CLI
+ * 
+ * Usage:
+ *   tempesttouch swap quote --from BTC --to ETH --amount 0.1
+ *   tempesttouch swap create --from BTC --to ETH --amount 0.1 --address 0x...
+ *   tempesttouch swap status <id>
+ *   tempesttouch swap coins
+ *   tempesttouch wallet create [--words 12|24] [--chains BTC,ETH] [--password pass]
+ *   tempesttouch wallet import "<mnemonic>" [--password pass]
+ *   tempesttouch wallet unlock [--password pass]
+ *   tempesttouch wallet info
+ *   tempesttouch wallet addresses
+ *   tempesttouch wallet derive <chain>
+ *   tempesttouch wallet derive-missing
+ *   tempesttouch wallet balance [chain]
+ *   tempesttouch wallet send --chain ETH --to 0x... --amount 0.1
+ *   tempesttouch wallet sign-digest --chain ETH --digest 0x<32-byte-hex>
+ *   tempesttouch wallet sign-message --chain ETH --message "login-challenge"
+ *   tempesttouch wallet sign-solana --message 0x<tx-message-bytes-hex>
+ *   tempesttouch wallet history
+ *   tempesttouch wallet backup --password <pass>
+ *   tempesttouch wallet delete
+ */
+
+import { WalletClient, WalletChain, DEFAULT_CHAINS, validateMnemonic } from '../packages/sdk/src/wallet.js';
+import { 
+  createQuickCardPayment,
+  createCardEscrow,
+  listCardEscrows,
+  releaseCardEscrow,
+  refundCardEscrow,
+  getCardEscrowStatus,
+  formatCardAmount 
+} from '../packages/sdk/src/card-payments.js';
+import { Tempest TouchClient } from '../packages/sdk/src/client.js';
+import { execSync, spawn } from 'child_process';
+import { existsSync, unlinkSync, readFileSync } from 'fs';
+import { homedir } from 'os';
+import { resolve } from 'path';
+
+const API_BASE = process.env.TEMPESTTOUCH_API_URL || 'https://tempesttouchportal.com';
+
+// ── Helpers ──────────────────────────────────────────────────────────
+
+function parseArgs(args) {
+  const opts = {};
+  const positional = [];
+  for (let i = 0; i < args.length; i++) {
+    const arg = args[i];
+    if (arg.startsWith('--')) {
+      const key = arg.slice(2);
+      const value = args[i + 1];
+      if (value && !value.startsWith('--')) {
+        opts[key] = value;
+        i++;
+      } else {
+        opts[key] = true;
+      }
+    } else {
+      positional.push(arg);
+    }
+  }
+  opts._positional = positional;
+  return opts;
+}
+
+function formatError(err) {
+  if (err instanceof Error) return err.message;
+  if (typeof err === 'string') return err;
+  try { return JSON.stringify(err); } catch { return String(err); }
+}
+
+// ── GPG local wallet storage ────────────────────────────────────────
+
+function getWalletFile(opts) {
+  return opts['wallet-file'] || resolve(homedir(), '.tempesttouch-wallet.gpg');
+}
+
+function getPassword(opts) {
+  return opts.password || process.env.TEMPESTTOUCH_WALLET_PASSWORD || null;
+}
+
+function gpgEncrypt(plaintext, password, outFile) {
+  return new Promise((resolve, reject) => {
+    const proc = spawn('gpg', [
+      '--batch', '--yes', '--passphrase-fd', '0',
+      '--symmetric', '--cipher-algo', 'AES256',
+      '--output', outFile,
+    ], { stdio: ['pipe', 'pipe', 'pipe'] });
+    let stderr = '';
+    proc.stderr.on('data', d => stderr += d);
+    proc.on('close', code => {
+      if (code === 0) resolve();
+      else reject(new Error(`gpg encrypt failed (${code}): ${stderr}`));
+    });
+    proc.stdin.write(password + '\n');
+    proc.stdin.write(plaintext);
+    proc.stdin.end();
+  });
+}
+
+function gpgDecrypt(inFile, password) {
+  return new Promise((resolve, reject) => {
+    const proc = spawn('gpg', [
+      '--batch', '--yes', '--passphrase-fd', '0',
+      '--decrypt', inFile,
+    ], { stdio: ['pipe', 'pipe', 'pipe'] });
+    let stdout = '', stderr = '';
+    proc.stdout.on('data', d => stdout += d);
+    proc.stderr.on('data', d => stderr += d);
+    proc.on('close', code => {
+      if (code === 0) resolve(stdout);
+      else reject(new Error(`gpg decrypt failed (${code}): ${stderr}`));
+    });
+    proc.stdin.write(password + '\n');
+    proc.stdin.end();
+  });
+}
+
+async function saveWalletLocally(data, opts) {
+  const password = getPassword(opts);
+  if (!password) throw new Error('Password required. Use --password or TEMPESTTOUCH_WALLET_PASSWORD env var.');
+  const file = getWalletFile(opts);
+  const json = JSON.stringify(data, null, 2);
+  await gpgEncrypt(json, password, file);
+  return file;
+}
+
+async function loadWalletLocally(opts) {
+  const password = getPassword(opts);
+  if (!password) throw new Error('Password required. Use --password or TEMPESTTOUCH_WALLET_PASSWORD env var.');
+  const file = getWalletFile(opts);
+  if (!existsSync(file)) throw new Error(`Wallet file not found: ${file}`);
+  const json = await gpgDecrypt(file, password);
+  return JSON.parse(json);
+}
+
+async function getWalletClient(opts) {
+  const data = await loadWalletLocally(opts);
+  if (!data.mnemonic) throw new Error('No mnemonic found in wallet file');
+  const client = await WalletClient.fromSeed(data.mnemonic, {
+    chains: data.chains || DEFAULT_CHAINS,
+    baseUrl: API_BASE + '/api',
+  });
+  return { client, data };
+}
+
+// ── Wallet commands ─────────────────────────────────────────────────
+
+async function handleWallet(subCommand, args) {
+  const opts = parseArgs(args);
+
+  const commands = {
+    create: walletCreate, import: walletImport, unlock: walletUnlock,
+    info: walletInfo, addresses: walletAddresses, derive: walletDerive,
+    'derive-missing': walletDeriveMissing, balance: walletBalance,
+    send: walletSend, history: walletHistory, backup: walletBackup,
+    delete: walletDelete,
+    'sign-digest': walletSignDigest,
+    'sign-message': walletSignMessage,
+    'sign-solana': walletSignSolana,
+  };
+
+  if (subCommand === 'help' || subCommand === '--help' || subCommand === '-h' || !subCommand) {
+    showWalletHelp();
+    return;
+  }
+
+  const fn = commands[subCommand];
+  if (!fn) {
+    console.error(`Unknown wallet command: ${subCommand}`);
+    showWalletHelp();
+    process.exit(1);
+  }
+
+  try {
+    await fn(opts);
+  } catch (err) {
+    // Pretty-print API/SDK errors
+    const msg = err?.response
+      ? formatError(err.response.error || err.response.message || err.response)
+      : formatError(err);
+    console.error('Error:', msg);
+    process.exit(1);
+  }
+}
+
+async function walletCreate(opts) {
+  const words = parseInt(opts.words || '12', 10);
+  const chains = opts.chains ? opts.chains.split(',') : DEFAULT_CHAINS;
+  
+  console.log(`Creating new ${words}-word wallet...`);
+  const client = await WalletClient.create({ words, chains, baseUrl: API_BASE + '/api' });
+  const mnemonic = client.getMnemonic();
+  const walletId = client.getWalletId();
+
+  console.log('\n╔══════════════════════════════════════════════════════════════╗');
+  console.log('║                  NEW WALLET CREATED                         ║');
+  console.log('╠══════════════════════════════════════════════════════════════╣');
+  console.log(`║  Wallet ID: ${walletId}`);
+  console.log(`║  Chains:    ${chains.join(', ')}`);
+  console.log('╠══════════════════════════════════════════════════════════════╣');
+  console.log('║  ⚠️  SAVE YOUR SEED PHRASE — IT CANNOT BE RECOVERED ⚠️      ║');
+  console.log('╠══════════════════════════════════════════════════════════════╣');
+  console.log(`║  ${mnemonic}`);
+  console.log('╚══════════════════════════════════════════════════════════════╝\n');
+
+  if (getPassword(opts)) {
+    const file = await saveWalletLocally({ mnemonic, walletId, chains }, opts);
+    console.log(`Wallet encrypted and saved to: ${file}`);
+  } else {
+    console.log('Tip: Use --password to encrypt and store the wallet locally.');
+  }
+}
+
+async function walletImport(opts) {
+  const mnemonic = opts._positional[0];
+  if (!mnemonic) {
+    console.error('Error: mnemonic phrase required');
+    console.log('Usage: tempesttouch wallet import "word1 word2 ... word12" --password <pass>');
+    process.exit(1);
+  }
+
+  if (!validateMnemonic(mnemonic)) {
+    console.error('Error: invalid mnemonic phrase');
+    process.exit(1);
+  }
+
+  const chains = opts.chains ? opts.chains.split(',') : DEFAULT_CHAINS;
+  console.log('Importing wallet from seed phrase...');
+
+  // Try server registration but don't fail if it errors
+  let walletId = null;
+  try {
+    const client = await WalletClient.fromSeed(mnemonic, { chains, baseUrl: API_BASE + '/api' });
+    walletId = client.getWalletId();
+  } catch (err) {
+    const msg = err?.response
+      ? formatError(err.response.error || err.response.message || err.response)
+      : formatError(err);
+    console.warn(`Warning: Server registration failed: ${msg}`);
+    console.warn('Wallet will be saved locally only.\n');
+  }
+
+  console.log('\n╔══════════════════════════════════════════════════════════════╗');
+  console.log('║                  WALLET IMPORTED                            ║');
+  console.log('╠══════════════════════════════════════════════════════════════╣');
+  console.log(`║  Wallet ID: ${walletId || '(local only — server registration pending)'}`);
+  console.log(`║  Chains:    ${chains.join(', ')}`);
+  console.log('╚══════════════════════════════════════════════════════════════╝\n');
+
+  if (getPassword(opts)) {
+    const file = await saveWalletLocally({ mnemonic, walletId, chains }, opts);
+    console.log(`Wallet encrypted and saved to: ${file}`);
+  } else {
+    console.log('Tip: Use --password to encrypt and store the wallet locally.');
+  }
+}
+
+async function walletUnlock(opts) {
+  const data = await loadWalletLocally(opts);
+  console.log('\n╔══════════════════════════════════════════════════════════════╗');
+  console.log('║                  WALLET UNLOCKED                            ║');
+  console.log('╠══════════════════════════════════════════════════════════════╣');
+  console.log(`║  Wallet ID: ${data.walletId || '(local only)'}`);
+  console.log(`║  Chains:    ${(data.chains || []).join(', ')}`);
+  console.log(`║  Mnemonic:  ${data.mnemonic}`);
+  console.log('╚══════════════════════════════════════════════════════════════╝\n');
+}
+
+async function walletInfo(opts) {
+  const { client } = await getWalletClient(opts);
+  const info = await client.getInfo();
+  console.log('\nWallet Info:');
+  console.log(JSON.stringify(info, null, 2));
+}
+
+async function walletAddresses(opts) {
+  const { client } = await getWalletClient(opts);
+  const result = await client.getAddresses();
+  console.log('\nWallet Addresses:');
+  console.log(JSON.stringify(result, null, 2));
+}
+
+async function walletDerive(opts) {
+  const chain = opts._positional[0];
+  if (!chain) {
+    console.error('Error: chain required. Usage: tempesttouch wallet derive <chain>');
+    process.exit(1);
+  }
+  const { client } = await getWalletClient(opts);
+  const result = await client.deriveAddress(chain);
+  console.log(`\nDerived address for ${chain}:`);
+  console.log(JSON.stringify(result, null, 2));
+}
+
+async function walletDeriveMissing(opts) {
+  const { client } = await getWalletClient(opts);
+  const results = await client.deriveMissingChains();
+  console.log('\nDerived missing chains:');
+  console.log(JSON.stringify(results, null, 2));
+}
+
+async function walletBalance(opts) {
+  const chain = opts._positional[0];
+  const { client } = await getWalletClient(opts);
+  const result = chain ? await client.getBalance(chain) : await client.getBalances();
+  console.log('\nBalances:');
+  console.log(JSON.stringify(result, null, 2));
+}
+
+async function walletSend(opts) {
+  if (!opts.chain || !opts.to || !opts.amount) {
+    console.error('Error: --chain, --to, and --amount are required');
+    console.log('Usage: tempesttouch wallet send --chain ETH --to 0x... --amount 0.1');
+    process.exit(1);
+  }
+  const { client } = await getWalletClient(opts);
+  const result = await client.send({
+    chain: opts.chain,
+    to: opts.to,
+    amount: opts.amount,
+    priority: opts.priority || 'medium',
+  });
+  console.log('\nTransaction result:');
+  console.log(JSON.stringify(result, null, 2));
+}
+
+async function walletHistory(opts) {
+  const { client } = await getWalletClient(opts);
+  const result = await client.getHistory({
+    chain: opts.chain,
+    limit: opts.limit ? parseInt(opts.limit) : undefined,
+  });
+  console.log('\nTransaction history:');
+  console.log(JSON.stringify(result, null, 2));
+}
+
+// ── Arbitrary signing commands ─────────────────────────────────
+// Lets external tools (e.g. b1dz.com's DEX engine) use a Tempest Touch
+// wallet as a signer for flows Tempest Touch itself doesn't implement —
+// Uniswap swaps, Jupiter routes, EIP-712 typed data, etc. The
+// caller builds the unsigned tx with its own library and hands us
+// just the digest or message bytes.
+
+async function walletSignDigest(opts) {
+  if (!opts.chain || !opts.digest) {
+    console.error('Error: --chain and --digest are required');
+    console.log('Usage: tempesttouch wallet sign-digest --chain ETH --digest 0x<32-byte-hex>');
+    process.exit(1);
+  }
+  const { client } = await getWalletClient(opts);
+  const signature = client.signDigest({ chain: opts.chain, digest: opts.digest });
+  // Raw stdout so callers can pipe / capture without parsing JSON.
+  process.stdout.write(signature + '\n');
+}
+
+async function walletSignMessage(opts) {
+  if (!opts.chain || opts.message == null) {
+    console.error('Error: --chain and --message are required');
+    console.log('Usage: tempesttouch wallet sign-message --chain ETH --message "login-challenge"');
+    process.exit(1);
+  }
+  const { client } = await getWalletClient(opts);
+  const signature = client.signMessage({ chain: opts.chain, message: String(opts.message) });
+  process.stdout.write(signature + '\n');
+}
+
+async function walletSignSolana(opts) {
+  if (!opts.message) {
+    console.error('Error: --message is required (hex-encoded Solana transaction message bytes)');
+    console.log('Usage: tempesttouch wallet sign-solana --message 0x<hex-bytes> [--index 0]');
+    process.exit(1);
+  }
+  const { client } = await getWalletClient(opts);
+  const signature = client.signSolanaMessage({
+    message: opts.message,
+    index: opts.index ? parseInt(opts.index, 10) : 0,
+  });
+  process.stdout.write(signature + '\n');
+}
+
+async function walletBackup(opts) {
+  const password = getPassword(opts);
+  if (!password) {
+    console.error('Error: --password required for backup');
+    process.exit(1);
+  }
+  const { client } = await getWalletClient(opts);
+  const encrypted = await client.backupSeed(password);
+  console.log('\nEncrypted backup (save this string):');
+  console.log(encrypted);
+}
+
+async function walletDelete(opts) {
+  const file = getWalletFile(opts);
+  if (!existsSync(file)) {
+    console.log(`No wallet file found at: ${file}`);
+    return;
+  }
+  unlinkSync(file);
+  console.log(`Wallet file deleted: ${file}`);
+}
+
+// ── Swap commands (unchanged) ───────────────────────────────────────
+
+async function handleSwap(subCommand, args) {
+  const opts = parseArgs(args);
+  switch (subCommand) {
+    case 'quote': return swapQuote(opts);
+    case 'create': return swapCreate(opts);
+    case 'status': return swapStatus(args);
+    case 'coins': return swapCoins();
+    default:
+      console.error(`Unknown swap command: ${subCommand}`);
+      showSwapHelp();
+      process.exit(1);
+  }
+}
+
+async function swapQuote(opts) {
+  const { from, to, amount } = opts;
+  if (!from || !to || !amount) {
+    console.error('Error: --from, --to, and --amount are required');
+    process.exit(1);
+  }
+  try {
+    const url = `${API_BASE}/api/swap/quote?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}&amount=${encodeURIComponent(amount)}`;
+    const res = await fetch(url);
+    const data = await res.json();
+    if (!res.ok) { console.error('Error:', formatError(data.error || data)); process.exit(1); }
+    const q = data.quote;
+    console.log('\n╔══════════════════════════════════════════╗');
+    console.log('║            SWAP QUOTE                    ║');
+    console.log('╠══════════════════════════════════════════╣');
+    console.log(`║  From:     ${q.depositAmount} ${q.from.padEnd(6)}`);
+    console.log(`║  To:       ${parseFloat(q.settleAmount).toFixed(8)} ${q.to.padEnd(6)}`);
+    console.log(`║  Rate:     1 ${q.from} = ${parseFloat(q.rate).toFixed(8)} ${q.to}`);
+    if (q.minAmount) console.log(`║  Min:      ${q.minAmount} ${q.from}`);
+    console.log(`║  Provider: ${q.provider} (no KYC)`);
+    console.log('╚══════════════════════════════════════════╝\n');
+    console.log(`To create: tempesttouch swap create --from ${from} --to ${to} --amount ${amount} --address YOUR_${to}_ADDRESS\n`);
+  } catch (err) { console.error('Network error:', formatError(err)); process.exit(1); }
+}
+
+async function swapCreate(opts) {
+  const { from, to, amount, address, refund } = opts;
+  if (!from || !to || !amount || !address) {
+    console.error('Error: --from, --to, --amount, and --address are required');
+    process.exit(1);
+  }
+  try {
+    const res = await fetch(`${API_BASE}/api/swap/create`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ from, to, amount, settleAddress: address, refundAddress: refund }),
+    });
+    const data = await res.json();
+    if (!res.ok) { console.error('Error:', formatError(data.error || data)); process.exit(1); }
+    const s = data.swap;
+    console.log('\n╔══════════════════════════════════════════════════════════════════╗');
+    console.log('║                    SWAP CREATED                                  ║');
+    console.log('╠══════════════════════════════════════════════════════════════════╣');
+    console.log(`║  Swap ID:  ${s.id}`);
+    console.log(`║  SEND ${s.depositAmount} ${from} TO:`);
+    console.log(`║  ${s.depositAddress}`);
+    console.log(`║  You will receive: ${s.settleAmount} ${to}`);
+    console.log(`║  Status: ${s.status}`);
+    if (s.expiresAt) console.log(`║  Expires: ${new Date(s.expiresAt).toLocaleString()}`);
+    console.log('╚══════════════════════════════════════════════════════════════════╝\n');
+    console.log(`Check status: tempesttouch swap status ${s.id}\n`);
+  } catch (err) { console.error('Network error:', formatError(err)); process.exit(1); }
+}
+
+async function swapStatus(args) {
+  const id = args[0];
+  if (!id || id.startsWith('--')) {
+    console.error('Error: swap ID required');
+    process.exit(1);
+  }
+  try {
+    const res = await fetch(`${API_BASE}/api/swap/${encodeURIComponent(id)}`);
+    const data = await res.json();
+    if (!res.ok) { console.error('Error:', formatError(data.error || data)); process.exit(1); }
+    const s = data.swap;
+    const emoji = { pending:'⏳', waiting:'⏳', confirming:'🔄', exchanging:'🔄', sending:'📤', finished:'✅', failed:'❌', refunded:'↩️', expired:'⌛' };
+    console.log('\n╔══════════════════════════════════════════════════════════════════╗');
+    console.log('║                    SWAP STATUS                                   ║');
+    console.log('╠══════════════════════════════════════════════════════════════════╣');
+    console.log(`║  ID:       ${s.id}`);
+    console.log(`║  Status:   ${emoji[s.status] || '❓'} ${s.status}`);
+    console.log(`║  From:     ${s.fromCurrency} → ${s.toCurrency}`);
+    if (s.amountFrom) console.log(`║  Sent:     ${s.amountFrom} ${s.fromCurrency}`);
+    if (s.amountTo) console.log(`║  Received: ${s.amountTo} ${s.toCurrency}`);
+    if (s.payinAddress) console.log(`║  Deposit:  ${s.payinAddress}`);
+    if (s.payoutAddress) console.log(`║  Payout:   ${s.payoutAddress}`);
+    if (s.payinHash) console.log(`║  TX In:    ${s.payinHash}`);
+    if (s.payoutHash) console.log(`║  TX Out:   ${s.payoutHash}`);
+    console.log('╚══════════════════════════════════════════════════════════════════╝\n');
+  } catch (err) { console.error('Network error:', formatError(err)); process.exit(1); }
+}
+
+async function swapCoins() {
+  try {
+    const res = await fetch(`${API_BASE}/api/swap/coins`);
+    const data = await res.json();
+    if (!res.ok) { console.error('Error:', formatError(data.error || data)); process.exit(1); }
+    console.log('\n╔══════════════════════════════════════════════════════════════╗');
+    console.log('║              SUPPORTED COINS FOR SWAP                        ║');
+    console.log('╠══════════════════════════════════════════════════════════════╣');
+    const coins = data.coins;
+    for (const coin of coins) {
+      const symbol = (coin.symbol || coin).toString().padEnd(10);
+      const name = (coin.name || '').padEnd(24);
+      const network = (coin.network || '').padEnd(18);
+      console.log(`║  ${symbol}  ${name}  ${network}║`);
+    }
+    console.log('╚══════════════════════════════════════════════════════════════╝\n');
+    console.log(`Total: ${coins.length} coins supported\nProvider: ChangeNOW (no KYC)\n`);
+  } catch (err) { console.error('Network error:', formatError(err)); process.exit(1); }
+}
+
+// ── Subscription Commands ────────────────────────────────────────────
+
+async function handleSubscription(subCommand, args) {
+  const opts = parseArgs(args);
+  switch (subCommand) {
+    case 'create-plan': return subscriptionCreatePlan(opts);
+    case 'subscribe': return subscriptionSubscribe(opts);
+    case 'cancel': return subscriptionCancel(args);
+    case 'list': return subscriptionList(opts);
+    case 'get': return subscriptionGet(args);
+    default:
+      console.error(`Unknown subscription command: ${subCommand}`);
+      showHelp();
+      process.exit(1);
+  }
+}
+
+function getApiKey() {
+  const key = process.env.TEMPESTTOUCH_API_KEY;
+  if (!key) {
+    console.error('Error: TEMPESTTOUCH_API_KEY environment variable required');
+    process.exit(1);
+  }
+  return key;
+}
+
+async function subscriptionCreatePlan(opts) {
+  const { business, name, amount, interval, 'interval-count': intervalCount, 'trial-days': trialDays, description } = opts;
+  if (!business || !name || !amount) {
+    console.error('Error: --business, --name, and --amount are required');
+    process.exit(1);
+  }
+  try {
+    const res = await fetch(`${API_BASE}/api/stripe/subscriptions/plans`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getApiKey()}` },
+      body: JSON.stringify({
+        businessId: business,
+        name,
+        description: description || undefined,
+        amount: parseInt(amount),
+        interval: interval || 'month',
+        intervalCount: intervalCount ? parseInt(intervalCount) : 1,
+        trialDays: trialDays ? parseInt(trialDays) : undefined,
+      }),
+    });
+    const data = await res.json();
+    if (!data.success) { console.error('Error:', data.error); process.exit(1); }
+    const p = data.plan;
+    console.log(`\n╔══════════════════════════════════════════════════════════════╗`);
+    console.log(`║  Subscription Plan Created                                   ║`);
+    console.log(`╠══════════════════════════════════════════════════════════════╣`);
+    console.log(`║  ID:       ${p.id}`);
+    console.log(`║  Name:     ${p.name}`);
+    console.log(`║  Amount:   $${(p.amount / 100).toFixed(2)}/${p.interval}`);
+    console.log(`║  Price ID: ${p.stripe_price_id}`);
+    if (p.trial_days) console.log(`║  Trial:    ${p.trial_days} days`);
+    console.log(`╚══════════════════════════════════════════════════════════════╝\n`);
+  } catch (err) { console.error('Network error:', formatError(err)); process.exit(1); }
+}
+
+async function subscriptionSubscribe(opts) {
+  const { plan, email, 'customer-id': customerId, 'success-url': successUrl, 'cancel-url': cancelUrl } = opts;
+  if (!plan || (!email && !customerId)) {
+    console.error('Error: --plan and --email (or --customer-id) are required');
+    process.exit(1);
+  }
+  try {
+    const res = await fetch(`${API_BASE}/api/stripe/subscriptions`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getApiKey()}` },
+      body: JSON.stringify({
+        planId: plan,
+        customerEmail: email || undefined,
+        customerId: customerId || undefined,
+        successUrl,
+        cancelUrl,
+      }),
+    });
+    const data = await res.json();
+    if (!data.success) { console.error('Error:', data.error); process.exit(1); }
+    console.log(`\n╔══════════════════════════════════════════════════════════════╗`);
+    console.log(`║  Subscription Created                                        ║`);
+    console.log(`╠══════════════════════════════════════════════════════════════╣`);
+    console.log(`║  ID:       ${data.subscription.id}`);
+    console.log(`║  Status:   ${data.subscription.status}`);
+    if (data.checkout_url) console.log(`║  Checkout: ${data.checkout_url}`);
+    console.log(`╚══════════════════════════════════════════════════════════════╝\n`);
+  } catch (err) { console.error('Network error:', formatError(err)); process.exit(1); }
+}
+
+async function subscriptionCancel(args) {
+  const opts = parseArgs(args);
+  const id = opts._positional[0];
+  if (!id) { console.error('Error: subscription ID required'); process.exit(1); }
+  try {
+    const res = await fetch(`${API_BASE}/api/stripe/subscriptions/${encodeURIComponent(id)}`, {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getApiKey()}` },
+      body: JSON.stringify({ immediately: opts.immediately === true }),
+    });
+    const data = await res.json();
+    if (!data.success) { console.error('Error:', data.error); process.exit(1); }
+    console.log(`\n✓ ${data.message}\n`);
+  } catch (err) { console.error('Network error:', formatError(err)); process.exit(1); }
+}
+
+async function subscriptionList(opts) {
+  const params = new URLSearchParams();
+  if (opts.business) params.set('businessId', opts.business);
+  if (opts.status) params.set('status', opts.status);
+  if (opts.limit) params.set('limit', opts.limit);
+  try {
+    const res = await fetch(`${API_BASE}/api/stripe/subscriptions?${params}`, {
+      headers: { 'Authorization': `Bearer ${getApiKey()}` },
+    });
+    const data = await res.json();
+    if (!data.success) { console.error('Error:', data.error); process.exit(1); }
+    const subs = data.subscriptions || [];
+    if (subs.length === 0) { console.log('\nNo subscriptions found.\n'); return; }
+    console.log(`\n╔══════════════════════════════════════════════════════════════╗`);
+    console.log(`║  Subscriptions (${subs.length})                                          ║`);
+    console.log(`╠══════════════════════════════════════════════════════════════╣`);
+    for (const s of subs) {
+      const planName = s.subscription_plans?.name || 'Unknown';
+      console.log(`║  ${s.id}`);
+      console.log(`║    Plan: ${planName}  Status: ${s.status}  Email: ${s.customer_email || 'N/A'}`);
+    }
+    console.log(`╚══════════════════════════════════════════════════════════════╝\n`);
+  } catch (err) { console.error('Network error:', formatError(err)); process.exit(1); }
+}
+
+async function subscriptionGet(args) {
+  const opts = parseArgs(args);
+  const id = opts._positional[0];
+  if (!id) { console.error('Error: subscription ID required'); process.exit(1); }
+  try {
+    const res = await fetch(`${API_BASE}/api/stripe/subscriptions/${encodeURIComponent(id)}`, {
+      headers: { 'Authorization': `Bearer ${getApiKey()}` },
+    });
+    const data = await res.json();
+    if (!data.success) { console.error('Error:', data.error); process.exit(1); }
+    const s = data.subscription;
+    const planName = s.subscription_plans?.name || 'Unknown';
+    const amount = s.subscription_plans ? `$${(s.subscription_plans.amount / 100).toFixed(2)}/${s.subscription_plans.interval}` : 'N/A';
+    console.log(`\n╔══════════════════════════════════════════════════════════════╗`);
+    console.log(`║  Subscription Details                                        ║`);
+    console.log(`╠══════════════════════════════════════════════════════════════╣`);
+    console.log(`║  ID:       ${s.id}`);
+    console.log(`║  Plan:     ${planName}`);
+    console.log(`║  Amount:   ${amount}`);
+    console.log(`║  Status:   ${s.status}`);
+    console.log(`║  Email:    ${s.customer_email || 'N/A'}`);
+    if (s.stripe_details) {
+      if (s.stripe_details.current_period_end) {
+        console.log(`║  Renews:   ${new Date(s.stripe_details.current_period_end * 1000).toLocaleDateString()}`);
+      }
+      if (s.stripe_details.cancel_at_period_end) console.log(`║  Cancels at period end`);
+    }
+    if (s.canceled_at) console.log(`║  Canceled: ${new Date(s.canceled_at).toLocaleDateString()}`);
+    console.log(`╚══════════════════════════════════════════════════════════════╝\n`);
+  } catch (err) { console.error('Network error:', formatError(err)); process.exit(1); }
+}
+
+// ── Help ────────────────────────────────────────────────────────────
+
+function showHelp() {
+  console.log(`
+Tempest Touch CLI - Non-custodial crypto payments
+
+USAGE
+  tempesttouch <command> [options]
+
+COMMANDS
+  swap         Coin swap operations (no KYC)
+  wallet       Wallet management
+  reputation   Trust & reputation (CPTL)
+  card         Card payments and escrow
+  subscription Subscription billing management
+  help         Show this help
+
+SWAP COMMANDS
+  tempesttouch swap quote   Get a swap quote
+  tempesttouch swap create  Create a swap transaction
+  tempesttouch swap status  Check swap status
+  tempesttouch swap coins   List supported coins
+
+WALLET COMMANDS
+  tempesttouch wallet create          Create a new wallet
+  tempesttouch wallet import "<seed>" Import from seed phrase
+  tempesttouch wallet unlock          Decrypt local wallet file
+  tempesttouch wallet info            Show wallet info from server
+  tempesttouch wallet addresses       List all addresses
+  tempesttouch wallet derive <chain>  Derive address for chain
+  tempesttouch wallet derive-missing  Derive addresses for missing chains
+  tempesttouch wallet balance [chain] Get balances
+  tempesttouch wallet send            Send a transaction
+  tempesttouch wallet history         Transaction history
+  tempesttouch wallet backup          Export encrypted backup
+  tempesttouch wallet delete          Delete local wallet file
+
+REPUTATION COMMANDS
+  tempesttouch reputation profile <did>  Show trust vector & reputation for a DID
+
+CARD COMMANDS
+  tempesttouch card pay --business <id> --amount <usd> --description "text"
+  tempesttouch card escrow --business <id> --amount <usd> --description "text"
+  tempesttouch card escrows [--business <id>] [--status <status>] [--limit <n>]
+  tempesttouch card release <escrowId>
+  tempesttouch card refund <escrowId> [--partial <amount>]
+  tempesttouch card transactions [--business <id>] [--status <status>] [--limit <n>]
+  tempesttouch card balance
+
+SUBSCRIPTION COMMANDS
+  tempesttouch subscription create-plan --business <id> --name "Plan Name" --amount <cents> [--interval month] [--trial-days 14]
+  tempesttouch subscription subscribe --plan <priceId> --email <customer@email.com> [--success-url <url>] [--cancel-url <url>]
+  tempesttouch subscription cancel <subscriptionId> [--immediately]
+  tempesttouch subscription list [--business <id>] [--status <status>] [--limit <n>]
+  tempesttouch subscription get <subscriptionId>
+
+GLOBAL OPTIONS
+  --password <pass>       Encryption password (or TEMPESTTOUCH_WALLET_PASSWORD env)
+  --wallet-file <path>    Wallet file path (default: ~/.tempesttouch-wallet.gpg)
+
+EXAMPLES
+  tempesttouch swap quote --from BTC --to ETH --amount 0.1
+  tempesttouch wallet create --words 24 --password mypass
+  tempesttouch wallet import "word1 word2 ... word12" --password mypass
+  tempesttouch wallet balance ETH --password mypass
+
+ENVIRONMENT
+  TEMPESTTOUCH_API_URL              API base URL (default: https://tempesttouchportal.com)
+  TEMPESTTOUCH_WALLET_PASSWORD      Default wallet password
+
+More info: https://tempesttouchportal.com/docs
+`);
+}
+
+function showSwapHelp() {
+  console.log(`
+SWAP COMMANDS
+  quote     --from <coin> --to <coin> --amount <n>
+  create    --from <coin> --to <coin> --amount <n> --address <addr> [--refund <addr>]
+  status    <swap-id>
+  coins     List supported coins
+`);
+}
+
+function showWalletHelp() {
+  console.log(`
+WALLET COMMANDS
+
+  create          Create a new wallet
+                  --words 12|24       Word count (default: 12)
+                  --chains BTC,ETH    Chains to derive (default: BTC,ETH,SOL,POL,BCH)
+                  --password <pass>   Encrypt and save locally
+
+  import "<seed>" Import wallet from seed phrase
+                  --password <pass>   Encrypt and save locally
+
+  unlock          Decrypt and show local wallet file
+                  --password <pass>   Decryption password
+
+  info            Get wallet info from server
+  addresses       List all derived addresses
+  derive <chain>  Derive a new address for a chain
+  derive-missing  Derive addresses for all missing chains
+  balance [chain] Get balances (optionally filter by chain)
+
+  send            Send a transaction
+                  --chain <chain>     Target chain (required)
+                  --to <address>      Recipient (required)
+                  --amount <n>        Amount (required)
+
+  history         Transaction history
+                  --chain <chain>     Filter by chain
+                  --limit <n>         Max results
+
+  backup          Export encrypted backup string
+                  --password <pass>   Encryption password (required)
+
+  delete          Delete local wallet file
+
+  sign-digest     Sign a 32-byte digest (for EVM contract calls)
+                  --chain <chain>     secp256k1 chain (ETH, POL, BNB, ...)
+                  --digest 0x...      32-byte keccak/sha256 hex
+                  Returns 65-byte r||s||v signature on stdout.
+
+  sign-message    Sign an EIP-191 personal_sign message
+                  --chain <chain>     EVM chain
+                  --message "..."     UTF-8 message to sign
+
+  sign-solana     Sign raw Solana transaction message bytes (ed25519)
+                  --message 0x...     Hex-encoded tx message bytes
+                  --index <n>         Derivation index (default: 0)
+
+GLOBAL OPTIONS
+  --password <pass>       Password (or TEMPESTTOUCH_WALLET_PASSWORD env var)
+  --wallet-file <path>    Wallet file (default: ~/.tempesttouch-wallet.gpg)
+`);
+}
+
+// ── Main ────────────────────────────────────────────────────────────
+
+// ── Reputation commands ──────────────────────────────────────────────
+
+async function handleReputation(subCommand, args) {
+  const opts = parseArgs(args);
+  switch (subCommand) {
+    case 'profile': {
+      const did = opts._positional?.[0] || opts.did;
+      if (!did) {
+        console.error('Usage: tempesttouch reputation profile <did>');
+        process.exit(1);
+      }
+      const res = await fetch(`${API_BASE}/api/reputation/agent/${encodeURIComponent(did)}/reputation`);
+      const data = await res.json();
+      if (!data.success) {
+        console.error('Error:', data.error);
+        process.exit(1);
+      }
+      console.log('\n📊 Reputation Profile:', did);
+      if (data.trust_vector) {
+        console.log('\n🔷 Trust Vector (CPTL v2):');
+        console.log(`  E (Economic):    ${data.trust_vector.E}`);
+        console.log(`  P (Productivity): ${data.trust_vector.P}`);
+        console.log(`  B (Behavioral):  ${data.trust_vector.B}`);
+        console.log(`  D (Diversity):   ${data.trust_vector.D}`);
+        console.log(`  R (Recency):     ${data.trust_vector.R}`);
+        console.log(`  A (Anomaly):     ${data.trust_vector.A}`);
+        console.log(`  C (Compliance):  ${data.trust_vector.C}`);
+      }
+      if (data.reputation?.windows) {
+        const w = data.reputation.windows.all_time;
+        console.log('\n📈 All-Time Stats:');
+        console.log(`  Tasks: ${w.task_count}  Accepted: ${w.accepted_count}  Disputed: ${w.disputed_count}`);
+        console.log(`  Volume: $${w.total_volume.toFixed(2)}  Unique Buyers: ${w.unique_buyers}`);
+      }
+      if (data.reputation?.anti_gaming?.flagged) {
+        console.log('\n⚠️  Anti-gaming flags:', data.reputation.anti_gaming.flags.join(', '));
+      }
+      break;
+    }
+    case 'claim': {
+      // Import and use the reputation claim functionality
+      const { Tempest TouchClient } = await import('../packages/sdk/src/client.js');
+      const { claimDid, getMyDid } = await import('../packages/sdk/src/reputation.js');
+      
+      const apiKey = opts['api-key'] || process.env.TEMPESTTOUCH_API_KEY;
+      const jwt = opts.jwt || process.env.TEMPESTTOUCH_JWT_TOKEN;
+
+      if (!apiKey && !jwt) {
+        console.error('Error: --api-key or --jwt required');
+        console.error('Set TEMPESTTOUCH_API_KEY or TEMPESTTOUCH_JWT_TOKEN environment variable');
+        process.exit(1);
+      }
+
+      try {
+        const client = new Tempest TouchClient({
+          apiKey: apiKey || undefined,
+          bearerToken: jwt || undefined,
+          baseUrl: `${API_BASE}/api`,
+        });
+
+        console.log('🔐 Checking existing DID...');
+        
+        // Check if DID already exists
+        let existingDid;
+        try {
+          existingDid = await getMyDid(client);
+          console.log(`✅ Found existing DID: ${existingDid.did}`);
+          console.log(`   Public Key: ${existingDid.public_key}`);
+          console.log(`   Verified: ${existingDid.verified ? '✅ Yes' : '❌ No'}`);
+          console.log(`   Created: ${existingDid.created_at}`);
+          
+          const reputationUrl = `${API_BASE}/api/reputation/agent/${encodeURIComponent(existingDid.did)}/reputation`;
+          console.log(`   Reputation: ${reputationUrl}`);
+          return;
+        } catch (error) {
+          if (!error.message.includes('not found')) {
+            throw error;
+          }
+        }
+
+        console.log('🚀 Claiming new DID...');
+        
+        const result = await claimDid(client);
+        
+        console.log('\n╔══════════════════════════════════════════════════════════════════╗');
+        console.log('║                          DID CLAIMED                            ║');
+        console.log('╠══════════════════════════════════════════════════════════════════╣');
+        console.log(`║  DID:        ${result.did}`);
+        console.log(`║  Public Key: ${result.public_key}`);
+        console.log(`║  Verified:   ${result.verified ? '✅ Yes' : '❌ No'}`);
+        console.log(`║  Created:    ${result.created_at}`);
+        console.log('╚══════════════════════════════════════════════════════════════════╝\n');
+        
+        const reputationUrl = `${API_BASE}/api/reputation/agent/${encodeURIComponent(result.did)}/reputation`;
+        console.log(`🔍 **View Reputation:** ${reputationUrl}`);
+        console.log(`📊 **Badge URL:** ${API_BASE}/api/reputation/badge/${encodeURIComponent(result.did)}`);
+        
+        console.log('\n💡 **Next Steps:**');
+        console.log('  • Submit task receipts to build reputation');
+        console.log('  • Add DID to your platform profiles');
+        console.log('  • Share reputation URL with clients');
+        console.log(`  • Use this DID: ${result.did}`);
+
+      } catch (error) {
+        const msg = error?.response
+          ? formatError(error.response.error || error.response.message || error.response)
+          : formatError(error);
+        console.error('\n❌ **DID Claim Failed:**', msg);
+        
+        if (msg.includes('Unauthorized')) {
+          console.error('\nTip: Verify your API key or JWT token is correct and has merchant permissions.');
+        } else if (msg.includes('already has a DID')) {
+          console.error('\nTip: Each merchant can only have one DID. Use `tempesttouch reputation profile <did>` to view existing.');
+        }
+        
+        process.exit(1);
+      }
+      break;
+    }
+    case 'help': case '--help': case '-h': default:
+      console.log(`
+Reputation Commands:
+  tempesttouch reputation profile <did>       Show trust vector and reputation for a DID
+  tempesttouch reputation claim [--api-key]   Claim a new DID for your merchant account
+`);
+      break;
+  }
+}
+
+// ── Card commands ───────────────────────────────────────────────────
+
+function getTempest TouchClient() {
+  const apiKey = process.env.TEMPESTTOUCH_API_KEY;
+  if (!apiKey) {
+    throw new Error('TEMPESTTOUCH_API_KEY environment variable required');
+  }
+  return new Tempest TouchClient({ 
+    apiKey,
+    baseUrl: API_BASE + '/api'
+  });
+}
+
+async function handleCard(subCommand, args) {
+  const opts = parseArgs(args);
+  
+  const commands = {
+    pay: cardPay,
+    escrow: cardEscrow,
+    escrows: cardEscrows,
+    release: cardRelease,
+    refund: cardRefund,
+    transactions: cardTransactions,
+    balance: cardBalance,
+  };
+
+  const command = commands[subCommand];
+  if (command) {
+    await command(opts);
+  } else {
+    console.error(`Unknown card command: ${subCommand || '(none)'}`);
+    showCardHelp();
+    process.exit(1);
+  }
+}
+
+async function cardPay(opts) {
+  const { business, amount, description } = opts;
+  if (!business || !amount || !description) {
+    console.error('Error: --business, --amount, and --description are required');
+    console.error('Usage: tempesttouch card pay --business <id> --amount <usd> --description "text"');
+    process.exit(1);
+  }
+
+  try {
+    const client = getTempest TouchClient();
+    const payment = await createQuickCardPayment(client, business, parseFloat(amount), description);
+    
+    console.log('\n╔══════════════════════════════════════════╗');
+    console.log('║            CARD PAYMENT CREATED         ║');
+    console.log('╠══════════════════════════════════════════╣');
+    console.log(`║  Amount:      ${formatCardAmount(Math.round(parseFloat(amount) * 100))}`);
+    console.log(`║  Business:    ${business}`);
+    console.log(`║  Description: ${description}`);
+    console.log(`║  Payment ID:  ${payment.id || payment.session_id || 'N/A'}`);
+    console.log('╚══════════════════════════════════════════╝\n');
+    console.log(`🔗 Checkout URL: ${payment.checkout_url || payment.url}\n`);
+  } catch (err) {
+    console.error('Error creating payment:', formatError(err));
+    process.exit(1);
+  }
+}
+
+async function cardEscrow(opts) {
+  const { business, amount, description } = opts;
+  if (!business || !amount || !description) {
+    console.error('Error: --business, --amount, and --description are required');
+    console.error('Usage: tempesttouch card escrow --business <id> --amount <usd> --description "text"');
+    process.exit(1);
+  }
+
+  try {
+    const client = getTempest TouchClient();
+    const escrow = await createCardEscrow(client, business, parseFloat(amount), description);
+    
+    console.log('\n╔══════════════════════════════════════════╗');
+    console.log('║            CARD ESCROW CREATED           ║');
+    console.log('╠══════════════════════════════════════════╣');
+    console.log(`║  Amount:      ${formatCardAmount(Math.round(parseFloat(amount) * 100))}`);
+    console.log(`║  Business:    ${business}`);
+    console.log(`║  Description: ${description}`);
+    console.log(`║  Escrow ID:   ${escrow.id || escrow.session_id || 'N/A'}`);
+    console.log('╚══════════════════════════════════════════╝\n');
+    console.log(`🔗 Checkout URL: ${escrow.checkout_url || escrow.url}\n`);
+    console.log('💡 Funds will be held in escrow until released.');
+  } catch (err) {
+    console.error('Error creating escrow:', formatError(err));
+    process.exit(1);
+  }
+}
+
+async function cardEscrows(opts) {
+  const { business, status, limit } = opts;
+  
+  try {
+    const client = getTempest TouchClient();
+    const options = {};
+    if (business) options.businessId = business;
+    if (status) options.status = status;
+    if (limit) options.limit = parseInt(limit);
+    
+    const result = await listCardEscrows(client, options);
+    const escrows = result.escrows || result.data || [];
+    
+    if (escrows.length === 0) {
+      console.log('No card escrows found.');
+      return;
+    }
+    
+    console.log('\n╔══════════════════════════════════════════════════════════════════╗');
+    console.log('║                          CARD ESCROWS                           ║');
+    console.log('╠══════════════════════════════════════════════════════════════════╣');
+    
+    escrows.forEach((escrow, i) => {
+      if (i > 0) console.log('╟──────────────────────────────────────────────────────────────────╢');
+      
+      const amount = escrow.amount || escrow.amount_cents;
+      const status = escrow.status || escrow.escrow_status || 'unknown';
+      const statusIcon = {
+        pending: '🟡',
+        released: '🟢',
+        refunded: '🔴',
+        disputed: '🟠'
+      }[status] || '⚪';
+      
+      console.log(`║  ID:          ${escrow.id || 'N/A'}`);
+      console.log(`║  Amount:      ${formatCardAmount(amount)}`);
+      console.log(`║  Status:      ${statusIcon} ${status.toUpperCase()}`);
+      console.log(`║  Business:    ${escrow.business_id || escrow.businessId || 'N/A'}`);
+      console.log(`║  Description: ${escrow.description || 'N/A'}`);
+      console.log(`║  Created:     ${escrow.created_at || escrow.createdAt || 'N/A'}`);
+    });
+    
+    console.log('╚══════════════════════════════════════════════════════════════════╝\n');
+  } catch (err) {
+    console.error('Error listing escrows:', formatError(err));
+    process.exit(1);
+  }
+}
+
+async function cardRelease(opts) {
+  const escrowId = opts._positional[0];
+  if (!escrowId) {
+    console.error('Error: Escrow ID is required');
+    console.error('Usage: tempesttouch card release <escrowId>');
+    process.exit(1);
+  }
+
+  try {
+    const client = getTempest TouchClient();
+    const result = await releaseCardEscrow(client, escrowId);
+    
+    console.log('\n╔══════════════════════════════════════════╗');
+    console.log('║          ESCROW RELEASED                 ║');
+    console.log('╠══════════════════════════════════════════╣');
+    console.log(`║  Escrow ID:   ${escrowId}`);
+    console.log(`║  Status:      🟢 RELEASED`);
+    console.log('╚══════════════════════════════════════════╝\n');
+    console.log('✅ Funds have been released to the merchant.');
+  } catch (err) {
+    console.error('Error releasing escrow:', formatError(err));
+    process.exit(1);
+  }
+}
+
+async function cardRefund(opts) {
+  const escrowId = opts._positional[0];
+  const { partial } = opts;
+  
+  if (!escrowId) {
+    console.error('Error: Escrow ID is required');
+    console.error('Usage: tempesttouch card refund <escrowId> [--partial <amount>]');
+    process.exit(1);
+  }
+
+  try {
+    const client = getTempest TouchClient();
+    const options = {};
+    if (partial) {
+      options.amount = Math.round(parseFloat(partial) * 100); // Convert to cents
+    }
+    
+    const result = await refundCardEscrow(client, escrowId, options);
+    
+    console.log('\n╔══════════════════════════════════════════╗');
+    console.log('║          ESCROW REFUNDED                 ║');
+    console.log('╠══════════════════════════════════════════╣');
+    console.log(`║  Escrow ID:   ${escrowId}`);
+    console.log(`║  Status:      🔴 REFUNDED`);
+    if (partial) {
+      console.log(`║  Amount:      ${formatCardAmount(options.amount)} (partial)`);
+    }
+    console.log('╚══════════════════════════════════════════╝\n');
+    console.log('💰 Refund has been processed.');
+  } catch (err) {
+    console.error('Error refunding escrow:', formatError(err));
+    process.exit(1);
+  }
+}
+
+async function cardTransactions(opts) {
+  const { business, status, limit } = opts;
+  
+  try {
+    // For now, we'll reuse the escrows endpoint since transactions endpoint 
+    // would require additional API implementation
+    const client = getTempest TouchClient();
+    const options = {};
+    if (business) options.businessId = business;
+    if (status) options.status = status;
+    if (limit) options.limit = parseInt(limit);
+    
+    const result = await listCardEscrows(client, options);
+    const transactions = result.escrows || result.data || [];
+    
+    if (transactions.length === 0) {
+      console.log('No card transactions found.');
+      return;
+    }
+    
+    console.log('\n╔══════════════════════════════════════════════════════════════════╗');
+    console.log('║                       CARD TRANSACTIONS                          ║');
+    console.log('╠══════════════════════════════════════════════════════════════════╣');
+    
+    transactions.forEach((tx, i) => {
+      if (i > 0) console.log('╟──────────────────────────────────────────────────────────────────╢');
+      
+      const amount = tx.amount || tx.amount_cents;
+      const status = tx.status || tx.escrow_status || 'unknown';
+      const statusIcon = {
+        pending: '🟡',
+        released: '🟢',
+        refunded: '🔴',
+        completed: '✅',
+        failed: '❌'
+      }[status] || '⚪';
+      
+      console.log(`║  ID:          ${tx.id || 'N/A'}`);
+      console.log(`║  Amount:      ${formatCardAmount(amount)}`);
+      console.log(`║  Status:      ${statusIcon} ${status.toUpperCase()}`);
+      console.log(`║  Business:    ${tx.business_id || tx.businessId || 'N/A'}`);
+      console.log(`║  Description: ${tx.description || 'N/A'}`);
+      console.log(`║  Date:        ${tx.created_at || tx.createdAt || 'N/A'}`);
+    });
+    
+    console.log('╚══════════════════════════════════════════════════════════════════╝\n');
+  } catch (err) {
+    console.error('Error listing transactions:', formatError(err));
+    process.exit(1);
+  }
+}
+
+async function cardBalance(opts) {
+  try {
+    // This would require a Stripe balance API endpoint
+    console.log('\n╔══════════════════════════════════════════╗');
+    console.log('║            STRIPE BALANCE                ║');
+    console.log('╠══════════════════════════════════════════╣');
+    console.log('║  Available:   (API not implemented)     ║');
+    console.log('║  Pending:     (API not implemented)     ║');
+    console.log('╚══════════════════════════════════════════╝\n');
+    console.log('💡 Stripe balance API endpoint not yet implemented.');
+  } catch (err) {
+    console.error('Error getting balance:', formatError(err));
+    process.exit(1);
+  }
+}
+
+function showCardHelp() {
+  console.log(`
+Card Commands:
+  tempesttouch card pay --business <id> --amount <usd> --description "text"
+      Create a card payment
+
+  tempesttouch card escrow --business <id> --amount <usd> --description "text"
+      Create a card escrow payment
+
+  tempesttouch card escrows [--business <id>] [--status <status>] [--limit <n>]
+      List card escrows
+
+  tempesttouch card release <escrowId>
+      Release an escrow to the merchant
+
+  tempesttouch card refund <escrowId> [--partial <amount>]
+      Refund an escrow (full or partial)
+
+  tempesttouch card transactions [--business <id>] [--status <status>] [--limit <n>]
+      List card transactions
+
+  tempesttouch card balance
+      Show Stripe account balance
+`);
+}
+
+async function main() {
+  const args = process.argv.slice(2);
+  
+  if (args.length === 0) { showHelp(); return; }
+
+  const command = args[0];
+  const subCommand = args[1];
+
+  switch (command) {
+    case 'swap':
+      await handleSwap(subCommand, args.slice(2));
+      break;
+    case 'wallet':
+      await handleWallet(subCommand, args.slice(2));
+      break;
+    case 'reputation':
+      await handleReputation(subCommand, args.slice(2));
+      break;
+    case 'card':
+      await handleCard(subCommand, args.slice(2));
+      break;
+    case 'subscription':
+      await handleSubscription(subCommand, args.slice(2));
+      break;
+    case 'help': case '--help': case '-h':
+      showHelp();
+      break;
+    default:
+      console.error(`Unknown command: ${command}`);
+      showHelp();
+      process.exit(1);
+  }
+}
+
+main().catch(err => {
+  // Handle API errors that have a response property
+  if (err && err.response) {
+    console.error('API error:', formatError(err.response.error || err.response.message || err.response));
+  } else {
+    console.error('Fatal error:', formatError(err));
+  }
+  process.exit(1);
+});

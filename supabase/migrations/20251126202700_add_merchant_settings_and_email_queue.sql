@@ -1,4 +1,4 @@
--- CoinPay Merchant Settings and Email Queue Migration
+-- Tempest Touch Merchant Settings and Email Queue Migration
 -- This adds merchant notification preferences and email queue system
 
 -- =====================================================

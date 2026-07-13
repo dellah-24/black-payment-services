@@ -1,8 +1,8 @@
-# CoinPayPortal Wallet Mode - Key Management
+# Tempest Touch Wallet Mode - Key Management
 
 ## 1. Overview
 
-This document describes the non-custodial key management system for Wallet Mode. The core principle is that **CoinPayPortal never has access to private keys**.
+This document describes the non-custodial key management system for Wallet Mode. The core principle is that **Tempest Touch never has access to private keys**.
 
 ### Key Management Principles
 
@@ -331,10 +331,10 @@ export WALLET_SEED="word1 word2 word3 ... word12"
 import keytar from 'keytar';
 
 // Store
-await keytar.setPassword('coinpayportal', 'wallet-seed', mnemonic);
+await keytar.setPassword('tempesttouch', 'wallet-seed', mnemonic);
 
 // Retrieve
-const mnemonic = await keytar.getPassword('coinpayportal', 'wallet-seed');
+const mnemonic = await keytar.getPassword('tempesttouch', 'wallet-seed');
 ```
 
 ---

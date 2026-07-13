@@ -1,12 +1,12 @@
 {
-  "name": "coinpayportal-magento",
-  "displayName": "CoinPayPortal for Magento / Adobe Commerce",
+  "name": "tempesttouch-magento",
+  "displayName": "Tempest Touch for Magento / Adobe Commerce",
   "version": "0.0.0",
   "status": "stub",
   "platform": "magento2",
   "platformMinVersion": "2.4",
   "language": "php",
-  "sdk": "packages/coinpay-php",
+  "sdk": "packages/tempesttouch-php",
   "supportedEvents": [
     "payment.confirmed",
     "payment.expired",

@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 
 /**
- * Decrypt CoinPay Wallet Backup
+ * Decrypt Tempest Touch Wallet Backup
  * 
  * Usage: node scripts/decrypt-wallet-backup.mjs <backup-file>
  * 
- * Example: node scripts/decrypt-wallet-backup.mjs backups/coinpay-wallets-2024-01-01.json.enc
+ * Example: node scripts/decrypt-wallet-backup.mjs backups/tempesttouch-wallets-2024-01-01.json.enc
  */
 
 import { createDecipheriv, scryptSync } from 'crypto';
@@ -47,12 +47,12 @@ async function main() {
   if (!backupFile) {
     console.log('\nUsage: node scripts/decrypt-wallet-backup.mjs <backup-file>\n');
     console.log('Example:');
-    console.log('  node scripts/decrypt-wallet-backup.mjs backups/coinpay-wallets-2024-01-01.json.enc\n');
+    console.log('  node scripts/decrypt-wallet-backup.mjs backups/tempesttouch-wallets-2024-01-01.json.enc\n');
     process.exit(1);
   }
 
   console.log('\n' + '='.repeat(70));
-  console.log('  🔓 CoinPay Wallet Backup Decryptor');
+  console.log('  🔓 Tempest Touch Wallet Backup Decryptor');
   console.log('='.repeat(70));
 
   try {

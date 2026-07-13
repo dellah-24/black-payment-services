@@ -3,13 +3,13 @@ import Link from 'next/link';
 import { listPosts, formatBlogDate, SITE_URL } from '@/lib/blog';
 
 export const metadata: Metadata = {
-  title: 'Blog — CoinPay',
+  title: 'Blog — Tempest Touch',
   description:
-    'Crypto payments, Lightning, and merchant-side updates from the CoinPay team.',
+    'Crypto payments, Lightning, and merchant-side updates from the Tempest Touch team.',
   alternates: { canonical: `${SITE_URL}/blog` },
   openGraph: {
-    title: 'Blog — CoinPay',
-    description: 'Crypto payments, Lightning, and merchant-side updates from the CoinPay team.',
+    title: 'Blog — Tempest Touch',
+    description: 'Crypto payments, Lightning, and merchant-side updates from the Tempest Touch team.',
     url: `${SITE_URL}/blog`,
     type: 'website',
   },
@@ -25,7 +25,7 @@ export default async function BlogIndexPage() {
       <header className="mb-10 border-b border-slate-700/60 pb-6">
         <h1 className="text-4xl font-bold text-white sm:text-5xl">Blog</h1>
         <p className="mt-3 text-gray-400">
-          Crypto payments, Lightning, and merchant-side updates from the CoinPay team.
+          Crypto payments, Lightning, and merchant-side updates from the Tempest Touch team.
         </p>
         <div className="mt-3 text-xs text-gray-500">
           <a href="/blog/rss.xml" className="hover:text-purple-300">RSS feed →</a>

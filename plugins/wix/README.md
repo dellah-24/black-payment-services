@@ -1,8 +1,8 @@
-# CoinPay for Wix Stores (stub)
+# Tempest Touch for Wix Stores (stub)
 
 > **Status:** stub. Not yet a working plugin.
 
-Wix integration for CoinPayPortal. Wix supports payment service providers via the **Payment Provider SPI** — a hosted JSON-RPC service that Wix calls during checkout. Listing in the Wix Marketplace requires Wix partner approval.
+Wix integration for Tempest Touch. Wix supports payment service providers via the **Payment Provider SPI** — a hosted JSON-RPC service that Wix calls during checkout. Listing in the Wix Marketplace requires Wix partner approval.
 
 ## Approval requirement
 
@@ -19,9 +19,9 @@ plugins/wix/
     src/
       server.ts                  # Wix Payment Provider SPI host
       routes/connect.ts          # /v1/connect       — store onboarding
-      routes/payment.ts          # /v1/payments      — create CoinPay checkout
+      routes/payment.ts          # /v1/payments      — create Tempest Touch checkout
       routes/refund.ts           # /v1/refunds       — (future)
-      routes/webhook-coinpay.ts  # CoinPay → us → Wix Payment Provider transactions API
+      routes/webhook-tempesttouch.ts  # Tempest Touch → us → Wix Payment Provider transactions API
 ```
 
 ## Docs

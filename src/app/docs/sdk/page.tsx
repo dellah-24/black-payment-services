@@ -20,11 +20,11 @@ export default function SDKDocsPage() {
             SDK Documentation
           </h1>
           <p className="text-xl text-gray-300">
-            @profullstack/coinpay - Node.js SDK &amp; CLI for cryptocurrency payments
+            @profullstack/tempesttouch - Node.js SDK &amp; CLI for cryptocurrency payments
           </p>
           <div className="mt-4 flex gap-4">
             <a
-              href="https://www.npmjs.com/package/@profullstack/coinpay"
+              href="https://www.npmjs.com/package/@profullstack/tempesttouch"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium transition-colors"
@@ -35,7 +35,7 @@ export default function SDKDocsPage() {
               npm
             </a>
             <a
-              href="https://github.com/profullstack/coinpayportal"
+              href="https://github.com/profullstack/tempesttouch"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg text-sm font-medium transition-colors"
@@ -85,23 +85,23 @@ export default function SDKDocsPage() {
         <div id="installation">
           <DocSection title="Installation">
             <p className="text-gray-300 mb-6">
-              Install the CoinPay SDK using your preferred package manager:
+              Install the Tempest Touch SDK using your preferred package manager:
             </p>
 
             <CodeBlock title="Using pnpm (recommended)" language="bash">
-{`pnpm add @profullstack/coinpay`}
+{`pnpm add @profullstack/tempesttouch`}
             </CodeBlock>
 
             <CodeBlock title="Using npm" language="bash">
-{`npm install @profullstack/coinpay`}
+{`npm install @profullstack/tempesttouch`}
             </CodeBlock>
 
             <CodeBlock title="Global CLI Installation" language="bash">
 {`# Install globally for CLI access
-pnpm add -g @profullstack/coinpay
+pnpm add -g @profullstack/tempesttouch
 
 # Or with npm
-npm install -g @profullstack/coinpay`}
+npm install -g @profullstack/tempesttouch`}
             </CodeBlock>
 
             <div className="mt-6 p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg">
@@ -116,27 +116,27 @@ npm install -g @profullstack/coinpay`}
         <div id="quick-start">
           <DocSection title="Quick Start">
             <div className="mb-8 p-4 bg-purple-500/10 border border-purple-500/20 rounded-lg">
-              <h4 className="text-purple-300 font-semibold mb-2">How CoinPay Works</h4>
+              <h4 className="text-purple-300 font-semibold mb-2">How Tempest Touch Works</h4>
               <ol className="text-gray-300 text-sm space-y-1 list-decimal list-inside">
-                <li>Your server calls the CoinPay API to create a payment request</li>
-                <li>CoinPay generates a unique payment address and QR code</li>
+                <li>Your server calls the Tempest Touch API to create a payment request</li>
+                <li>Tempest Touch generates a unique payment address and QR code</li>
                 <li>Your customer sends cryptocurrency to that address</li>
-                <li>CoinPay monitors the blockchain and notifies you via webhook</li>
+                <li>Tempest Touch monitors the blockchain and notifies you via webhook</li>
                 <li>Funds are automatically forwarded to your wallet (minus fees)</li>
               </ol>
             </div>
 
             <h3 className="text-xl font-semibold text-white mb-4">SDK Usage</h3>
             <CodeBlock title="Basic SDK Example" language="javascript">
-{`import { CoinPayClient, Blockchain } from '@profullstack/coinpay';
+{`import { TempestTouchClient, Blockchain } from '@profullstack/tempesttouch';
 
 // Initialize with your API key (get it from your dashboard)
-const coinpay = new CoinPayClient({
+const tempesttouch = new tempesttouchClient({
   apiKey: 'cp_live_your_api_key_here',
 });
 
 // Create a payment when customer checks out
-const result = await coinpay.createPayment({
+  const result = await tempesttouch.createPayment({
   businessId: 'your-business-id',  // From your dashboard
   amount: 100,                      // Amount in fiat currency
   currency: 'USD',                  // Fiat currency (default: USD)
@@ -156,7 +156,7 @@ console.log('QR Code:', result.payment.qr_code);`}
 
             <h3 className="text-xl font-semibold text-white mb-4 mt-8">cURL Example</h3>
             <CodeBlock title="Direct API Call" language="bash">
-{`curl -X POST https://coinpayportal.com/api/payments/create \\
+{`curl -X POST https://tempesttouch.com/api/payments/create \\
   -H "Authorization: Bearer cp_live_your_api_key" \\
   -H "Content-Type: application/json" \\
   -d '{
@@ -171,30 +171,30 @@ console.log('QR Code:', result.payment.qr_code);`}
             <h3 className="text-xl font-semibold text-white mb-4 mt-8">CLI Usage</h3>
             <CodeBlock title="CLI Quick Start" language="bash">
 {`# Configure your API key (one-time setup)
-coinpay config set-key cp_live_your_api_key
+tempesttouch config set-key cp_live_your_api_key
 
 # Create a Bitcoin payment
-coinpay payment create --business-id biz_123 --amount 100 --blockchain BTC
+tempesttouch payment create --business-id biz_123 --amount 100 --blockchain BTC
 
 # Create an Ethereum payment with description
-coinpay payment create --business-id biz_123 --amount 50 --blockchain ETH --description "Order #12345"
+tempesttouch payment create --business-id biz_123 --amount 50 --blockchain ETH --description "Order #12345"
 
 # Create a USDC payment on Polygon
-coinpay payment create --business-id biz_123 --amount 25 --blockchain USDC_POL
+tempesttouch payment create --business-id biz_123 --amount 25 --blockchain USDC_POL
 
 # Send with fiat amount (wallet commands)
-coinpay wallet send --chain SOL --to abc... --amount-fiat 10 --fiat USD
-coinpay wallet send --chain ETH --to 0x123... --amount-fiat 25 --fiat EUR
+tempesttouch wallet send --chain SOL --to abc... --amount-fiat 10 --fiat USD
+tempesttouch wallet send --chain ETH --to 0x123... --amount-fiat 25 --fiat EUR
 
 # Get payment details
-coinpay payment get pay_abc123
+tempesttouch payment get pay_abc123
 
 # List payments
-coinpay payment list --business-id biz_123
+tempesttouch payment list --business-id biz_123
 
 # Get exchange rates with fiat support
-coinpay rates get BTC --fiat USD
-coinpay rates get SOL --fiat EUR`}
+tempesttouch rates get BTC --fiat USD
+tempesttouch rates get SOL --fiat EUR`}
             </CodeBlock>
           </DocSection>
         </div>
@@ -203,18 +203,18 @@ coinpay rates get SOL --fiat EUR`}
         <div id="sdk-client">
           <DocSection title="SDK Client Configuration">
             <p className="text-gray-300 mb-6">
-              Initialize the CoinPayClient with your API key from your business dashboard:
+              Initialize the tempesttouchClient with your API key from your business dashboard:
             </p>
 
             <CodeBlock title="Client Initialization" language="javascript">
-{`import { CoinPayClient } from '@profullstack/coinpay';
+{`import { TempestTouchClient } from '@profullstack/tempesttouch';
 
-const client = new CoinPayClient({
+const client = new TempestTouchClient({
   // Required: Your API key (starts with cp_live_)
   apiKey: 'cp_live_your_api_key_here',
   
-  // Optional: Custom API URL (defaults to https://coinpayportal.com/api)
-  baseUrl: 'https://coinpayportal.com/api',
+  // Optional: Custom API URL (defaults to https://tempesttouch.com/api)
+  baseUrl: 'https://tempesttouch.com/api',
   
   // Optional: Request timeout in milliseconds (default: 30000)
   timeout: 30000,
@@ -232,11 +232,11 @@ const client = new CoinPayClient({
                 </thead>
                 <tbody className="text-gray-300">
                   <tr className="border-b border-white/5">
-                    <td className="py-2"><code className="text-purple-400">COINPAY_API_KEY</code></td>
+                    <td className="py-2"><code className="text-purple-400">tempesttouch_API_KEY</code></td>
                     <td className="py-2">API key (overrides config file)</td>
                   </tr>
                   <tr>
-                    <td className="py-2"><code className="text-purple-400">COINPAY_BASE_URL</code></td>
+                    <td className="py-2"><code className="text-purple-400">tempesttouch_BASE_URL</code></td>
                     <td className="py-2">Custom API URL</td>
                   </tr>
                 </tbody>
@@ -338,7 +338,7 @@ console.log(\`Found \${payments.length} payments\`);`}
             <CodeBlock title="QR code usage" language="javascript">
 {`// Get QR code URL for use in HTML <img> tags
 const qrUrl = client.getPaymentQRUrl('pay_abc123');
-// Returns: "https://coinpayportal.com/api/payments/pay_abc123/qr"
+// Returns: "https://tempesttouch.com/api/payments/pay_abc123/qr"
 
 // Use directly in HTML:
 // <img src={qrUrl} alt="Payment QR Code" />
@@ -353,7 +353,7 @@ fs.writeFileSync('payment-qr.png', Buffer.from(imageData));`}
 
             <CodeBlock title="HTML usage" language="html">
 {`<!-- Use QR endpoint directly as image source -->
-<img src="https://coinpayportal.com/api/payments/pay_abc123/qr" alt="Payment QR Code" />`}
+<img src="https://tempesttouch.com/api/payments/pay_abc123/qr" alt="Payment QR Code" />`}
             </CodeBlock>
           </DocSection>
         </div>
@@ -379,9 +379,9 @@ fs.writeFileSync('payment-qr.png', Buffer.from(imageData));`}
 
             <h3 className="text-xl font-semibold text-white mb-4">Customer Payment Choice Example</h3>
             <CodeBlock title="Let customers choose: Crypto OR Card" language="javascript">
-{`import { CoinPayClient } from '@profullstack/coinpay';
+{`import { TempestTouchClient } from '@profullstack/tempesttouch';
 
-const client = new CoinPayClient({ apiKey: 'your-api-key' });
+const client = new TempestTouchClient({ apiKey: 'your-api-key' });
 
 // Check what payment methods are available
 const support = await client.getPaymentMethodSupport('business-id');
@@ -479,7 +479,7 @@ console.log(\`Released \$\${release.amount_transferred / 100} to merchant\`);`}
   createQuickCardPayment, 
   formatCardAmount,
   calculateCardPaymentFees
-} from '@profullstack/coinpay/card-payments';
+} from '@profullstack/tempesttouch/card-payments';
 
 // Quick payment with USD amount (auto-converts to cents)
 const payment = await createQuickCardPayment(client, 'biz_123', 50.0, 'Order #123', {
@@ -576,31 +576,31 @@ console.log(\`Escrow status: \${partialRefund.escrow_status}\`); // 'partially_r
             <h3 className="text-xl font-semibold text-white mb-4">CLI Card Commands</h3>
             <CodeBlock title="Card payment CLI" language="bash">
 {`# Create a card payment ($50.00 = 5000 cents)
-coinpay card create --business-id biz_123 --amount 5000 --description "Order #123"
+tempesttouch card create --business-id biz_123 --amount 5000 --description "Order #123"
 
 # Create card payment with escrow mode
-coinpay card create --business-id biz_123 --amount 10000 --escrow --description "Freelance work"
+tempesttouch card create --business-id biz_123 --amount 10000 --escrow --description "Freelance work"
 
 # Get card payment details
-coinpay card get pay_abc123
+tempesttouch card get pay_abc123
 
 # List card payments for a business
-coinpay card list --business-id biz_123
+tempesttouch card list --business-id biz_123
 
 # Stripe Connect — onboard a merchant
-coinpay card connect onboard merch_123 --email merchant@example.com --country US
+tempesttouch card connect onboard merch_123 --email merchant@example.com --country US
 
 # Stripe Connect — check onboarding status
-coinpay card connect status merch_123
+tempesttouch card connect status merch_123
 
 # Release card escrow funds
-coinpay card escrow release esc_123 --reason "Work completed"
+tempesttouch card escrow release esc_123 --reason "Work completed"
 
 # Refund card escrow (full)
-coinpay card escrow refund esc_123
+tempesttouch card escrow refund esc_123
 
 # Refund card escrow (partial, $25)
-coinpay card escrow refund esc_123 --amount 2500 --reason "Partial refund"`}
+tempesttouch card escrow refund esc_123 --amount 2500 --reason "Partial refund"`}
             </CodeBlock>
 
             <h3 className="text-xl font-semibold text-white mb-4">Stripe Webhook Events</h3>
@@ -884,7 +884,7 @@ await client.updateEscrowSeries('series_abc123', { amount: 750 });`}
             <h3 className="text-xl font-semibold text-white mb-4 mt-8">CLI Commands</h3>
             <CodeBlock title="Recurring escrow CLI" language="bash">
 {`# Create a recurring escrow series
-coinpay escrow series create \\
+tempesttouch escrow series create \\
   --business-id biz_123 \\
   --payment-method crypto \\
   --email client@example.com \\
@@ -893,20 +893,20 @@ coinpay escrow series create \\
   --beneficiary Bob...
 
 # List series for a business
-coinpay escrow series list --business-id biz_123
-coinpay escrow series list --business-id biz_123 --status active
+tempesttouch escrow series list --business-id biz_123
+tempesttouch escrow series list --business-id biz_123 --status active
 
 # Get series details (includes child escrows)
-coinpay escrow series get series_abc123
+tempesttouch escrow series get series_abc123
 
 # Pause a series
-coinpay escrow series pause series_abc123
+tempesttouch escrow series pause series_abc123
 
 # Resume a series
-coinpay escrow series resume series_abc123
+tempesttouch escrow series resume series_abc123
 
 # Cancel a series permanently
-coinpay escrow series cancel series_abc123`}
+tempesttouch escrow series cancel series_abc123`}
             </CodeBlock>
           </DocSection>
         </div>
@@ -987,17 +987,17 @@ console.log(\`€50 EUR = \${eurConversion.cryptoAmount.toFixed(6)} SOL\`);`}
         <div id="webhooks">
           <DocSection title="Webhook Verification">
             <p className="text-gray-300 mb-6">
-              Verify webhook signatures to ensure requests are from CoinPay:
+              Verify webhook signatures to ensure requests are from Tempest Touch:
             </p>
 
             <h3 className="text-xl font-semibold text-white mb-4">Manual Verification</h3>
             <CodeBlock title="Verify webhook signature" language="javascript">
-{`import { verifyWebhookSignature } from '@profullstack/coinpay';
+{`import { verifyWebhookSignature } from '@profullstack/tempesttouch';
 
 // In your webhook handler
 const isValid = verifyWebhookSignature({
   payload: rawBody,  // Raw request body as string
-  signature: req.headers['x-coinpay-signature'],
+  signature: req.headers['x-tempesttouch-signature'],
   secret: 'your-webhook-secret',
 });
 
@@ -1011,7 +1011,7 @@ if (!isValid) {
             <h3 className="text-xl font-semibold text-white mb-4 mt-8">Express Middleware</h3>
             <CodeBlock title="Use the webhook handler middleware" language="javascript">
 {`import express from 'express';
-import { createWebhookHandler } from '@profullstack/coinpay';
+import { createWebhookHandler } from '@profullstack/tempesttouch';
 
 const app = express();
 
@@ -1083,120 +1083,120 @@ console.log(\`Test delivery: \${result.success ? 'OK' : 'Failed'}\`);`}
         <div id="cli">
           <DocSection title="CLI Commands">
             <p className="text-gray-300 mb-6">
-              The CoinPay CLI provides command-line access to all API features:
+              The Tempest Touch CLI provides command-line access to all API features:
             </p>
 
             <h3 className="text-xl font-semibold text-white mb-4">Configuration</h3>
             <CodeBlock title="Configure CLI" language="bash">
 {`# Set your API key
-coinpay config set-key sk_live_xxxxx
+tempesttouch config set-key sk_live_xxxxx
 
 # Set custom API URL (optional)
-coinpay config set-url https://custom-api.example.com
+tempesttouch config set-url https://custom-api.example.com
 
 # Show current configuration
-coinpay config show`}
+tempesttouch config show`}
             </CodeBlock>
 
             <h3 className="text-xl font-semibold text-white mb-4 mt-8">Payment Commands</h3>
             <CodeBlock title="Payment operations" language="bash">
 {`# Create a Bitcoin payment
-coinpay payment create \\
+tempesttouch payment create \\
   --business-id biz_123 \\
   --amount 100 \\
   --blockchain BTC \\
   --description "Order #12345"
 
 # Create a USDC payment on Polygon
-coinpay payment create \\
+tempesttouch payment create \\
   --business-id biz_123 \\
   --amount 50 \\
   --blockchain USDC_POL
 
 # Get payment details
-coinpay payment get pay_abc123
+tempesttouch payment get pay_abc123
 
 # List payments
-coinpay payment list --business-id biz_123 --status completed --limit 20
+tempesttouch payment list --business-id biz_123 --status completed --limit 20
 
 # Generate QR code
-coinpay payment qr pay_abc123 --format png > payment-qr.png`}
+tempesttouch payment qr pay_abc123 --format png > payment-qr.png`}
             </CodeBlock>
 
             <h3 className="text-xl font-semibold text-white mb-4 mt-8">Business Commands</h3>
             <CodeBlock title="Business operations" language="bash">
 {`# Create a business
-coinpay business create --name "My Store" --webhook-url https://example.com/webhook
+tempesttouch business create --name "My Store" --webhook-url https://example.com/webhook
 
 # Get business details
-coinpay business get biz_123
+tempesttouch business get biz_123
 
 # List all businesses
-coinpay business list
+tempesttouch business list
 
 # Update business
-coinpay business update biz_123 --name "New Name" --webhook-url https://new-url.com/webhook`}
+tempesttouch business update biz_123 --name "New Name" --webhook-url https://new-url.com/webhook`}
             </CodeBlock>
 
             <h3 className="text-xl font-semibold text-white mb-4 mt-8">Exchange Rate Commands</h3>
             <CodeBlock title="Rate operations" language="bash">
 {`# Get rate for single cryptocurrency in USD (default)
-coinpay rates get BTC
+tempesttouch rates get BTC
 
 # Get rate in specific fiat currency
-coinpay rates get SOL --fiat EUR
+tempesttouch rates get SOL --fiat EUR
 
 # List all supported rates in USD
-coinpay rates list
+tempesttouch rates list
 
 # List all supported rates in EUR
-coinpay rates list --fiat EUR`}
+tempesttouch rates list --fiat EUR`}
             </CodeBlock>
 
             <h3 className="text-xl font-semibold text-white mb-4 mt-8">Escrow Commands</h3>
             <CodeBlock title="Escrow operations" language="bash">
 {`# Create escrow with crypto amount
-coinpay escrow create --chain ETH --amount 0.5 \\
+tempesttouch escrow create --chain ETH --amount 0.5 \\
   --depositor 0xAlice... --beneficiary 0xBob...
 
 # Create escrow with fiat amount
-coinpay escrow create --chain SOL --amount-fiat 50 --fiat USD \\
+tempesttouch escrow create --chain SOL --amount-fiat 50 --fiat USD \\
   --depositor abc... --beneficiary def...
 
 # Create escrow with EUR amount
-coinpay escrow create --chain SOL --amount-fiat 45 --fiat EUR \\
+tempesttouch escrow create --chain SOL --amount-fiat 45 --fiat EUR \\
   --depositor abc... --beneficiary def...
 
 # Authenticate and manage escrow with token
-coinpay escrow auth <id> --token <token>
+tempesttouch escrow auth <id> --token <token>
 
 # Get escrow details
-coinpay escrow get a1b2c3d4-...
+tempesttouch escrow get a1b2c3d4-...
 
 # List escrows by status
-coinpay escrow list --status funded
+tempesttouch escrow list --status funded
 
 # Release funds (depositor)
-coinpay escrow release a1b2c3d4-... --token esc_abc123...
+tempesttouch escrow release a1b2c3d4-... --token esc_abc123...
 
 # Refund (depositor, no fee)
-coinpay escrow refund a1b2c3d4-... --token esc_abc123...
+tempesttouch escrow refund a1b2c3d4-... --token esc_abc123...
 
 # Open dispute (either party)
-coinpay escrow dispute a1b2c3d4-... --token esc_def456... \\
+tempesttouch escrow dispute a1b2c3d4-... --token esc_def456... \\
   --reason "Work not delivered as agreed"
 
 # View audit log
-coinpay escrow events a1b2c3d4-...`}
+tempesttouch escrow events a1b2c3d4-...`}
             </CodeBlock>
 
             <h3 className="text-xl font-semibold text-white mb-4 mt-8">Webhook Commands</h3>
             <CodeBlock title="Webhook operations" language="bash">
 {`# View webhook logs
-coinpay webhook logs biz_123 --limit 50
+tempesttouch webhook logs biz_123 --limit 50
 
 # Test webhook endpoint
-coinpay webhook test biz_123 --event payment.completed`}
+tempesttouch webhook test biz_123 --event payment.completed`}
             </CodeBlock>
           </DocSection>
         </div>
@@ -1207,20 +1207,20 @@ coinpay webhook test biz_123 --event payment.completed`}
           <DocSection title="OAuth Client Management">
             <p className="text-gray-300 mb-6">
               Register and manage OAuth applications for third-party integrations. Create OAuth clients
-              to allow external apps to authenticate users via your CoinPay merchant account.
+              to allow external apps to authenticate users via your Tempest Touch merchant account.
             </p>
 
             <h3 className="text-xl font-semibold text-white mb-4">SDK Methods</h3>
 
             <CodeBlock title="List OAuth Clients" language="javascript">
-{`const result = await coinpay.listOAuthClients();
+{`const result = await tempesttouch.listOAuthClients();
 for (const app of result.clients) {
   console.log(app.client_id, app.name);
 }`}
             </CodeBlock>
 
             <CodeBlock title="Create an OAuth Client" language="javascript">
-{`const app = await coinpay.createOAuthClient({
+{`const app = await tempesttouch.createOAuthClient({
   name: 'My App',
   redirectUris: ['https://myapp.com/callback'],
   scopes: ['openid', 'profile'],
@@ -1233,28 +1233,28 @@ console.log('Client Secret:', app.client_secret);
             </CodeBlock>
 
             <CodeBlock title="Get OAuth Client Details" language="javascript">
-{`const app = await coinpay.getOAuthClient('oac_abc123');
+{`const app = await tempesttouch.getOAuthClient('oac_abc123');
 console.log(app.name, app.redirect_uris);`}
             </CodeBlock>
 
             <CodeBlock title="Delete an OAuth Client" language="javascript">
-{`await coinpay.deleteOAuthClient('oac_abc123');`}
+{`await tempesttouch.deleteOAuthClient('oac_abc123');`}
             </CodeBlock>
 
             <h3 className="text-xl font-semibold text-white mb-4 mt-8">CLI Commands</h3>
 
             <CodeBlock title="OAuth CLI" language="bash">
 {`# List all OAuth clients
-coinpay oauth list
+tempesttouch oauth list
 
 # Create a new OAuth client
-coinpay oauth create --name "My App" --redirect-uri https://myapp.com/callback --scope openid,profile
+tempesttouch oauth create --name "My App" --redirect-uri https://myapp.com/callback --scope openid,profile
 
 # Get client details
-coinpay oauth get <client-id>
+tempesttouch oauth get <client-id>
 
 # Delete a client
-coinpay oauth delete <client-id>`}
+tempesttouch oauth delete <client-id>`}
             </CodeBlock>
 
             <div className="mt-6 p-4 bg-amber-500/10 border border-amber-500/20 rounded-lg">
@@ -1271,8 +1271,8 @@ coinpay oauth delete <client-id>`}
           <DocSection title="Lightning Network (Custodial)">
             <div className="mb-6 p-4 bg-amber-500/10 border border-amber-500/20 rounded-lg">
               <p className="text-amber-300 text-sm">
-                <strong>☝️ Custodial wallet:</strong> Lightning wallets are custodial — funds are held on CoinPay&apos;s LNbits server.
-                This enables instant payments without channel management, but means CoinPay holds the keys.
+                <strong>☝️ Custodial wallet:</strong> Lightning wallets are custodial — funds are held on Tempest Touch&apos;s LNbits server.
+                This enables instant payments without channel management, but means Tempest Touch holds the keys.
                 Keep balances small and withdraw regularly.
               </p>
             </div>
@@ -1290,13 +1290,13 @@ console.log('Lightning enabled!', result);`}
 
             <h3 className="text-xl font-semibold text-white mb-4 mt-8">Lightning Address</h3>
             <CodeBlock title="Register and manage Lightning Addresses" language="javascript">
-{`// Register a Lightning Address (username@coinpayportal.com)
+{`// Register a Lightning Address (username@tempesttouch.com)
 const addr = await client.lightning.registerAddress({
   wallet_id: 'your-wallet-uuid',
   username: 'alice',  // 3-32 chars, lowercase alphanumeric
 });
 console.log('Address:', addr.lightning_address);
-// → alice@coinpayportal.com
+// → alice@tempesttouch.com
 
 // Get current Lightning Address
 const current = await client.lightning.getAddress('your-wallet-uuid');
@@ -1325,7 +1325,7 @@ console.log('Payment hash:', invoice.payment_hash);
 {`// Send to a Lightning Address
 const payment = await client.lightning.sendPayment({
   wallet_id: 'your-wallet-uuid',
-  destination: 'bob@coinpayportal.com',
+  destination: 'bob@tempesttouch.com',
   amount_sats: 100,
 });
 console.log('Sent!', payment.payment_hash);
@@ -1357,32 +1357,32 @@ const payment = await client.lightning.getPayment('abc123...');`}
             <h3 className="text-xl font-semibold text-white mb-4 mt-8">CLI Commands</h3>
             <CodeBlock title="Lightning CLI" language="bash">
 {`# Enable Lightning for a wallet
-coinpay ln enable --wallet-id <uuid>
+tempesttouch ln enable --wallet-id <uuid>
 
 # Register a Lightning Address
-coinpay ln address --wallet-id <uuid> --username alice
+tempesttouch ln address --wallet-id <uuid> --username alice
 
 # Check current Lightning Address
-coinpay ln address --wallet-id <uuid>
+tempesttouch ln address --wallet-id <uuid>
 
 # Check username availability
-coinpay ln address-check --username alice
+tempesttouch ln address-check --username alice
 
 # Create an invoice
-coinpay ln invoice --wallet-id <uuid> --amount 1000 --description "Coffee"
+tempesttouch ln invoice --wallet-id <uuid> --amount 1000 --description "Coffee"
 
 # Send a payment
-coinpay ln send --wallet-id <uuid> --to bob@coinpayportal.com --amount 100
+tempesttouch ln send --wallet-id <uuid> --to bob@tempesttouch.com --amount 100
 
 # Send to a BOLT11 invoice
-coinpay ln send --wallet-id <uuid> --to lnbc1000n1p...
+tempesttouch ln send --wallet-id <uuid> --to lnbc1000n1p...
 
 # List payment history
-coinpay ln payments --wallet-id <uuid>
-coinpay ln payments --wallet-id <uuid> --direction incoming
+tempesttouch ln payments --wallet-id <uuid>
+tempesttouch ln payments --wallet-id <uuid> --direction incoming
 
 # Check Lightning balance
-coinpay ln balance --wallet-id <uuid>`}
+tempesttouch ln balance --wallet-id <uuid>`}
             </CodeBlock>
           </DocSection>
         </div>
@@ -1395,9 +1395,9 @@ coinpay ln balance --wallet-id <uuid>`}
             </p>
 
             <CodeBlock title="Error handling example" language="javascript">
-{`import { CoinPayClient } from '@profullstack/coinpay';
+{`import { TempestTouchClient } from '@profullstack/tempesttouch';
 
-const client = new CoinPayClient({ apiKey: 'cp_live_your_api_key' });
+const client = new TempestTouchClient({ apiKey: 'cp_live_your_api_key' });
 
 try {
   const result = await client.createPayment({
@@ -1458,22 +1458,22 @@ try {
 
             <CodeBlock title="Account management" language="bash">
 {`# Register a new merchant account
-coinpay auth register --email you@example.com --password yourpassword --name "Your Name"
+tempesttouch auth register --email you@example.com --password yourpassword --name "Your Name"
 
 # Login to get a JWT token (saved to config)
-coinpay auth login --email you@example.com --password yourpassword
+tempesttouch auth login --email you@example.com --password yourpassword
 
 # Check who you're logged in as
-coinpay auth me`}
+tempesttouch auth me`}
             </CodeBlock>
 
             <h3 className="text-xl font-semibold text-white mb-4 mt-8">SDK Methods</h3>
 
             <CodeBlock title="Authentication" language="javascript">
-{`import { CoinPayClient, registerMerchant, loginMerchant, getMe } from '@profullstack/coinpay';
+{`import { TempestTouchClient, registerMerchant, loginMerchant, getMe } from '@profullstack/tempesttouch';
 
 // Create a client (no API key needed for registration)
-const client = new CoinPayClient({ apiKey: 'unused', baseUrl: 'https://coinpayportal.com' });
+const client = new tempesttouchClient({ apiKey: 'unused', baseUrl: 'https://tempesttouch.com' });
 
 // Register a new merchant
 const { token, merchant } = await registerMerchant(client, {
@@ -1500,19 +1500,19 @@ console.log('Logged in as:', me.email);`}
 
             <CodeBlock title="Register → Create Business → Claim DID" language="bash">
 {`# 1. Register your account
-coinpay auth register --email agent@example.com --password mypass123
+tempesttouch auth register --email agent@example.com --password mypass123
 
 # 2. Create a business (generates API key)
-coinpay business create --name "My Agency" --chain ETH,SOL,BTC
+tempesttouch business create --name "My Agency" --chain ETH,SOL,BTC
 
 # 3. Set your API key
-coinpay config set-key cp_live_your_key_here
+tempesttouch config set-key cp_live_your_key_here
 
 # 4. Claim your DID
-coinpay reputation did claim
+tempesttouch reputation did claim
 
 # 5. Check your reputation
-coinpay reputation did`}
+tempesttouch reputation did`}
             </CodeBlock>
           </DocSection>
         </div>
@@ -1527,9 +1527,9 @@ coinpay reputation did`}
             <h3 className="text-xl font-semibold text-white mb-4">SDK Methods</h3>
 
             <CodeBlock title="DID Management" language="javascript">
-{`import { CoinPayClient } from '@profullstack/coinpay';
+{`import { TempestTouchClient } from '@profullstack/tempesttouch';
 
-const client = new CoinPayClient({ apiKey: 'cp_live_your_api_key' });
+const client = new TempestTouchClient({ apiKey: 'cp_live_your_api_key' });
 
 // Claim a DID
 const did = await client.claimDid({ displayName: 'Agent Smith' });
@@ -1549,12 +1549,12 @@ const receipt = await client.submitReceipt({
   escrowId: 'esc_abc123',
   taskDescription: 'Frontend bug fix',
   rating: 5,
-  counterpartyDid: 'did:coinpay:xyz789...',
+  counterpartyDid: 'did:tempesttouch:xyz789...',
 });
 console.log('Receipt:', receipt.receiptId);
 
 // Query reputation for a DID
-const rep = await client.queryReputation('did:coinpay:abc123...');
+const rep = await client.queryReputation('did:tempesttouch:abc123...');
 console.log('Score:', rep.score, 'Tasks:', rep.totalTasks);`}
             </CodeBlock>
 
@@ -1580,8 +1580,8 @@ const receipts = await client.getReceipts('did:key:z6Mk...');
 console.log('Receipts:', receipts.receipts.length);
 
 // Get embeddable reputation badge URL
-import { getBadgeUrl } from '@profullstack/coinpay';
-const badgeUrl = getBadgeUrl('https://coinpayportal.com', 'did:key:z6Mk...');
+import { getBadgeUrl } from '@profullstack/tempesttouch';
+const badgeUrl = getBadgeUrl('https://tempesttouch.com', 'did:key:z6Mk...');
 // Use in markdown: ![Reputation](badgeUrl)`}
             </CodeBlock>
 
@@ -1589,48 +1589,48 @@ const badgeUrl = getBadgeUrl('https://coinpayportal.com', 'did:key:z6Mk...');
 
             <CodeBlock title="DID commands" language="bash">
 {`# Claim a DID
-coinpay reputation did claim --name "Agent Smith"
+tempesttouch reputation did claim --name "Agent Smith"
 
 # Get your DID
-coinpay reputation did
+tempesttouch reputation did
 
 # Link an external DID
-coinpay reputation did link --did "did:web:example.com"`}
+tempesttouch reputation did link --did "did:web:example.com"`}
             </CodeBlock>
 
             <CodeBlock title="Reputation commands" language="bash">
 {`# Submit a receipt
-coinpay reputation submit --escrow esc_abc123 --rating 5 --description "Bug fix"
+tempesttouch reputation submit --escrow esc_abc123 --rating 5 --description "Bug fix"
 
 # Query reputation
-coinpay reputation query did:key:z6Mk...
+tempesttouch reputation query did:key:z6Mk...
 
 # Get a credential
-coinpay reputation credential cred_ghi789
+tempesttouch reputation credential cred_ghi789
 
 # List all your credentials
-coinpay reputation credentials
+tempesttouch reputation credentials
 
 # List credentials for another DID
-coinpay reputation credentials did:key:z6Mk...
+tempesttouch reputation credentials did:key:z6Mk...
 
 # List your task receipts
-coinpay reputation receipts
+tempesttouch reputation receipts
 
 # List receipts for another DID
-coinpay reputation receipts did:key:z6Mk...
+tempesttouch reputation receipts did:key:z6Mk...
 
 # Get your embeddable reputation badge URL
-coinpay reputation badge
+tempesttouch reputation badge
 
 # Get badge for another DID
-coinpay reputation badge did:key:z6Mk...
+tempesttouch reputation badge did:key:z6Mk...
 
 # Verify a credential
-coinpay reputation verify cred_ghi789
+tempesttouch reputation verify cred_ghi789
 
 # List revocations
-coinpay reputation revocations`}
+tempesttouch reputation revocations`}
             </CodeBlock>
           </DocSection>
         </div>
@@ -1642,7 +1642,7 @@ coinpay reputation revocations`}
           </p>
 
           <CodeBlock title="Type hints in VS Code" language="javascript">
-{`import { CoinPayClient, Blockchain, PaymentStatus } from '@profullstack/coinpay';
+{`import { tempesttouchClient, Blockchain, PaymentStatus } from '@profullstack/tempesttouch';
 
 // Use Blockchain constants for type safety
 const result = await client.createPayment({
@@ -1663,7 +1663,7 @@ const result = await client.createPayment({
             Phase 2 adds multi-dimensional trust scoring with categorized action receipts.
           </p>
           <CodeBlock title="Submit Action Receipt">
-{`import { submitActionReceipt } from '@profullstack/coinpay/reputation';
+{`import { submitActionReceipt } from '@profullstack/tempesttouch/reputation';
 
 const result = await submitActionReceipt(client, {
   receipt_id: '550e8400-...',
@@ -1679,7 +1679,7 @@ const result = await submitActionReceipt(client, {
 });`}
           </CodeBlock>
           <CodeBlock title="Get Trust Profile">
-{`import { getTrustProfile } from '@profullstack/coinpay/reputation';
+{`import { getTrustProfile } from '@profullstack/tempesttouch/reputation';
 
 const profile = await getTrustProfile(client, 'did:key:z6Mk...');
 // profile.trust_vector = { E: 42.5, P: 12.3, B: 9.1, D: 2.08, R: 0.87, A: 0, C: 0 }
@@ -1788,7 +1788,7 @@ console.log('Card checkout:', payData.stripeCheckoutUrl);`}
               Back to API Documentation
             </Link>
             <a
-              href="https://github.com/profullstack/coinpayportal/issues"
+              href="https://github.com/profullstack/tempesttouch/issues"
               target="_blank"
               rel="noopener noreferrer"
               className="text-gray-400 hover:text-white flex items-center"

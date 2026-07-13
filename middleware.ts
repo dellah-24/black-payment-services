@@ -14,8 +14,8 @@ const REFERRAL_MAX_AGE = 60 * 60 * 24 * 30;
 
 // ── CORS Configuration ──
 const PRODUCTION_ORIGINS = new Set([
-  "https://coinpayportal.com",
-  "https://www.coinpayportal.com",
+  "https://tempesttouch.com",
+  "https://www.tempesttouch.com",
 ]);
 
 function getExtraOrigins(): string[] {
@@ -36,7 +36,7 @@ function getCorsHeaders(requestOrigin: string | null): Record<string, string> {
   const headers: Record<string, string> = {
     "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, PATCH, OPTIONS",
     "Access-Control-Allow-Headers":
-      "Content-Type, Authorization, X-API-Key, x-api-key, X-CoinPay-Signature",
+      "Content-Type, Authorization, X-API-Key, x-api-key, X-TempestTouch-Signature",
     "Access-Control-Max-Age": "86400",
   };
 

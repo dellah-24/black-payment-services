@@ -63,7 +63,7 @@ describe('Secrets Module', () => {
   describe('getSecret', () => {
     it('should return undefined for unset secrets', () => {
       initSecrets();
-      expect(getSecret('COINPAY_MNEMONIC')).toBeUndefined();
+      expect(getSecret('tempesttouch_MNEMONIC')).toBeUndefined();
     });
 
     it('should fall back to process.env when not initialized', () => {
@@ -96,7 +96,7 @@ describe('Secrets Module', () => {
 
     it('should return false for unconfigured secrets', () => {
       initSecrets();
-      expect(hasSecret('COINPAY_MNEMONIC')).toBe(false);
+      expect(hasSecret('tempesttouch_MNEMONIC')).toBe(false);
     });
   });
 
@@ -153,14 +153,15 @@ describe('Secrets Module', () => {
 
     describe('getMnemonic', () => {
       it('should return mnemonic when set', () => {
-        process.env.COINPAY_MNEMONIC = 'word word word';
+        process.env.tempesttouch_MNEMONIC = 'word word word';
         expect(getMnemonic()).toBe('word word word');
       });
 
       it('should return undefined when not set', () => {
-        delete process.env.COINPAY_MNEMONIC;
+        delete process.env.tempesttouch_MNEMONIC;
         expect(getMnemonic()).toBeUndefined();
       });
     });
   });
 });
+

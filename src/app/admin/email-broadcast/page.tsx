@@ -4,7 +4,7 @@ import EmailBroadcastForm from './EmailBroadcastForm';
 export const dynamic = 'force-dynamic';
 
 export const metadata = {
-  title: 'Email Broadcast · Admin · CoinPay',
+  title: 'Email Broadcast · Admin · Tempest Touch',
   robots: { index: false, follow: false },
 };
 

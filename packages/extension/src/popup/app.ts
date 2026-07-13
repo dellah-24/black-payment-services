@@ -40,7 +40,7 @@ export async function start(): Promise<void> {
 
 function renderWelcome(): void {
   mount(
-    header('CoinPay Wallet'),
+    header('Tempest Touch Wallet'),
     note('Non-custodial. Your keys never leave this device.'),
     el('div', { class: 'stack' }, [
       button('Create new wallet', () => void beginCreate(), 'btn primary'),
@@ -218,7 +218,7 @@ async function renderWallet(): Promise<void> {
     );
     mount(
       el('div', { class: 'topbar' }, [
-        el('h1', { class: 'title', text: 'CoinPay' }),
+        el('h1', { class: 'title', text: 'Tempest Touch' }),
         button('Lock', async () => {
           await call({ type: 'lock' });
           renderUnlock();

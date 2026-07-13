@@ -17,7 +17,7 @@ import {
   addWalletToRegistry,
 } from './wallet-registry';
 
-const OLD_KEY = 'coinpay_wallet';
+const OLD_KEY = 'tempesttouch_wallet';
 
 function makeOldWallet(walletId = 'old-wallet-uuid'): StoredWallet {
   const encrypted: EncryptedData = {
@@ -171,3 +171,4 @@ describe('migration', () => {
     });
   });
 });
+

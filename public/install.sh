@@ -1,43 +1,43 @@
 #!/bin/sh
-# CoinPay Portal — one-line installer for the `coinpay` CLI.
+# Tempest Touch Portal — one-line installer for the `tempesttouch` CLI.
 #
 # Usage:
-#   curl -fsSL https://coinpayportal.com/install.sh | sh
+#   curl -fsSL https://tempesttouch.com/install.sh | sh
 #
-# Subcommands (also runnable directly via `coinpay`):
-#   curl -fsSL https://coinpayportal.com/install.sh | sh -s -- install     (default)
-#   curl -fsSL https://coinpayportal.com/install.sh | sh -s -- update
-#   curl -fsSL https://coinpayportal.com/install.sh | sh -s -- upgrade     (alias)
-#   curl -fsSL https://coinpayportal.com/install.sh | sh -s -- remove
-#   curl -fsSL https://coinpayportal.com/install.sh | sh -s -- uninstall   (alias)
+# Subcommands (also runnable directly via `tempesttouch`):
+#   curl -fsSL https://tempesttouch.com/install.sh | sh -s -- install     (default)
+#   curl -fsSL https://tempesttouch.com/install.sh | sh -s -- update
+#   curl -fsSL https://tempesttouch.com/install.sh | sh -s -- upgrade     (alias)
+#   curl -fsSL https://tempesttouch.com/install.sh | sh -s -- remove
+#   curl -fsSL https://tempesttouch.com/install.sh | sh -s -- uninstall   (alias)
 #
 # What it does:
 #   1. Detects OS (Linux/macOS — Windows users: use WSL).
 #   2. Installs mise (https://mise.jdx.dev) if missing, lives under $HOME.
 #   3. Installs Node.js 20 via mise if no system Node 18+ is present.
-#   4. `npm install -g @profullstack/coinpay`.
-#   5. Drops a wrapper at $HOME/.local/bin/coinpay that handles
-#      `coinpay update | upgrade | remove | uninstall` itself and
+#   4. `npm install -g @profullstack/tempesttouch`.
+#   5. Drops a wrapper at $HOME/.local/bin/tempesttouch that handles
+#      `tempesttouch update | upgrade | remove | uninstall` itself and
 #      forwards everything else to the real CLI.
 #   6. Schedules a self-update poll every 5 minutes:
 #         Linux  → systemd --user timer (falls back to cron)
 #         macOS  → launchd LaunchAgent (StartInterval=300)
-#   7. Prints next steps (`coinpay --help`).
+#   7. Prints next steps (`tempesttouch --help`).
 #
 # Override env vars:
-#   COINPAY_HOME=/path           install dir          (default: $HOME/.coinpay)
-#   COINPAY_BIN=/path/dir        wrapper bin dir      (default: $HOME/.local/bin)
-#   COINPAY_NPM_VERSION=X.Y.Z    pin npm version      (default: latest)
-#   COINPAY_NO_AUTOUPGRADE=1     skip the 5-min poll setup
-#   COINPAY_API_URL=https://…    pin API base         (default: https://coinpayportal.com)
+#   TEMPESTTOUCH_HOME=/path           install dir          (default: $HOME/.tempesttouch)
+#   TEMPESTTOUCH_BIN=/path/dir        wrapper bin dir      (default: $HOME/.local/bin)
+#   TEMPESTTOUCH_NPM_VERSION=X.Y.Z    pin npm version      (default: latest)
+#   TEMPESTTOUCH_NO_AUTOUPGRADE=1     skip the 5-min poll setup
+#   TEMPESTTOUCH_API_URL=https://…    pin API base         (default: https://tempesttouch.com)
 #
 # Re-running this script updates an existing install in place.
 
 set -eu
 
-NPM_PACKAGE="@profullstack/coinpay"
-DEFAULT_API_URL="https://coinpayportal.com"
-INSTALL_URL="https://coinpayportal.com/install.sh"
+NPM_PACKAGE="@profullstack/tempesttouch"
+DEFAULT_API_URL="https://tempesttouch.com"
+INSTALL_URL="https://tempesttouch.com/install.sh"
 # 5-minute poll interval, matching infernet + c0mpute.
 UPGRADE_INTERVAL_SEC=300
 
@@ -69,13 +69,13 @@ USER="$(_cp_resolve_user)"
 HOME="$(_cp_resolve_home)"
 export USER HOME
 
-COINPAY_HOME="${COINPAY_HOME:-$HOME/.coinpay}"
-COINPAY_BIN="${COINPAY_BIN:-$HOME/.local/bin}"
-COINPAY_NPM_VERSION="${COINPAY_NPM_VERSION:-latest}"
-COINPAY_API_URL="${COINPAY_API_URL:-$DEFAULT_API_URL}"
-WRAPPER="$COINPAY_BIN/coinpay"
-UPGRADER="$COINPAY_HOME/bin/coinpay-self-upgrade"
-LOG_DIR="$COINPAY_HOME/log"
+TEMPESTTOUCH_HOME="${TEMPESTTOUCH_HOME:-$HOME/.tempesttouch}"
+TEMPESTTOUCH_BIN="${TEMPESTTOUCH_BIN:-$HOME/.local/bin}"
+TEMPESTTOUCH_NPM_VERSION="${TEMPESTTOUCH_NPM_VERSION:-latest}"
+TEMPESTTOUCH_API_URL="${TEMPESTTOUCH_API_URL:-$DEFAULT_API_URL}"
+WRAPPER="$TEMPESTTOUCH_BIN/tempesttouch"
+UPGRADER="$TEMPESTTOUCH_HOME/bin/tempesttouch-self-upgrade"
+LOG_DIR="$TEMPESTTOUCH_HOME/log"
 UPGRADE_LOG="$LOG_DIR/auto-upgrade.log"
 
 # ---------------------------------------------------------------------------
@@ -175,10 +175,10 @@ install_npm_package() {
     if ! command -v npm >/dev/null 2>&1; then
         fail "npm not found — node install must have failed"
     fi
-    info "installing $NPM_PACKAGE@$COINPAY_NPM_VERSION (npm install -g)"
-    if ! npm install -g "$NPM_PACKAGE@$COINPAY_NPM_VERSION" >/dev/null 2>&1; then
+    info "installing $NPM_PACKAGE@$TEMPESTTOUCH_NPM_VERSION (npm install -g)"
+    if ! npm install -g "$NPM_PACKAGE@$TEMPESTTOUCH_NPM_VERSION" >/dev/null 2>&1; then
         # Retry verbosely so the user sees the failure.
-        npm install -g "$NPM_PACKAGE@$COINPAY_NPM_VERSION" \
+        npm install -g "$NPM_PACKAGE@$TEMPESTTOUCH_NPM_VERSION" \
             || fail "npm install -g $NPM_PACKAGE failed"
     fi
     # Reshim mise so the new global binary is on PATH via the shim layer.
@@ -186,16 +186,16 @@ install_npm_package() {
     ok "$NPM_PACKAGE installed"
 }
 
-# Resolve where npm dropped the real coinpay binary.
-resolve_real_coinpay() {
+# Resolve where npm dropped the real tempesttouch binary.
+resolve_real_tempesttouch() {
     _prefix="$(npm prefix -g 2>/dev/null)"
-    if [ -n "$_prefix" ] && [ -x "$_prefix/bin/coinpay" ]; then
-        echo "$_prefix/bin/coinpay"
+    if [ -n "$_prefix" ] && [ -x "$_prefix/bin/tempesttouch" ]; then
+        echo "$_prefix/bin/tempesttouch"
         unset _prefix
         return 0
     fi
     # mise-shim case: the shim itself is on PATH but not under npm prefix.
-    _shim="$(command -v coinpay 2>/dev/null || true)"
+    _shim="$(command -v tempesttouch 2>/dev/null || true)"
     if [ -n "$_shim" ] && [ "$_shim" != "$WRAPPER" ]; then
         echo "$_shim"
         unset _prefix _shim
@@ -206,7 +206,7 @@ resolve_real_coinpay() {
 }
 
 # ---------------------------------------------------------------------------
-# wrapper at $COINPAY_BIN/coinpay
+# wrapper at $TEMPESTTOUCH_BIN/tempesttouch
 #
 # The wrapper:
 #   • intercepts `update|upgrade|remove|uninstall` and runs them itself
@@ -215,15 +215,15 @@ resolve_real_coinpay() {
 #     timer also exec's it
 # ---------------------------------------------------------------------------
 write_wrapper() {
-    mkdir -p "$COINPAY_BIN"
+    mkdir -p "$TEMPESTTOUCH_BIN"
     cat > "$WRAPPER" <<WRAPPER_EOF
 #!/bin/sh
-# CoinPay CLI wrapper — installed by https://coinpayportal.com/install.sh
+# Tempest Touch CLI wrapper — installed by https://tempesttouch.com/install.sh
 # Re-run the installer to update this wrapper.
 set -eu
 
-COINPAY_HOME="\${COINPAY_HOME:-$COINPAY_HOME}"
-COINPAY_BIN="\${COINPAY_BIN:-$COINPAY_BIN}"
+TEMPESTTOUCH_HOME="\${TEMPESTTOUCH_HOME:-$TEMPESTTOUCH_HOME}"
+TEMPESTTOUCH_BIN="\${TEMPESTTOUCH_BIN:-$TEMPESTTOUCH_BIN}"
 NPM_PACKAGE="$NPM_PACKAGE"
 INSTALL_URL="$INSTALL_URL"
 
@@ -256,19 +256,19 @@ esac
 _real=""
 if command -v npm >/dev/null 2>&1; then
     _prefix="\$(npm prefix -g 2>/dev/null)"
-    [ -n "\$_prefix" ] && [ -x "\$_prefix/bin/coinpay" ] && _real="\$_prefix/bin/coinpay"
+    [ -n "\$_prefix" ] && [ -x "\$_prefix/bin/tempesttouch" ] && _real="\$_prefix/bin/tempesttouch"
 fi
 if [ -z "\$_real" ]; then
     # Search PATH but skip our own wrapper to avoid recursion.
     for _dir in \$(echo "\$PATH" | tr ':' ' '); do
-        if [ -x "\$_dir/coinpay" ] && [ "\$_dir/coinpay" != "\$0" ]; then
-            _real="\$_dir/coinpay"; break
+        if [ -x "\$_dir/tempesttouch" ] && [ "\$_dir/tempesttouch" != "\$0" ]; then
+            _real="\$_dir/tempesttouch"; break
         fi
     done
 fi
 
 if [ -z "\$_real" ] || [ ! -x "\$_real" ]; then
-    printf 'coinpay: real CLI not found — re-run installer:\n  curl -fsSL %s | sh\n' "\$INSTALL_URL" >&2
+    printf 'tempesttouch: real CLI not found — re-run installer:\n  curl -fsSL %s | sh\n' "\$INSTALL_URL" >&2
     exit 127
 fi
 
@@ -286,10 +286,10 @@ WRAPPER_EOF
 # exists, runs `npm install -g` and logs.
 # ---------------------------------------------------------------------------
 write_self_upgrade_helper() {
-    mkdir -p "$COINPAY_HOME/bin" "$LOG_DIR"
+    mkdir -p "$TEMPESTTOUCH_HOME/bin" "$LOG_DIR"
     cat > "$UPGRADER" <<UPGRADER_EOF
 #!/bin/sh
-# CoinPay self-upgrade poll. Invoked every $UPGRADE_INTERVAL_SEC by
+# Tempest Touch self-upgrade poll. Invoked every $UPGRADE_INTERVAL_SEC by
 # systemd --user / launchd / cron. Idempotent — silent when up-to-date.
 set -eu
 
@@ -367,10 +367,10 @@ schedule_systemd_timer() {
     _unit_dir="$HOME/.config/systemd/user"
     mkdir -p "$_unit_dir"
 
-    cat > "$_unit_dir/coinpay-autoupgrade.service" <<UNIT_EOF
+    cat > "$_unit_dir/tempesttouch-autoupgrade.service" <<UNIT_EOF
 [Unit]
-Description=CoinPay CLI auto-upgrade poll
-Documentation=https://coinpayportal.com/install.sh
+Description=Tempest Touch CLI auto-upgrade poll
+Documentation=https://tempesttouch.com/install.sh
 
 [Service]
 Type=oneshot
@@ -378,34 +378,34 @@ ExecStart=$UPGRADER
 Nice=10
 UNIT_EOF
 
-    cat > "$_unit_dir/coinpay-autoupgrade.timer" <<TIMER_EOF
+    cat > "$_unit_dir/tempesttouch-autoupgrade.timer" <<TIMER_EOF
 [Unit]
-Description=CoinPay CLI auto-upgrade poll (every 5 min)
-Documentation=https://coinpayportal.com/install.sh
+Description=Tempest Touch CLI auto-upgrade poll (every 5 min)
+Documentation=https://tempesttouch.com/install.sh
 
 [Timer]
 OnBootSec=2min
 OnUnitActiveSec=${UPGRADE_INTERVAL_SEC}sec
 AccuracySec=30sec
 Persistent=true
-Unit=coinpay-autoupgrade.service
+Unit=tempesttouch-autoupgrade.service
 
 [Install]
 WantedBy=timers.target
 TIMER_EOF
 
     systemctl --user daemon-reload >/dev/null 2>&1 || true
-    systemctl --user enable --now coinpay-autoupgrade.timer >/dev/null 2>&1 \
+    systemctl --user enable --now tempesttouch-autoupgrade.timer >/dev/null 2>&1 \
         || { unset _unit_dir; return 1; }
 
-    ok "systemd --user timer enabled (every 5 min): coinpay-autoupgrade.timer"
+    ok "systemd --user timer enabled (every 5 min): tempesttouch-autoupgrade.timer"
     unset _unit_dir
     return 0
 }
 
 schedule_launchd_agent() {
     _agents_dir="$HOME/Library/LaunchAgents"
-    _plist="$_agents_dir/com.coinpayportal.autoupgrade.plist"
+    _plist="$_agents_dir/com.tempesttouch.autoupgrade.plist"
     mkdir -p "$_agents_dir"
 
     cat > "$_plist" <<PLIST_EOF
@@ -413,7 +413,7 @@ schedule_launchd_agent() {
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-  <key>Label</key>          <string>com.coinpayportal.autoupgrade</string>
+  <key>Label</key>          <string>com.tempesttouch.autoupgrade</string>
   <key>ProgramArguments</key>
   <array>
     <string>$UPGRADER</string>
@@ -430,17 +430,17 @@ PLIST_EOF
     launchctl unload "$_plist" >/dev/null 2>&1 || true
     launchctl load   "$_plist" >/dev/null 2>&1 || { unset _agents_dir _plist; return 1; }
 
-    ok "launchd agent loaded (every 5 min): com.coinpayportal.autoupgrade"
+    ok "launchd agent loaded (every 5 min): com.tempesttouch.autoupgrade"
     unset _agents_dir _plist
     return 0
 }
 
 schedule_cron_fallback() {
     if ! command -v crontab >/dev/null 2>&1; then return 1; fi
-    _marker="# coinpay-autoupgrade (managed by install.sh)"
+    _marker="# tempesttouch-autoupgrade (managed by install.sh)"
     _line="*/5 * * * * $UPGRADER  $_marker"
-    # Read existing crontab, strip any old coinpay-autoupgrade line, append fresh.
-    _existing="$(crontab -l 2>/dev/null | grep -v 'coinpay-autoupgrade' || true)"
+    # Read existing crontab, strip any old tempesttouch-autoupgrade line, append fresh.
+    _existing="$(crontab -l 2>/dev/null | grep -v 'tempesttouch-autoupgrade' || true)"
     {
         [ -n "$_existing" ] && printf '%s\n' "$_existing"
         printf '%s\n' "$_line"
@@ -451,8 +451,8 @@ schedule_cron_fallback() {
 }
 
 schedule_auto_upgrade() {
-    if [ "${COINPAY_NO_AUTOUPGRADE:-}" = "1" ]; then
-        info "COINPAY_NO_AUTOUPGRADE=1 — skipping auto-upgrade scheduling"
+    if [ "${TEMPESTTOUCH_NO_AUTOUPGRADE:-}" = "1" ]; then
+        info "TEMPESTTOUCH_NO_AUTOUPGRADE=1 — skipping auto-upgrade scheduling"
         return 0
     fi
     case "$OS" in
@@ -473,13 +473,13 @@ schedule_auto_upgrade() {
 # ---------------------------------------------------------------------------
 ensure_path() {
     case ":$PATH:" in
-        *":$COINPAY_BIN:"*) ;;
-        *) PATH="$COINPAY_BIN:$PATH"; export PATH ;;
+        *":$TEMPESTTOUCH_BIN:"*) ;;
+        *) PATH="$TEMPESTTOUCH_BIN:$PATH"; export PATH ;;
     esac
     for rc in "$HOME/.bashrc" "$HOME/.zshrc" "$HOME/.profile"; do
         [ -f "$rc" ] || continue
         if ! grep -q '/.local/bin' "$rc" 2>/dev/null; then
-            printf '\n# Added by CoinPay installer\nexport PATH="$HOME/.local/bin:$PATH"\n' >> "$rc"
+            printf '\n# Added by Tempest Touch installer\nexport PATH="$HOME/.local/bin:$PATH"\n' >> "$rc"
         fi
     done
 }
@@ -490,15 +490,15 @@ ensure_path() {
 unschedule_systemd_timer() {
     [ -d "$HOME/.config/systemd/user" ] || return 0
     if command -v systemctl >/dev/null 2>&1; then
-        systemctl --user disable --now coinpay-autoupgrade.timer >/dev/null 2>&1 || true
+        systemctl --user disable --now tempesttouch-autoupgrade.timer >/dev/null 2>&1 || true
         systemctl --user daemon-reload >/dev/null 2>&1 || true
     fi
-    rm -f "$HOME/.config/systemd/user/coinpay-autoupgrade.timer" \
-          "$HOME/.config/systemd/user/coinpay-autoupgrade.service" 2>/dev/null || true
+    rm -f "$HOME/.config/systemd/user/tempesttouch-autoupgrade.timer" \
+          "$HOME/.config/systemd/user/tempesttouch-autoupgrade.service" 2>/dev/null || true
 }
 
 unschedule_launchd_agent() {
-    _plist="$HOME/Library/LaunchAgents/com.coinpayportal.autoupgrade.plist"
+    _plist="$HOME/Library/LaunchAgents/com.tempesttouch.autoupgrade.plist"
     [ -f "$_plist" ] || return 0
     launchctl unload "$_plist" >/dev/null 2>&1 || true
     rm -f "$_plist" 2>/dev/null || true
@@ -507,7 +507,7 @@ unschedule_launchd_agent() {
 
 unschedule_cron() {
     command -v crontab >/dev/null 2>&1 || return 0
-    _existing="$(crontab -l 2>/dev/null | grep -v 'coinpay-autoupgrade' || true)"
+    _existing="$(crontab -l 2>/dev/null | grep -v 'tempesttouch-autoupgrade' || true)"
     if [ -n "$_existing" ]; then
         printf '%s\n' "$_existing" | crontab - >/dev/null 2>&1 || true
     else
@@ -517,7 +517,7 @@ unschedule_cron() {
 }
 
 run_remove() {
-    info "removing CoinPay CLI"
+    info "removing Tempest Touch CLI"
     detect_os
     unschedule_systemd_timer
     unschedule_launchd_agent
@@ -529,20 +529,20 @@ run_remove() {
     fi
 
     rm -f "$WRAPPER" 2>/dev/null || true
-    rm -rf "$COINPAY_HOME" 2>/dev/null || true
+    rm -rf "$TEMPESTTOUCH_HOME" 2>/dev/null || true
     ok "removed wrapper $WRAPPER"
-    ok "removed $COINPAY_HOME"
+    ok "removed $TEMPESTTOUCH_HOME"
 
     cat <<NOTE_EOF
 
-CoinPay has been uninstalled.
+Tempest Touch has been uninstalled.
 
 Files left in place (kept on purpose — they hold your wallet/secrets):
-  $HOME/.coinpay-wallet.gpg   (your encrypted wallet, if any)
-  $HOME/.coinpay.json         (CLI config — API key, base URL)
+  $HOME/.tempesttouch-wallet.gpg   (your encrypted wallet, if any)
+  $HOME/.tempesttouch.json         (CLI config — API key, base URL)
 
 Remove them manually if you really want a clean slate:
-  rm -f $HOME/.coinpay-wallet.gpg $HOME/.coinpay.json
+  rm -f $HOME/.tempesttouch-wallet.gpg $HOME/.tempesttouch.json
 
 NOTE_EOF
 }
@@ -552,12 +552,12 @@ NOTE_EOF
 # ---------------------------------------------------------------------------
 print_banner() {
     printf '\n'
-    printf '%sCoinPay Portal installer%s\n' "$BOLD" "$RESET"
+    printf '%sTempest Touch Portal installer%s\n' "$BOLD" "$RESET"
     printf '  user:        %s (uid=%s)\n' "$USER" "$(id -u 2>/dev/null || echo ?)"
     printf '  home:        %s\n' "$HOME"
-    printf '  install dir: %s\n' "$COINPAY_HOME"
-    printf '  bin dir:     %s\n' "$COINPAY_BIN"
-    printf '  api:         %s\n' "$COINPAY_API_URL"
+    printf '  install dir: %s\n' "$TEMPESTTOUCH_HOME"
+    printf '  bin dir:     %s\n' "$TEMPESTTOUCH_BIN"
+    printf '  api:         %s\n' "$TEMPESTTOUCH_API_URL"
     printf '\n'
 }
 
@@ -566,7 +566,7 @@ run_install() {
     detect_os
     ok "OS: $OS"
 
-    mkdir -p "$COINPAY_HOME/bin" "$COINPAY_BIN" "$LOG_DIR"
+    mkdir -p "$TEMPESTTOUCH_HOME/bin" "$TEMPESTTOUCH_BIN" "$LOG_DIR"
 
     ensure_node_via_mise
     install_npm_package
@@ -577,23 +577,23 @@ run_install() {
 
     printf '\n%sInstall complete.%s\n\n' "$GREEN" "$RESET"
     printf 'Use:\n'
-    printf '  coinpay --help                           # full command list\n'
-    printf '  coinpay config set-key <api-key>         # configure your API key\n'
-    printf '  coinpay wallet create --words 24         # create a non-custodial wallet\n'
-    printf '  coinpay payment create                   # accept a payment\n'
+    printf '  tempesttouch --help                           # full command list\n'
+    printf '  tempesttouch config set-key <api-key>         # configure your API key\n'
+    printf '  tempesttouch wallet create --words 24         # create a non-custodial wallet\n'
+    printf '  tempesttouch payment create                   # accept a payment\n'
     printf '\n'
     printf 'Lifecycle:\n'
-    printf '  coinpay update                           # upgrade to latest\n'
-    printf '  coinpay remove                           # uninstall\n'
+    printf '  tempesttouch update                           # upgrade to latest\n'
+    printf '  tempesttouch remove                           # uninstall\n'
     printf '  curl -fsSL %s | sh -s -- update\n' "$INSTALL_URL"
     printf '  curl -fsSL %s | sh -s -- remove\n' "$INSTALL_URL"
     printf '\n'
-    if [ "${COINPAY_NO_AUTOUPGRADE:-}" != "1" ]; then
+    if [ "${TEMPESTTOUCH_NO_AUTOUPGRADE:-}" != "1" ]; then
         printf 'Auto-upgrade: every 5 min (logs: %s)\n' "$UPGRADE_LOG"
     fi
-    if ! command -v coinpay >/dev/null 2>&1 || [ "$(command -v coinpay)" != "$WRAPPER" ]; then
-        printf '\n%sIf this shell isn'"'"'t picking up coinpay, run:%s\n' "$YELLOW" "$RESET"
-        printf '  export PATH="%s:$PATH"\n' "$COINPAY_BIN"
+    if ! command -v tempesttouch >/dev/null 2>&1 || [ "$(command -v tempesttouch)" != "$WRAPPER" ]; then
+        printf '\n%sIf this shell isn'"'"'t picking up tempesttouch, run:%s\n' "$YELLOW" "$RESET"
+        printf '  export PATH="%s:$PATH"\n' "$TEMPESTTOUCH_BIN"
     fi
     printf '\n'
 }
@@ -625,12 +625,12 @@ case "$CMD" in
     remove|uninstall)     run_remove ;;
     -h|--help|help)
         sed -n '2,40p' "$0" 2>/dev/null || cat <<HELP_EOF
-CoinPay installer — usage:
+Tempest Touch installer — usage:
   curl -fsSL $INSTALL_URL | sh                       # install (default)
   curl -fsSL $INSTALL_URL | sh -s -- update          # upgrade in place
   curl -fsSL $INSTALL_URL | sh -s -- remove          # uninstall
 
-Env: COINPAY_HOME, COINPAY_BIN, COINPAY_NPM_VERSION, COINPAY_NO_AUTOUPGRADE
+Env: TEMPESTTOUCH_HOME, TEMPESTTOUCH_BIN, TEMPESTTOUCH_NPM_VERSION, TEMPESTTOUCH_NO_AUTOUPGRADE
 HELP_EOF
         ;;
     *)

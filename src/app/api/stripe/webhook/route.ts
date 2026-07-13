@@ -110,20 +110,20 @@ export async function POST(request: NextRequest) {
 async function handleCheckoutSessionCompleted(session: any) {
   const supabase = getSupabase();
   try {
-    const coinpayPaymentId = session.metadata?.coinpay_payment_id;
-    const coinpayInvoiceId = session.metadata?.coinpay_invoice_id;
+    const tempesttouchPaymentId = session.metadata?.tempesttouch_payment_id;
+    const tempesttouchInvoiceId = session.metadata?.tempesttouch_invoice_id;
     const businessId = session.metadata?.business_id;
 
     // Handle invoice payments
-    if (coinpayInvoiceId) {
-      await handleInvoiceCheckoutCompleted(session, coinpayInvoiceId, businessId);
+    if (tempesttouchInvoiceId) {
+      await handleInvoiceCheckoutCompleted(session, tempesttouchInvoiceId, businessId);
       return;
     }
 
-    if (!coinpayPaymentId) {
-      // No CoinPay payment ID — but if there's a business_id, fire merchant webhook
+    if (!tempesttouchPaymentId) {
+      // No Tempest Touch payment ID — but if there's a business_id, fire merchant webhook
       // This handles external integrations (e.g. ugig.net funding) that create
-      // checkout sessions via /api/stripe/payments/create without a CoinPay payment record
+      // checkout sessions via /api/stripe/payments/create without a Tempest Touch payment record
       if (businessId) {
         console.log(`[Stripe Webhook] checkout.session.completed for external payment (business=${businessId})`);
 
@@ -171,17 +171,17 @@ async function handleCheckoutSessionCompleted(session: any) {
       return;
     }
 
-    console.log(`[Stripe Webhook] checkout.session.completed for payment ${coinpayPaymentId}`);
+    console.log(`[Stripe Webhook] checkout.session.completed for payment ${tempesttouchPaymentId}`);
 
     // Fetch the payment to get full details for webhook
     const { data: fullPayment } = await supabase
       .from('payments')
       .select('*')
-      .eq('id', coinpayPaymentId)
+      .eq('id', tempesttouchPaymentId)
       .single();
 
     if (!fullPayment) {
-      console.error(`[Stripe Webhook] Payment not found: ${coinpayPaymentId}`);
+      console.error(`[Stripe Webhook] Payment not found: ${tempesttouchPaymentId}`);
       return;
     }
 
@@ -200,14 +200,14 @@ async function handleCheckoutSessionCompleted(session: any) {
         updated_at: new Date().toISOString(),
         metadata: updatedMetadata,
       })
-      .eq('id', coinpayPaymentId);
+      .eq('id', tempesttouchPaymentId);
 
     // Fire merchant webhook with card_confirmed event
     if (businessId) {
       void firePaymentWebhook(
         supabase,
         businessId,
-        coinpayPaymentId,
+        tempesttouchPaymentId,
         'payment.confirmed',
         {
           status: 'confirmed',
@@ -259,26 +259,26 @@ async function handleCheckoutSessionCompleted(session: any) {
 }
 
 /**
- * Handle payment_intent.payment_failed — mark CoinPay payment as failed
+ * Handle payment_intent.payment_failed — mark Tempest Touch payment as failed
  * and forward payment.failed webhook to the merchant.
  */
 async function handlePaymentIntentFailed(paymentIntent: any) {
   const supabase = getSupabase();
   try {
-    const coinpayPaymentId = paymentIntent.metadata?.coinpay_payment_id;
+    const tempesttouchPaymentId = paymentIntent.metadata?.tempesttouch_payment_id;
     const businessId = paymentIntent.metadata?.business_id;
 
-    if (!coinpayPaymentId || !businessId) {
-      console.log('[Stripe Webhook] payment_intent.payment_failed without coinpay metadata, skipping');
+    if (!tempesttouchPaymentId || !businessId) {
+      console.log('[Stripe Webhook] payment_intent.payment_failed without tempesttouch metadata, skipping');
       return;
     }
 
-    console.log(`[Stripe Webhook] payment_intent.payment_failed for payment ${coinpayPaymentId}`);
+    console.log(`[Stripe Webhook] payment_intent.payment_failed for payment ${tempesttouchPaymentId}`);
 
     const { data: fullPayment } = await supabase
       .from('payments')
       .select('*')
-      .eq('id', coinpayPaymentId)
+      .eq('id', tempesttouchPaymentId)
       .single();
 
     await supabase
@@ -293,12 +293,12 @@ async function handlePaymentIntentFailed(paymentIntent: any) {
           card_failed_at: new Date().toISOString(),
         },
       })
-      .eq('id', coinpayPaymentId);
+      .eq('id', tempesttouchPaymentId);
 
     void firePaymentWebhook(
       supabase,
       businessId,
-      coinpayPaymentId,
+      tempesttouchPaymentId,
       'payment.failed' as any,
       {
         status: 'failed',
@@ -595,3 +595,4 @@ async function handleInvoiceCheckoutCompleted(session: any, invoiceId: string, b
     console.error('Error handling invoice checkout session completed:', error);
   }
 }
+

@@ -4,8 +4,8 @@
 │                                                                              │
 │  Penetration test initiated                                                  │
 │                                                                              │
-│  Target  /home/ubuntu/src/coinpayportal                                      │
-│  Output  strix_runs/coinpayportal_21b0                                       │
+│  Target  /home/ubuntu/src/tempesttouchportal                                      │
+│  Output  strix_runs/tempesttouchportal_21b0                                       │
 │                                                                              │
 │  Vulnerabilities will be displayed in real-time.                             │
 │                                                                              │
@@ -16,18 +16,18 @@
 │                                                                              │
 │  Vulnerability Report                                                        │
 │                                                                              │
-│  Title: Secure JWT Implementation in CoinPayPortal                           │
+│  Title: Secure JWT Implementation in Tempest TouchPortal                           │
 │                                                                              │
 │  Severity: NONE                                                              │
 │                                                                              │
 │  CVSS Score: 0.0                                                             │
 │                                                                              │
-│  Target: Repository: CoinPayPortal                                           │
+│  Target: Repository: Tempest TouchPortal                                           │
 │                                                                              │
 │  CVSS Vector: AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:N                            │
 │                                                                              │
 │  Description                                                                 │
-│  The JWT implementation in CoinPayPortal was analyzed. The focus was on      │
+│  The JWT implementation in Tempest TouchPortal was analyzed. The focus was on      │
 │  ensuring correct usage of signing algorithms and proper implementation of   │
 │  JWT signature verifications.                                                │
 │                                                                              │
@@ -51,7 +51,7 @@
 │  console.log("No exploit code applicable as implementation adheres to        │
 │  secure JWT standards.");                                                    │
 │                                                                              │
-│  Code File: /workspace/coinpayportal/src/lib/auth/jwt.ts                     │
+│  Code File: /workspace/tempesttouchportal/src/lib/auth/jwt.ts                     │
 │                                                                              │
 │  Remediation                                                                 │
 │  No immediate remediation required given HS256 usage congruent with project  │

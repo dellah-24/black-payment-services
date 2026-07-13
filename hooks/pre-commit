@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# CoinPay Pre-commit Hook
+# Tempest Touch Pre-commit Hook
 # Runs build and tests before allowing commit
 
 echo "Running pre-commit checks..."

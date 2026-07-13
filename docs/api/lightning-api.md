@@ -1,8 +1,8 @@
 # Lightning Network API Reference
 
-The CoinPay Lightning API enables BOLT12 offer-based payments via Greenlight (CLN-as-a-service). Nodes are provisioned from the same BIP39 seed used for on-chain wallets.
+The Tempest Touch Lightning API enables BOLT12 offer-based payments via Greenlight (CLN-as-a-service). Nodes are provisioned from the same BIP39 seed used for on-chain wallets.
 
-**Base URL:** `https://coinpayportal.com/api/lightning`
+**Base URL:** `https://tempesttouch.com/api/lightning`
 
 ---
 
@@ -29,13 +29,13 @@ The CoinPay Lightning API enables BOLT12 offer-based payments via Greenlight (CL
 
 ## Lightning Addresses
 
-Lightning Addresses let users receive payments at `username@coinpayportal.com` from any Lightning wallet.
+Lightning Addresses let users receive payments at `username@tempesttouch.com` from any Lightning wallet.
 
 ### Architecture
 
 ```
-Sender's wallet → coinpayportal.com/.well-known/lnurlp/<username>
-                → proxied to ln.coinpayportal.com (LNbits)
+Sender's wallet → tempesttouch.com/.well-known/lnurlp/<username>
+                → proxied to ln.tempesttouch.com (LNbits)
                 → LNbits creates BOLT11 invoice via CLN
                 → Sender pays invoice
                 → Payment arrives in user's LNbits wallet
@@ -62,7 +62,7 @@ Register a Lightning Address for a wallet.
 ```json
 {
   "success": true,
-  "lightning_address": "chovy@coinpayportal.com",
+  "lightning_address": "chovy@tempesttouch.com",
   "username": "chovy"
 }
 ```
@@ -79,7 +79,7 @@ Get the Lightning Address for a wallet.
 **Response:**
 ```json
 {
-  "lightning_address": "chovy@coinpayportal.com",
+  "lightning_address": "chovy@tempesttouch.com",
   "username": "chovy"
 }
 ```
@@ -91,10 +91,10 @@ LNURL-pay endpoint. This is called by Lightning wallets when resolving a Lightni
 **Response (LNURL-pay spec):**
 ```json
 {
-  "callback": "https://coinpayportal.com/.well-known/lnurlp/chovy?amount=...",
+  "callback": "https://tempesttouch.com/.well-known/lnurlp/chovy?amount=...",
   "maxSendable": 1000000000,
   "minSendable": 1000,
-  "metadata": "[[\"text/plain\",\"Lightning Address for chovy@coinpayportal.com\"]]",
+  "metadata": "[[\"text/plain\",\"Lightning Address for chovy@tempesttouch.com\"]]",
   "tag": "payRequest",
   "commentAllowed": 255
 }

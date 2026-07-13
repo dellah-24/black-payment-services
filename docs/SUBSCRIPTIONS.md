@@ -1,10 +1,10 @@
 # Subscription Plans & Entitlements
 
-This document describes the subscription plan system and entitlements enforcement in CoinPay Portal.
+This document describes the subscription plan system and entitlements enforcement in Tempest Touch Portal.
 
 ## Overview
 
-CoinPay Portal offers two subscription tiers:
+Tempest Touch Portal offers two subscription tiers:
 
 | Feature | Starter (Free) | Professional ($49/month) |
 |---------|----------------|--------------------------|

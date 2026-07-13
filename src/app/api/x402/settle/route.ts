@@ -1,8 +1,8 @@
 /**
  * POST /api/x402/settle — Settle an x402 payment
  * 
- * Uses CoinPayPortal's existing forwarding infrastructure:
- *   1. Buyer pays to CoinPayPortal house wallet (PLATFORM_FEE_WALLET_*)
+ * Uses Tempest Touch's existing forwarding infrastructure:
+ *   1. Buyer pays to Tempest Touch house wallet (PLATFORM_FEE_WALLET_*)
  *   2. We verify payment landed
  *   3. We forward to merchant wallet minus commission (0.5% paid / 1% free tier)
  * 

@@ -107,8 +107,8 @@ export async function POST(request: NextRequest) {
     const sessionParams: any = {
       mode: 'subscription',
       line_items: [{ price: plan.stripe_price_id, quantity: 1 }],
-      success_url: successUrl || `${process.env.NEXT_PUBLIC_APP_URL || 'https://coinpayportal.com'}/subscriptions?success=true`,
-      cancel_url: cancelUrl || `${process.env.NEXT_PUBLIC_APP_URL || 'https://coinpayportal.com'}/subscriptions?canceled=true`,
+      success_url: successUrl || `${process.env.NEXT_PUBLIC_APP_URL || 'https://tempesttouch.com'}/subscriptions?success=true`,
+      cancel_url: cancelUrl || `${process.env.NEXT_PUBLIC_APP_URL || 'https://tempesttouch.com'}/subscriptions?canceled=true`,
       metadata: { ...metadata, plan_id: plan.id, merchant_id: merchantId, business_id: plan.business_id },
       subscription_data: {
         metadata: { plan_id: plan.id, merchant_id: merchantId, business_id: plan.business_id },

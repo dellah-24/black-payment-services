@@ -1,9 +1,9 @@
-# CoinPayPortal — Project Status
+# Tempest Touch — Project Status
 
 > **This is the single source of truth for project status.**
 > Updated: 2026-04-07
-> Fork of: [profullstack/coinpayportal](https://github.com/profullstack/coinpayportal)
-> Deployed at: **https://coinpay.eww-pew.com** (Coolify, Docker Compose build pack)
+> Fork of: [profullstack/tempesttouch](https://github.com/profullstack/tempesttouch)
+> Deployed at: **https://tempesttouch.eww-pew.com** (Coolify, Docker Compose build pack)
 
 ---
 
@@ -27,7 +27,7 @@
 
 | Item | Detail |
 |------|--------|
-| **Production URL** | https://coinpay.eww-pew.com |
+| **Production URL** | https://tempesttouch.eww-pew.com |
 | **Host** | Coolify (self-hosted) |
 | **Build** | Docker Compose — `docker/docker-compose.yml` |
 | **Port** | App listens on **8080** |
@@ -75,7 +75,7 @@ See [`.drewrox2009/FORK_TRACKING.md`](.drewrox2009/FORK_TRACKING.md) for full de
 - [x] Unsigned TX preparation + fee estimation (all chains)
 - [x] Client-side signing library (ETH EIP-1559, BTC P2PKH, BCH, SOL)
 - [x] TX broadcast + retry + confirmation tracking
-- [x] Bot SDK (`@coinpayportal/wallet-sdk`) — create, import, send, events, CLI
+- [x] Bot SDK (`@tempesttouch/wallet-sdk`) — create, import, send, events, CLI
 - [x] Full Web Wallet UI (`/web-wallet`) — create, import, dashboard, send, receive, history, settings
 - [x] Seed phrase display/verification, AES-256-GCM localStorage encryption
 - [x] Auto-lock on inactivity, memory clearing after signing
@@ -121,7 +121,7 @@ See [`.drewrox2009/FORK_TRACKING.md`](.drewrox2009/FORK_TRACKING.md) for full de
 - [ ] SDK README with quick start
 - [ ] Document all SDK API methods
 - [ ] Create SDK usage examples
-- [ ] Publish `@coinpayportal/wallet-sdk` to npm
+- [ ] Publish `@tempesttouch/wallet-sdk` to npm
 
 ### 🟢 Lower Priority — Settings & UX
 - [ ] Daily spend limit setting UI (backend exists)

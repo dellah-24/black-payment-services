@@ -67,8 +67,8 @@ export async function submitReceipt(
     return { success: false, error: 'Amount below minimum economic threshold' };
   }
 
-  // If platform_did is coinpayportal, verify escrow_tx exists
-  if (data.platform_did === 'did:web:coinpayportal.com' && data.escrow_tx) {
+  // If platform_did is tempesttouch, verify escrow_tx exists
+  if (data.platform_did === 'did:web:tempesttouch.com' && data.escrow_tx) {
     const { data: escrow } = await supabase
       .from('escrows')
       .select('id')

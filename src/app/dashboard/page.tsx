@@ -48,7 +48,7 @@ interface CryptoPayment {
   metadata?: Record<string, unknown>;
 }
 
-// Hosted CoinPay checkout page for a given payment id.
+// Hosted Tempest Touch checkout page for a given payment id.
 function paymentPageUrl(id: string): string {
   const origin = typeof window !== 'undefined' ? window.location.origin : '';
   return `${origin}/pay/${id}`;
@@ -241,7 +241,7 @@ export default function DashboardPage() {
       const vol = parseFloat(combinedStats.total_volume_usd);
       document.title = vol > 0
         ? `$${vol.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} volume — Dashboard`
-        : 'Dashboard — CoinPay';
+        : 'Dashboard — Tempest Touch';
     }
     return () => { document.title = original; };
   }, [combinedStats?.total_volume_usd]);

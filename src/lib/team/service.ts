@@ -124,7 +124,7 @@ function invitationEmailHtml(opts: {
 }): string {
   return `
     <div style="font-family: -apple-system, Segoe UI, Roboto, sans-serif; max-width: 480px; margin: 0 auto;">
-      <h2>You've been invited to ${opts.scopeLabel} on CoinPay</h2>
+      <h2>You've been invited to ${opts.scopeLabel} on TempestTouch</h2>
       <p>You've been added as a <strong>${opts.role}</strong>. Click below to accept the invitation and access the workspace.</p>
       <p style="margin: 24px 0;">
         <a href="${opts.acceptUrl}"
@@ -213,7 +213,7 @@ export async function inviteMember(opts: {
   const acceptUrl = `${baseUrl.replace(/\/$/, '')}/invite/accept?token=${invitation.token}`;
   await sendEmail({
     to: email,
-    subject: `You've been invited to ${scopeName} on CoinPay`,
+    subject: `You've been invited to ${scopeName} on TempestTouch`,
     html: invitationEmailHtml({
       scopeLabel: scope === 'org' ? `${scopeName}` : `the "${scopeName}" business`,
       role,

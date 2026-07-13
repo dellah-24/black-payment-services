@@ -31,7 +31,7 @@ function isValidEmail(email: string): boolean {
 function getMailgunConfig() {
   const apiKey = process.env.MAILGUN_API_KEY;
   const domain = process.env.MAILGUN_DOMAIN;
-  const replyTo = process.env.REPLY_TO_EMAIL || 'noreply@coinpay.com';
+  const replyTo = process.env.REPLY_TO_EMAIL || 'noreply@tempesttouch.com';
 
   return { apiKey, domain, replyTo };
 }
@@ -83,7 +83,7 @@ export async function sendEmail(input: SendEmailInput): Promise<SendEmailResult>
 
     // Prepare email data
     const formData = new FormData();
-    formData.append('from', input.from || `CoinPay <noreply@${domain}>`);
+    formData.append('from', input.from || `TempestTouch <noreply@${domain}>`);
     formData.append('to', input.to);
     formData.append('subject', input.subject);
     formData.append('html', input.html);

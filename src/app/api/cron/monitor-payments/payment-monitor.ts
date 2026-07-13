@@ -109,7 +109,7 @@ export async function monitorPayments(
 
       // Always check the chain before expiring an addressed payment. This
       // prevents late or briefly missed deposits from being marked expired
-      // while funds are already sitting at the generated CoinPay address.
+      // while funds are already sitting at the generated Tempest Touch address.
       if (!payment.payment_address) {
         if (isExpired) {
           await supabase

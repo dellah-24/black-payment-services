@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { deriveAddress } from '@profullstack/coinpay/wallet';
+import { deriveAddress } from '@profullstack/tempesttouch/wallet';
 import { seedFromMnemonic, deriveChainAddress, deriveAllAddresses } from '../derivation.js';
 import { DEFAULT_CHAINS } from '../chains.js';
 
@@ -7,8 +7,8 @@ import { DEFAULT_CHAINS } from '../chains.js';
 const TEST_MNEMONIC =
   'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about';
 
-// Regression fixture — the addresses the CoinPay web wallet / SDK produce for
-// the vector above. Captured from `@profullstack/coinpay` deriveAddress().
+// Regression fixture — the addresses the Tempest Touch web wallet / SDK produce for
+// the vector above. Captured from `@profullstack/tempesttouch` deriveAddress().
 // The ETH value is the canonical m/44'/60'/0'/0/0 address for this mnemonic,
 // which cross-checks BIP-44 derivation against standard tooling.
 const EXPECTED: Record<string, string> = {
@@ -19,7 +19,7 @@ const EXPECTED: Record<string, string> = {
   SOL: 'HAgk14JpMQLgt6rVgv7cBQFJWFto5Dqxi472uT3DKpqk',
 };
 
-describe('derivation parity with CoinPay web wallet', () => {
+describe('derivation parity with Tempest Touch web wallet', () => {
   it('produces a deterministic 64-byte seed (no passphrase)', () => {
     const a = seedFromMnemonic(TEST_MNEMONIC);
     const b = seedFromMnemonic('  ' + TEST_MNEMONIC + '  ');

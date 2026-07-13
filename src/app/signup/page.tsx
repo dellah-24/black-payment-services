@@ -107,7 +107,7 @@ export default function SignupPage() {
             Create your account
           </h1>
           <p className="text-gray-600">
-            Start accepting crypto payments in minutes with CoinPay
+            Start accepting crypto payments in minutes with TempestTouch
           </p>
         </div>
 

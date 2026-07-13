@@ -1,5 +1,5 @@
 {
-  "name": "coinpayportal-bigcommerce-app",
+  "name": "tempesttouchportal-bigcommerce-app",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -9,6 +9,6 @@
     "start": "echo 'TODO'"
   },
   "dependencies": {
-    "@coinpayportal/sdk": "workspace:*"
+    "@tempesttouch/sdk": "workspace:*"
   }
 }

@@ -137,7 +137,7 @@ describe('Resend Email Service', () => {
       expect(body.subject).toBe('Test Email');
       expect(body.html).toBe('<p>Test content</p>');
       expect(body.reply_to).toBe('support@example.com');
-      expect(body.from).toContain('CoinPay');
+      expect(body.from).toContain('Tempest Touch');
     });
 
     it('should use custom from address when provided', async () => {

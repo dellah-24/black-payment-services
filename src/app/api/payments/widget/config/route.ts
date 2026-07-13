@@ -77,7 +77,7 @@ export async function GET(request: NextRequest) {
       {
         success: true,
         merchant_id: merchantId,
-        display_name: business?.name || 'CoinPay merchant',
+        display_name: business?.name || 'Tempest Touch merchant',
         accepts_card: acceptsCard,
         accepts_crypto: chains.length > 0,
         chains,

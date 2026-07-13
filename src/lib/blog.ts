@@ -24,7 +24,7 @@ export type BlogListItem = Pick<
 >;
 
 export const SITE_URL =
-  (process.env.NEXT_PUBLIC_APP_URL || 'https://coinpayportal.com').replace(/\/$/, '');
+  (process.env.NEXT_PUBLIC_APP_URL || 'https://tempesttouch.com').replace(/\/$/, '');
 
 function tryGetAdmin() {
   try {

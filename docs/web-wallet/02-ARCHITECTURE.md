@@ -1,11 +1,11 @@
-# CoinPayPortal Wallet Mode - Architecture
+# Tempest Touch Wallet Mode - Architecture
 
 ## 1. High-Level Architecture
 
-### Current CoinPayPortal Architecture
+### Current Tempest Touch Architecture
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                        CoinPayPortal                            │
+│                        Tempest Touch                            │
 ├─────────────────────────────────────────────────────────────────┤
 │  Frontend (Next.js)                                             │
 │  ├── Landing Page                                               │
@@ -32,7 +32,7 @@
 ### Extended Architecture with Wallet Mode
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                        CoinPayPortal                            │
+│                        Tempest Touch                            │
 ├─────────────────────────────────────────────────────────────────┤
 │  Frontend (Next.js)                                             │
 │  ├── Landing Page                                               │

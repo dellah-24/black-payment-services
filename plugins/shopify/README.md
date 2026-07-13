@@ -1,16 +1,16 @@
-# CoinPay for Shopify (stub)
+# Tempest Touch for Shopify (stub)
 
 > **Status:** stub. Not yet a working plugin. See `manifest.json` for capability state.
 
-Shopify integration for CoinPayPortal — accept crypto payments via Shopify checkout.
+Shopify integration for Tempest Touch — accept crypto payments via Shopify checkout.
 
 ## Approval requirement
 
 Shopify only allows approved partners to ship checkout-time payment apps via the **Payments App Extension** API. Until that approval is in place, this plugin can ship as a regular Shopify app that:
 
 - Adds a "Pay with crypto" button on the cart / order-status page (off-Shopify checkout)
-- Listens to the `orders/create` webhook and creates a CoinPayPortal invoice
-- Marks the order paid via `POST /admin/api/<ver>/orders/{id}/transactions.json` after the CoinPay webhook confirms
+- Listens to the `orders/create` webhook and creates a Tempest Touch invoice
+- Marks the order paid via `POST /admin/api/<ver>/orders/{id}/transactions.json` after the Tempest Touch webhook confirms
 
 We track the partner-approval path separately. See `docs/INSTALL.md` for both modes.
 
@@ -24,7 +24,7 @@ plugins/shopify/
     package.json
     server.ts                    # Remix / Hono entrypoint
     routes/
-      api.coinpay.webhook.ts     # CoinPay → us
+      api.tempesttouch.webhook.ts     # Tempest Touch → us
       api.shopify.webhook.ts     # Shopify → us
       checkout.ts                # build hosted checkout, redirect customer
   payments-app-extension/        # only if/when approved

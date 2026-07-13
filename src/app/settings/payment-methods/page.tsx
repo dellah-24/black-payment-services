@@ -80,7 +80,7 @@ export default function AccountPaymentMethodsPage() {
           <p className="mt-2 text-gray-600 dark:text-gray-300">
             Save your Venmo, Cash App, and Zelle handles once here, then import them into any business
             from its <span className="font-medium">3rd Party</span> settings tab. Customers pay you directly on these
-            rails — CoinPay takes no fee and never touches the funds.
+            rails — TempestTouch takes no fee and never touches the funds.
           </p>
         </div>
 

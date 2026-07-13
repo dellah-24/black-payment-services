@@ -238,7 +238,7 @@ export async function POST(request: NextRequest) {
       {
         amount,
         currency,
-        description: description || 'CoinPay payout',
+        description: description || 'Tempest Touch payout',
         metadata: metadata || {},
       },
       {

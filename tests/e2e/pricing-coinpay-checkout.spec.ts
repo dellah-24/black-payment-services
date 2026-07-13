@@ -76,7 +76,7 @@ async function seedPricingRoutes(page: Page) {
         payment: {
           id: 'pay_upgrade_e2e',
           checkout_path: '/pay/pay_upgrade_e2e',
-          checkout_url: 'https://coinpayportal.com/pay/pay_upgrade_e2e',
+          checkout_url: 'https://tempesttouch.com/pay/pay_upgrade_e2e',
         },
       }),
     });
@@ -111,7 +111,7 @@ async function seedPricingRoutes(page: Page) {
       contentType: 'application/json',
       body: JSON.stringify({
         success: true,
-        business: { id: 'business-e2e', name: 'CoinPay' },
+        business: { id: 'business-e2e', name: 'Tempest Touch' },
       }),
     });
   });
@@ -125,7 +125,7 @@ async function seedPricingRoutes(page: Page) {
   });
 }
 
-test('pricing upgrade opens hosted CoinPay checkout instead of payment modal', async ({ page }) => {
+test('pricing upgrade opens hosted Tempest Touch checkout instead of payment modal', async ({ page }) => {
   await seedPricingRoutes(page);
 
   await page.goto('/pricing');

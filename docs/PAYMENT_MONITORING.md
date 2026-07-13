@@ -2,7 +2,7 @@
 
 ## Overview
 
-CoinPay uses a Supabase Edge Function-based payment monitoring system that continuously checks for incoming payments and automatically handles payment expiration after 15 minutes.
+Tempest Touch uses a Supabase Edge Function-based payment monitoring system that continuously checks for incoming payments and automatically handles payment expiration after 15 minutes.
 
 ## Architecture
 

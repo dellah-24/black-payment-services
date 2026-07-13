@@ -35,25 +35,25 @@ Add in-wallet coin swapping using **ChangeNOW** - a no-KYC swap provider that wo
 
 ### CLI
 ```bash
-coinpay swap --from BTC --to ETH --amount 0.01
-coinpay swap:quote --from BTC --to ETH --amount 0.01
-coinpay swap:status <shift_id>
+tempesttouch swap --from BTC --to ETH --amount 0.01
+tempesttouch swap:quote --from BTC --to ETH --amount 0.01
+tempesttouch swap:status <shift_id>
 ```
 
 ### SDK
 ```typescript
-const quote = await coinpay.swap.getQuote({
+const quote = await tempesttouch.swap.getQuote({
   from: 'BTC',
   to: 'ETH', 
   amount: '0.01'
 });
 
-const shift = await coinpay.swap.create({
+const shift = await tempesttouch.swap.create({
   quoteId: quote.id,
   settleAddress: '0x...'
 });
 
-const status = await coinpay.swap.getStatus(shift.id);
+const status = await tempesttouch.swap.getStatus(shift.id);
 ```
 
 ## Environment Variables

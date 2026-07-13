@@ -46,7 +46,7 @@ const TEST_SECRET = 'test-oidc-signing-secret-for-unit-tests-min-32';
 
 function makeFormRequest(body: Record<string, string>, headers?: Record<string, string>): any {
   const params = new URLSearchParams(body);
-  return new Request('https://coinpay.dev/api/oauth/token', {
+  return new Request('https://tempesttouch.dev/api/oauth/token', {
     method: 'POST',
     headers: { 'content-type': 'application/x-www-form-urlencoded', ...headers },
     body: params.toString(),
@@ -54,7 +54,7 @@ function makeFormRequest(body: Record<string, string>, headers?: Record<string, 
 }
 
 function makeJsonRequest(body: Record<string, string>): any {
-  return new Request('https://coinpay.dev/api/oauth/token', {
+  return new Request('https://tempesttouch.dev/api/oauth/token', {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify(body),
@@ -65,7 +65,7 @@ describe('POST /api/oauth/token', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.stubEnv('OIDC_SIGNING_SECRET', TEST_SECRET);
-    vi.stubEnv('NEXT_PUBLIC_APP_URL', 'https://coinpay.dev');
+    vi.stubEnv('NEXT_PUBLIC_APP_URL', 'https://tempesttouch.dev');
     vi.stubEnv('NEXT_PUBLIC_SUPABASE_URL', 'https://test.supabase.co');
     vi.stubEnv('SUPABASE_SERVICE_ROLE_KEY', 'test-key');
   });
@@ -417,3 +417,4 @@ describe('POST /api/oauth/token', () => {
     });
   });
 });
+

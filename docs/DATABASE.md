@@ -1,8 +1,8 @@
-# CoinPay Database Schema
+# Tempest Touch Database Schema
 
 ## Overview
 
-CoinPay uses Supabase (PostgreSQL) as its primary database. The schema is designed to support multi-tenant merchant operations with multiple businesses per merchant, secure payment processing, and comprehensive audit logging.
+Tempest Touch uses Supabase (PostgreSQL) as its primary database. The schema is designed to support multi-tenant merchant operations with multiple businesses per merchant, secure payment processing, and comprehensive audit logging.
 
 ## Entity Relationship Diagram
 

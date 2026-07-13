@@ -1,6 +1,6 @@
 {
-  "name": "coinpayportal-ecwid",
-  "displayName": "CoinPayPortal for Ecwid / Lightspeed eCom",
+  "name": "tempesttouch-ecwid",
+  "displayName": "Tempest Touch for Ecwid / Lightspeed eCom",
   "version": "0.0.0",
   "status": "stub",
   "platform": "ecwid",

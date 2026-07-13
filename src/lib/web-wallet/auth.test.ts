@@ -32,7 +32,7 @@ describe('Web Wallet Auth', () => {
   describe('generateChallenge', () => {
     it('should generate a challenge string with correct format', () => {
       const challenge = generateChallenge();
-      expect(challenge).toMatch(/^coinpayportal:auth:\d+:[a-f0-9]{32}$/);
+      expect(challenge).toMatch(/^tempesttouch:auth:\d+:[a-f0-9]{32}$/);
     });
 
     it('should generate unique challenges', () => {

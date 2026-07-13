@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document describes the security measures implemented for HD wallet private key management in the CoinPay payment system.
+This document describes the security measures implemented for HD wallet private key management in the Tempest Touch payment system.
 
 ## Architecture
 

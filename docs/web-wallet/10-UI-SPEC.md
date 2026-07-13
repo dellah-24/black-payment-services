@@ -1,8 +1,8 @@
-# CoinPayPortal Wallet Mode - UI Specification
+# Tempest Touch Wallet Mode - UI Specification
 
 ## 1. Overview
 
-The Web Wallet UI provides a browser-based interface for human users to manage their anonymous wallets. Built with Next.js and TailwindCSS, it integrates seamlessly with the existing CoinPayPortal dashboard.
+The Web Wallet UI provides a browser-based interface for human users to manage their anonymous wallets. Built with Next.js and TailwindCSS, it integrates seamlessly with the existing Tempest Touch dashboard.
 
 ### Design Principles
 

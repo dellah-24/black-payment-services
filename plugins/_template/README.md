@@ -1,8 +1,8 @@
-# CoinPayPortal Plugin Template
+# Tempest Touch Plugin Template
 
-This directory is a **scaffolding template** for new CoinPayPortal ecommerce / billing platform integrations. It is not a runnable plugin — copy it into a new `plugins/<platform>/` directory and fill in the platform-specific bits.
+This directory is a **scaffolding template** for new Tempest Touch ecommerce / billing platform integrations. It is not a runnable plugin — copy it into a new `plugins/<platform>/` directory and fill in the platform-specific bits.
 
-The shape mirrors the working WooCommerce, WHMCS, and FOSSBilling plugins so that every CoinPayPortal integration looks roughly the same:
+The shape mirrors the working WooCommerce, WHMCS, and FOSSBilling plugins so that every Tempest Touch integration looks roughly the same:
 
 ```
 plugins/<platform>/
@@ -18,19 +18,19 @@ plugins/<platform>/
 
 ## What every plugin must do
 
-1. **Authenticate to CoinPayPortal** with a `cp_live_*` / `cp_test_*` API key the merchant pastes into the plugin settings.
+1. **Authenticate to Tempest Touch** with a `cp_live_*` / `cp_test_*` API key the merchant pastes into the plugin settings.
 2. **Create an invoice / checkout session** when a customer chooses "Pay with crypto" — `POST /api/invoices` (or `POST /api/payments/create` for one-shot payment links).
-3. **Redirect the customer** to the hosted CoinPay checkout URL returned in step 2.
+3. **Redirect the customer** to the hosted Tempest Touch checkout URL returned in step 2.
 4. **Receive a signed webhook** at a publicly reachable URL on the merchant's site, verify the HMAC-SHA256 signature using the merchant's webhook secret, and update order status idempotently.
-5. **Map CoinPayPortal payment states → platform order states** (see `WEBHOOKS.md`).
+5. **Map Tempest Touch payment states → platform order states** (see `WEBHOOKS.md`).
 6. **Surface refunds** if the platform supports them (read-only display is acceptable for MVP).
 
 ## Webhook signature format
 
-CoinPayPortal signs webhooks as:
+Tempest Touch signs webhooks as:
 
 ```
-X-CoinPayPortal-Signature: t=<unix_ts>,v1=<hmac_sha256_hex>
+X-Tempest Touch-Signature: t=<unix_ts>,v1=<hmac_sha256_hex>
 ```
 
 Verify with constant-time comparison and reject if `|now - t| > 300s`.
@@ -51,8 +51,8 @@ Verify with constant-time comparison and reject if `|now - t| > 300s`.
 
 Use the canonical client from `packages/`:
 
-- JS / TS plugins → `packages/sdk` (`@coinpayportal/sdk`)
-- PHP plugins → `packages/coinpay-php` (vendored into the plugin under `lib/CoinPay/` or `src/`)
+- JS / TS plugins → `packages/sdk` (`@tempesttouch/sdk`)
+- PHP plugins → `packages/tempesttouch-php` (vendored into the plugin under `lib/Tempest Touch/` or `src/`)
 
 Do **not** re-implement HMAC verification, retries, or SSRF protection in the plugin — call into the SDK.
 

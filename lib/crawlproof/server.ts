@@ -30,7 +30,7 @@ export async function sendCrawlProofEvent(event: CrawlProofEvent): Promise<void>
         Authorization: `Bearer ${projectKey}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ project: "coinpayportal.com", ...event }),
+      body: JSON.stringify({ project: "tempesttouch.com", ...event }),
     });
     if (!response.ok) {
       console.warn("CrawlProof ingest failed", response.status, await response.text());

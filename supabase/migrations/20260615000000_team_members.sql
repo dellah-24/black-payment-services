@@ -1,6 +1,6 @@
 -- Team members: organizations (group of businesses) + org/business membership + invitations.
 --
--- coinpayportal enforces authorization in the APP LAYER (service-role client bypasses
+-- tempesttouchportal enforces authorization in the APP LAYER (service-role client bypasses
 -- RLS). Unlike crawlproof (Supabase Auth + auth.uid() RLS), the roles here are NOT
 -- enforced by RLS policies — they are enforced by src/lib/auth/authz.ts. RLS is enabled
 -- with NO policies so direct PostgREST (anon/authenticated) access is denied; all access

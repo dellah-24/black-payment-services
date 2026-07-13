@@ -1,4 +1,4 @@
-# CoinPayPortal Trust Layer (CPTL) v2
+# Tempest Touch Trust Layer (CPTL) v2
 
 ## Multi-Signal, Economically Anchored, Portable Reputation Protocol
 
@@ -236,7 +236,7 @@ All submitted actions scaled by platform trust.
 
 ## 6. SDK Design
 
-Package: `@coinpayportal/trust-sdk`
+Package: `@tempesttouch/trust-sdk`
 
 ### 6.1 Submit Action
 
@@ -309,7 +309,7 @@ External platforms must:
 5. Accept revocation protocol
 
 Optional:
-- Use CoinPay escrow for high-trust signals
+- Use Tempest Touch escrow for high-trust signals
 
 ---
 
@@ -342,7 +342,7 @@ Optional:
 
 ## 10. Strategic Positioning
 
-**CoinPayPortal becomes:** Escrow + Multi-Signal Portable Trust Infrastructure
+**Tempest Touch becomes:** Escrow + Multi-Signal Portable Trust Infrastructure
 
 **ugig becomes:** Signal producer + trust consumer
 
@@ -379,6 +379,6 @@ Other platforms can integrate without escrow but receive lower signal weight.
 - ❌ Trust vector computation (E/P/B/D/R/A/C dimensions)
 - ❌ Economic scaling: `log(1 + value_usd)` weighting
 - ❌ Platform DID registration (reputation_issuers → platform trust)
-- ❌ `@coinpayportal/trust-sdk` package (separate from current `@profullstack/coinpay`)
+- ❌ `@tempesttouch/trust-sdk` package (separate from current `@profullstack/tempesttouch`)
 - ❌ `getTrustProfile()` returning vector instead of simple windows
 - ❌ `submitActionReceipt()` with schema validation

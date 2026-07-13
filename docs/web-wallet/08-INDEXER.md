@@ -1,8 +1,8 @@
-# CoinPayPortal Wallet Mode - Blockchain Indexer
+# Tempest Touch Wallet Mode - Blockchain Indexer
 
 ## 1. Overview
 
-The Wallet Indexer extends CoinPayPortal's existing payment monitoring infrastructure to provide persistent address monitoring for wallet addresses.
+The Wallet Indexer extends Tempest Touch's existing payment monitoring infrastructure to provide persistent address monitoring for wallet addresses.
 
 ### Key Differences from Payment Monitor
 

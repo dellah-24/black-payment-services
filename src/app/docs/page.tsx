@@ -25,7 +25,7 @@ export default function DocsPage() {
             API Documentation
           </h1>
           <p className="text-xl text-gray-300">
-            Complete reference for the CoinPay REST API
+            Complete reference for the Tempest Touch REST API
           </p>
         </div>
 
@@ -139,9 +139,9 @@ export default function DocsPage() {
               <h2 className="text-xl font-bold text-white mb-2">🔌 Platform Plugins</h2>
               <p className="text-gray-300 text-sm">
                 Ready-made payment gateway plugins for{' '}
-                <a href="https://github.com/profullstack/coinpayportal/tree/master/plugins/whmcs" target="_blank" rel="noopener noreferrer" className="text-orange-400 hover:text-orange-300 font-medium">WHMCS</a>,{' '}
-                <a href="https://github.com/profullstack/coinpayportal/tree/master/plugins/woocommerce" target="_blank" rel="noopener noreferrer" className="text-purple-400 hover:text-purple-300 font-medium">WooCommerce</a>, and{' '}
-                <a href="https://github.com/profullstack/coinpayportal/tree/master/plugins/fossbilling" target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:text-cyan-300 font-medium">FOSSBilling</a>.
+                <a href="https://github.com/profullstack/tempesttouch/tree/master/plugins/whmcs" target="_blank" rel="noopener noreferrer" className="text-orange-400 hover:text-orange-300 font-medium">WHMCS</a>,{' '}
+                <a href="https://github.com/profullstack/tempesttouch/tree/master/plugins/woocommerce" target="_blank" rel="noopener noreferrer" className="text-purple-400 hover:text-purple-300 font-medium">WooCommerce</a>, and{' '}
+                <a href="https://github.com/profullstack/tempesttouch/tree/master/plugins/fossbilling" target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:text-cyan-300 font-medium">FOSSBilling</a>.
                 Install in minutes — no custom code required.
               </p>
             </div>
@@ -313,7 +313,7 @@ export default function DocsPage() {
             <p className="text-gray-300 mb-6">
               HTTP-native machine payments using the <strong>HTTP 402 Payment Required</strong> status code. 
               Paywall any API route — clients (browsers, AI agents, bots) automatically negotiate payment inline with HTTP requests. 
-              CoinPayPortal is the <strong>only multi-chain x402 facilitator</strong>: BTC, ETH, SOL, POL, BCH, USDC (4 chains), Lightning, and Stripe.
+              Tempest Touch is the <strong>only multi-chain x402 facilitator</strong>: BTC, ETH, SOL, POL, BCH, USDC (4 chains), Lightning, and Stripe.
             </p>
 
             <div className="mb-8 p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-lg">
@@ -323,7 +323,7 @@ export default function DocsPage() {
                 <li><strong>Server returns 402</strong> with an <code className="text-yellow-100">accepts[]</code> array listing all payment methods + prices</li>
                 <li><strong>Client picks a method</strong> (BTC, USDC, Lightning, card...) and creates a payment proof</li>
                 <li><strong>Client retries</strong> the request with an <code className="text-yellow-100">X-Payment</code> header containing the proof</li>
-                <li><strong>Server verifies</strong> the proof via CoinPayPortal&apos;s facilitator and serves the content</li>
+                <li><strong>Server verifies</strong> the proof via Tempest Touch&apos;s facilitator and serves the content</li>
               </ol>
             </div>
 
@@ -333,10 +333,10 @@ export default function DocsPage() {
               Install the SDK and add x402 middleware to any Express or Next.js route. Set a USD price — the middleware handles multi-chain pricing and 402 responses automatically.
             </p>
 
-            <CodeBlock language="bash">{`npm install @profullstack/coinpay`}</CodeBlock>
+            <CodeBlock language="bash">{`npm install @profullstack/tempesttouch`}</CodeBlock>
 
             <h4 className="text-md font-semibold text-white mt-6 mb-3">Express</h4>
-            <CodeBlock language="javascript">{`import { createX402Middleware } from '@profullstack/coinpay';
+            <CodeBlock language="javascript">{`import { createX402Middleware } from '@profullstack/tempesttouch';
 
 const x402 = createX402Middleware({
   apiKey: 'cp_live_xxxxx',                // from /businesses
@@ -346,7 +346,7 @@ const x402 = createX402Middleware({
     polygon: '0xYourEvmAddress',
     base: '0xYourEvmAddress',             // also receives USDC on Base
     solana: 'YourSolanaAddress',
-    lightning: 'alice@coinpayportal.com',  // Lightning Address
+    lightning: 'alice@tempesttouch.com',  // Lightning Address
     stripe: 'acct_YourStripeId',
     'bitcoin-cash': 'bitcoincash:qYourBchAddress',
   },
@@ -359,7 +359,7 @@ app.get('/api/premium', x402({ amountUsd: 5.00 }), (req, res) => {
 });`}</CodeBlock>
 
             <h4 className="text-md font-semibold text-white mt-6 mb-3">Next.js (App Router)</h4>
-            <CodeBlock language="typescript">{`import { buildPaymentRequired, verifyX402Payment } from '@profullstack/coinpay';
+            <CodeBlock language="typescript">{`import { buildPaymentRequired, verifyX402Payment } from '@profullstack/tempesttouch';
 
 export async function GET(request: Request) {
   const paymentHeader = request.headers.get('x-payment');
@@ -371,7 +371,7 @@ export async function GET(request: Request) {
         bitcoin: 'bc1q...',
         ethereum: '0x...',
         solana: 'So1...',
-        lightning: 'alice@coinpayportal.com',
+        lightning: 'alice@tempesttouch.com',
       },
       amountUsd: 5.00,
       rates: { BTC: 65000, ETH: 3500, SOL: 150 },
@@ -379,7 +379,7 @@ export async function GET(request: Request) {
     return Response.json(body, { status: 402 });
   }
 
-  // Verify payment proof via CoinPayPortal facilitator
+  // Verify payment proof via Tempest Touch facilitator
   const result = await verifyX402Payment(paymentHeader, {
     apiKey: 'cp_live_xxxxx',
   });
@@ -422,7 +422,7 @@ export async function GET(request: Request) {
       "network": "lightning",
       "asset": "BTC",
       "maxAmountRequired": "769",
-      "payTo": "merchant@coinpayportal.com",
+      "payTo": "merchant@tempesttouch.com",
       "extra": { "label": "Lightning" }
     },
     {
@@ -460,7 +460,7 @@ export async function GET(request: Request) {
                   </tr>
                   <tr className="border-b border-white/5">
                     <td className="px-4 py-3 font-medium text-white">Lightning</td>
-                    <td className="px-4 py-3">Pay via Lightning Address (user@coinpayportal.com) or BOLT11 invoice</td>
+                    <td className="px-4 py-3">Pay via Lightning Address (user@tempesttouch.com) or BOLT11 invoice</td>
                     <td className="px-4 py-3">Payment preimage</td>
                   </tr>
                   <tr className="border-b border-white/5">
@@ -503,15 +503,15 @@ X-Payment: eyJzY2hlbWUiOiJleGFjdCIsIm5ldHdvcmsiOiJiYXNlIi4uLn0=`}</CodeBlock>
   }
 }`}</CodeBlock>
 
-            {/* Paying with CoinPay Wallet */}
-            <h4 className="text-md font-semibold text-white mt-6 mb-3">Paying with CoinPay Web Wallet</h4>
+            {/* Paying with Tempest Touch Wallet */}
+            <h4 className="text-md font-semibold text-white mt-6 mb-3">Paying with Tempest Touch Web Wallet</h4>
             <p className="text-gray-300 text-sm mb-3">
-              If the customer has a <a href="/web-wallet" className="text-purple-400 hover:text-purple-300 underline">CoinPay Web Wallet</a>, the flow is seamless — the wallet can read the 402 response, display the payment options, and sign the proof automatically:
+              If the customer has a <a href="/web-wallet" className="text-purple-400 hover:text-purple-300 underline">Tempest Touch Web Wallet</a>, the flow is seamless — the wallet can read the 402 response, display the payment options, and sign the proof automatically:
             </p>
-            <CodeBlock language="javascript">{`// Using CoinPay Wallet SDK (browser)
-import { CoinPayWallet } from '@profullstack/coinpay/wallet';
+            <CodeBlock language="javascript">{`// Using Tempest Touch Wallet SDK (browser)
+import { tempesttouchWallet } from '@profullstack/tempesttouch/wallet';
 
-const wallet = new CoinPayWallet();
+const wallet = new tempesttouchWallet();
 
 // Fetch with automatic x402 handling
 const response = await wallet.x402fetch('https://api.example.com/premium');
@@ -524,7 +524,7 @@ const data = await response.json();`}</CodeBlock>
             <p className="text-gray-300 text-sm mb-3">
               AI agents, bots, or any programmatic client can use <code className="text-purple-300">x402fetch()</code> — it wraps <code className="text-purple-300">fetch()</code> and handles the entire 402 → pay → retry loop:
             </p>
-            <CodeBlock language="javascript">{`import { x402fetch } from '@profullstack/coinpay';
+            <CodeBlock language="javascript">{`import { x402fetch } from '@profullstack/tempesttouch';
 
 const response = await x402fetch('https://api.example.com/premium', {
   paymentMethods: {
@@ -558,7 +558,7 @@ curl -H "X-Payment: $(echo -n '{"scheme":"exact","network":"bitcoin","asset":"BT
             {/* Fees */}
             <h3 className="text-lg font-bold text-white mt-10 mb-4">Fees</h3>
             <p className="text-gray-300 text-sm mb-4">
-              CoinPayPortal takes a small commission on each x402 payment, deducted before forwarding to the merchant:
+              Tempest Touch takes a small commission on each x402 payment, deducted before forwarding to the merchant:
             </p>
             <div className="overflow-x-auto mb-4">
               <table className="w-full text-sm">
@@ -732,7 +732,7 @@ curl -H "X-Payment: $(echo -n '{"scheme":"exact","network":"bitcoin","asset":"BT
               </CodeBlock>
 
               <CodeBlock title="cURL Example" language="curl">
-{`curl -X POST https://coinpayportal.com/api/escrow \\
+{`curl -X POST https://tempesttouch.com/api/escrow \\
   -H "Content-Type: application/json" \\
   -d '{
     "chain": "ETH",
@@ -808,7 +808,7 @@ offset       — Pagination offset`}
 
             <ApiEndpoint method="GET" path="/api/escrow/:id" description="Get escrow details by ID. Public endpoint — no auth required.">
               <CodeBlock title="cURL Example" language="curl">
-{`curl https://coinpayportal.com/api/escrow/a1b2c3d4-...`}
+{`curl https://tempesttouch.com/api/escrow/a1b2c3d4-...`}
               </CodeBlock>
             </ApiEndpoint>
 
@@ -820,7 +820,7 @@ offset       — Pagination offset`}
               </CodeBlock>
 
               <CodeBlock title="cURL Example" language="curl">
-{`curl -X POST https://coinpayportal.com/api/escrow/a1b2c3d4-.../auth \\
+{`curl -X POST https://tempesttouch.com/api/escrow/a1b2c3d4-.../auth \\
   -H "Content-Type: application/json" \\
   -d '{"token": "esc_abc123..."}'`}
               </CodeBlock>
@@ -919,9 +919,9 @@ offset       — Pagination offset`}
 
             <h3 className="text-xl font-semibold text-white mt-8 mb-4">SDK &amp; CLI</h3>
             <CodeBlock title="Node.js SDK" language="javascript">
-{`import { CoinPayClient } from '@profullstack/coinpay';
+{`import { tempesttouchClient } from '@profullstack/tempesttouch';
 
-const client = new CoinPayClient({ apiKey: 'YOUR_API_KEY' });
+const client = new tempesttouchClient({ apiKey: 'YOUR_API_KEY' });
 
 // Create escrow
 const escrow = await client.createEscrow({
@@ -945,27 +945,27 @@ const settled = await client.waitForEscrow(escrow.id, 'settled');`}
 
             <CodeBlock title="CLI" language="bash">
 {`# Create escrow
-coinpay escrow create --chain SOL --amount 10 \\
+tempesttouch escrow create --chain SOL --amount 10 \\
   --depositor Alice... --beneficiary Bob...
 
 # Check status
-coinpay escrow get <escrow_id>
+tempesttouch escrow get <escrow_id>
 
 # List escrows
-coinpay escrow list --status funded
+tempesttouch escrow list --status funded
 
 # Release funds
-coinpay escrow release <escrow_id> --token esc_abc123...
+tempesttouch escrow release <escrow_id> --token esc_abc123...
 
 # Refund
-coinpay escrow refund <escrow_id> --token esc_abc123...
+tempesttouch escrow refund <escrow_id> --token esc_abc123...
 
 # Open dispute
-coinpay escrow dispute <escrow_id> --token esc_def456... \\
+tempesttouch escrow dispute <escrow_id> --token esc_def456... \\
   --reason "Work not delivered as agreed"
 
 # View audit log
-coinpay escrow events <escrow_id>`}
+tempesttouch escrow events <escrow_id>`}
             </CodeBlock>
           </DocSection>
         </div>
@@ -1150,15 +1150,15 @@ coinpay escrow events <escrow_id>`}
 
               <CodeBlock title="Single Rate Example" language="curl">
 {`# Get SOL price in EUR
-curl "https://coinpayportal.com/api/rates?coin=SOL&fiat=EUR"`}
+curl "https://tempesttouch.com/api/rates?coin=SOL&fiat=EUR"`}
               </CodeBlock>
 
               <CodeBlock title="Multiple Rates Example" language="curl">
 {`# Get multiple cryptocurrency rates in USD (default)
-curl "https://coinpayportal.com/api/rates?coins=BTC,ETH,SOL"
+curl "https://tempesttouch.com/api/rates?coins=BTC,ETH,SOL"
 
 # Get multiple rates in EUR
-curl "https://coinpayportal.com/api/rates?coins=BTC,ETH,SOL&fiat=EUR"`}
+curl "https://tempesttouch.com/api/rates?coins=BTC,ETH,SOL&fiat=EUR"`}
               </CodeBlock>
 
               <CodeBlock title="Single Rate Response">
@@ -1187,12 +1187,12 @@ curl "https://coinpayportal.com/api/rates?coins=BTC,ETH,SOL&fiat=EUR"`}
 
               <CodeBlock title="Node.js Example" language="javascript">
 {`// Get single rate
-const response = await fetch('https://coinpayportal.com/api/rates?coin=SOL&fiat=EUR');
+const response = await fetch('https://tempesttouch.com/api/rates?coin=SOL&fiat=EUR');
 const data = await response.json();
 console.log(\`1 SOL = €\${data.rate}\`);
 
 // Get multiple rates  
-const multiResponse = await fetch('https://coinpayportal.com/api/rates?coins=BTC,ETH,SOL&fiat=GBP');
+const multiResponse = await fetch('https://tempesttouch.com/api/rates?coins=BTC,ETH,SOL&fiat=GBP');
 const multiData = await multiResponse.json();
 console.log(\`BTC: £\${multiData.rates.BTC}\`);`}
               </CodeBlock>
@@ -1231,7 +1231,7 @@ console.log(\`BTC: £\${multiData.rates.BTC}\`);`}
           <DocSection title="Businesses">
             <ApiEndpoint method="GET" path="/api/businesses" description="List all businesses for the authenticated merchant.">
               <CodeBlock title="cURL Example" language="curl">
-{`curl https://coinpayportal.com/api/businesses \\
+{`curl https://tempesttouch.com/api/businesses \\
   -H "Authorization: Bearer YOUR_TOKEN"`}
               </CodeBlock>
             </ApiEndpoint>
@@ -1247,7 +1247,7 @@ console.log(\`BTC: £\${multiData.rates.BTC}\`);`}
               </CodeBlock>
 
               <CodeBlock title="Node.js Example" language="javascript">
-{`const response = await fetch('https://coinpayportal.com/api/businesses', {
+{`const response = await fetch('https://tempesttouch.com/api/businesses', {
   method: 'POST',
   headers: {
     'Authorization': 'Bearer YOUR_TOKEN',
@@ -1284,12 +1284,12 @@ const data = await response.json();`}
               </div>
 
               <CodeBlock title="cURL Example (API Key)" language="curl">
-{`curl https://coinpayportal.com/api/supported-coins \\
+{`curl https://tempesttouch.com/api/supported-coins \\
   -H "Authorization: Bearer cp_live_your_api_key"`}
               </CodeBlock>
 
               <CodeBlock title="cURL Example (JWT with business_id)" language="curl">
-{`curl "https://coinpayportal.com/api/supported-coins?business_id=your-business-uuid" \\
+{`curl "https://tempesttouch.com/api/supported-coins?business_id=your-business-uuid" \\
   -H "Authorization: Bearer YOUR_JWT_TOKEN"`}
               </CodeBlock>
 
@@ -1322,7 +1322,7 @@ const data = await response.json();`}
               </CodeBlock>
 
               <CodeBlock title="Node.js Example" language="javascript">
-{`const response = await fetch('https://coinpayportal.com/api/supported-coins', {
+{`const response = await fetch('https://tempesttouch.com/api/supported-coins', {
   headers: {
     'Authorization': 'Bearer cp_live_your_api_key'
   }
@@ -1409,7 +1409,7 @@ data.coins.filter(c => c.is_active).forEach(coin => {
               </div>
 
               <CodeBlock title="cURL Example with redirect_url" language="curl">
-{`curl -X POST https://coinpayportal.com/api/payments/create \\
+{`curl -X POST https://tempesttouch.com/api/payments/create \\
   -H "Authorization: Bearer YOUR_TOKEN" \\
   -H "Content-Type: application/json" \\
   -d '{
@@ -1452,7 +1452,7 @@ data.coins.filter(c => c.is_active).forEach(coin => {
 
             <ApiEndpoint method="GET" path="/api/payments/:id" description="Retrieve payment details by ID.">
               <CodeBlock title="Node.js Example" language="javascript">
-{`const response = await fetch('https://coinpayportal.com/api/payments/payment-456', {
+{`const response = await fetch('https://tempesttouch.com/api/payments/payment-456', {
   headers: { 'Authorization': 'Bearer YOUR_TOKEN' }
 });
 const data = await response.json();
@@ -1462,7 +1462,7 @@ console.log(data.payment.status);`}
 
             <ApiEndpoint method="GET" path="/api/payments/:id/qr" description="Get QR code image for payment address.">
               <CodeBlock title="Usage" language="html">
-{`<img src="https://coinpayportal.com/api/payments/payment-456/qr" 
+{`<img src="https://tempesttouch.com/api/payments/payment-456/qr" 
      alt="Payment QR Code" />`}
               </CodeBlock>
             </ApiEndpoint>
@@ -1538,7 +1538,7 @@ console.log(data.payment.status);`}
               </CodeBlock>
 
               <CodeBlock title="cURL Example" language="curl">
-{`curl -X POST https://coinpayportal.com/api/payments/create \\
+{`curl -X POST https://tempesttouch.com/api/payments/create \\
   -H "Authorization: Bearer YOUR_TOKEN" \\
   -H "Content-Type: application/json" \\
   -d '{
@@ -1758,8 +1758,8 @@ console.log(data.payment.status);`}
                 (<code className="text-purple-300">&quot;crypto&quot;</code> or <code className="text-purple-300">&quot;card&quot;</code>).
               </p>
               <p className="text-gray-400 text-xs mt-2">
-                Stripe never POSTs to your URL directly. Stripe → CoinPay → your endpoint. CoinPay verifies the Stripe signature, processes the event,
-                then re-signs in CoinPay format (<code className="text-purple-300">X-CoinPay-Signature: t=…,v1=…</code>) before forwarding.
+                Stripe never POSTs to your URL directly. Stripe → Tempest Touch → your endpoint. Tempest Touch verifies the Stripe signature, processes the event,
+                then re-signs in Tempest Touch format (<code className="text-purple-300">X-tempesttouch-Signature: t=…,v1=…</code>) before forwarding.
                 This means you only need to verify ONE signature scheme, ours.
               </p>
             </div>
@@ -1832,11 +1832,11 @@ console.log(data.payment.status);`}
             <h3 className="text-xl font-semibold text-white mb-4">Webhook Headers</h3>
             <CodeBlock>
 {`Content-Type: application/json
-X-CoinPay-Signature: t=1702234567,v1=5d41402abc4b2a76b9719d911017c592
-User-Agent: CoinPay-Webhook/1.0`}
+X-tempesttouch-Signature: t=1702234567,v1=5d41402abc4b2a76b9719d911017c592
+User-Agent: tempesttouch-Webhook/1.0`}
             </CodeBlock>
             <p className="text-gray-400 text-sm mt-2 mb-6">
-              The <code className="text-purple-400">X-CoinPay-Signature</code> header contains: <code className="text-purple-400">t</code> (Unix timestamp) and <code className="text-purple-400">v1</code> (HMAC-SHA256 signature)
+              The <code className="text-purple-400">X-tempesttouch-Signature</code> header contains: <code className="text-purple-400">t</code> (Unix timestamp) and <code className="text-purple-400">v1</code> (HMAC-SHA256 signature)
             </p>
 
             <h3 className="text-xl font-semibold text-white mb-4">payment.confirmed Payload</h3>
@@ -1954,7 +1954,7 @@ function verifyWebhookSignature(rawBody, signatureHeader, secret) {
 // Express.js example
 app.post('/webhook', express.raw({ type: 'application/json' }), (req, res) => {
   const rawBody = req.body.toString();
-  const signature = req.headers['x-coinpay-signature'];
+  const signature = req.headers['x-tempesttouch-signature'];
 
   if (!verifyWebhookSignature(rawBody, signature, process.env.WEBHOOK_SECRET)) {
     return res.status(401).json({ error: 'Invalid signature' });
@@ -1986,7 +1986,7 @@ app.post('/webhook', express.raw({ type: 'application/json' }), (req, res) => {
 
             <div className="mt-4 p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg">
               <p className="text-blue-300 text-sm">
-                <strong>SDK Support:</strong> Use <code className="text-blue-200">verifyWebhookSignature()</code> and <code className="text-blue-200">parseWebhookPayload()</code> from the <a href="/docs/sdk" className="underline">CoinPay SDK</a> for easier integration.
+                <strong>SDK Support:</strong> Use <code className="text-blue-200">verifyWebhookSignature()</code> and <code className="text-blue-200">parseWebhookPayload()</code> from the <a href="/docs/sdk" className="underline">Tempest Touch SDK</a> for easier integration.
               </p>
             </div>
           </DocSection>

@@ -5,7 +5,7 @@
 
 import { createHmac, createHash, randomUUID } from 'crypto';
 
-const ISSUER_DID = 'did:web:coinpayportal.com';
+const ISSUER_DID = 'did:web:tempesttouch.com';
 const SIGNING_SECRET = process.env.REPUTATION_SIGNING_SECRET || 'cpr-dev-secret';
 
 /**

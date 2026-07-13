@@ -569,7 +569,7 @@ describe('PublicPaymentPage', () => {
   });
 
   describe('Branding', () => {
-    it('should show CoinPay branding', async () => {
+    it('should show Tempest Touch branding', async () => {
       vi.mocked(fetch).mockResolvedValue({
         ok: true,
         json: async () => ({
@@ -581,13 +581,13 @@ describe('PublicPaymentPage', () => {
       render(<PublicPaymentPage />);
 
       await waitFor(() => {
-        // There are multiple CoinPay elements (header and footer)
-        const coinpayElements = screen.getAllByText(/coinpay/i);
-        expect(coinpayElements.length).toBeGreaterThan(0);
+        // There are multiple Tempest Touch elements (header and footer)
+        const tempesttouchElements = screen.getAllByText(/tempesttouch/i);
+        expect(tempesttouchElements.length).toBeGreaterThan(0);
       });
     });
 
-    it('should show "Powered by CoinPay" footer', async () => {
+    it('should show "Powered by Tempest Touch" footer', async () => {
       vi.mocked(fetch).mockResolvedValue({
         ok: true,
         json: async () => ({

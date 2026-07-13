@@ -201,7 +201,7 @@ export function generateChallenge(): string {
   const timestamp = Math.floor(Date.now() / 1000);
   const random = randomBytes(16).toString('hex');
   console.log(`[Auth] Generated challenge at timestamp=${timestamp}`);
-  return `coinpayportal:auth:${timestamp}:${random}`;
+  return `tempesttouch:auth:${timestamp}:${random}`;
 }
 
 /**
@@ -237,7 +237,7 @@ export function generateWalletToken(walletId: string): string {
     {
       sub: walletId,
       type: 'wallet',
-      iss: 'coinpayportal.com',
+      iss: 'tempesttouch.com',
       aud: 'wallet-api',
     },
     jwtSecret,

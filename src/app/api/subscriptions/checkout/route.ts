@@ -20,7 +20,7 @@ import {
  */
 export async function POST(request: NextRequest) {
   try {
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://coinpayportal.com';
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://tempesttouch.com';
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 

@@ -1,0 +1,25 @@
+{
+    "name": "profullstack/tempesttouch-php",
+    "description": "PHP client for the Tempest Touch merchant API. Shared by Tempest Touch WooCommerce and WHMCS plugins.",
+    "type": "library",
+    "license": "MIT",
+    "keywords": ["tempesttouch", "payments", "crypto", "woocommerce", "whmcs"],
+    "homepage": "https://tempesttouch.com",
+    "authors": [
+        {
+            "name": "Profullstack, Inc.",
+            "homepage": "https://profullstack.com"
+        }
+    ],
+    "require": {
+        "php": ">=7.4",
+        "ext-json": "*",
+        "ext-hash": "*",
+        "ext-curl": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "Tempest Touch\\": "src/"
+        }
+    }
+}

@@ -44,7 +44,7 @@ function apiError(code: string, message: string, status: number) {
   };
 }
 
-const BASE_URL = 'https://test-api.coinpayportal.com';
+const BASE_URL = 'https://test-api.tempesttouch.com';
 
 // ──────────────────────────────────────────────
 // Wallet.create() Tests
@@ -164,7 +164,7 @@ describe('SDK Integration - Wallet.fromSeed()', () => {
     // Should have sent proof of ownership
     const body = JSON.parse(mockFetch.mock.calls[0][1].body);
     expect(body.proof_of_ownership).toBeDefined();
-    expect(body.proof_of_ownership.message).toContain('coinpayportal:import:');
+    expect(body.proof_of_ownership.message).toContain('tempesttouch:import:');
     expect(body.proof_of_ownership.signature).toBeTruthy();
 
     wallet.destroy();

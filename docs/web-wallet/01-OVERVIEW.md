@@ -1,12 +1,12 @@
-# CoinPayPortal Anonymous Wallet Platform (AWP) - Overview
+# Tempest Touch Anonymous Wallet Platform (AWP) - Overview
 
 ## 1. Executive Summary
 
 ### Product Name
-**CoinPayPortal Wallet Mode (CPW)**
+**Tempest Touch Wallet Mode (CPW)**
 
 ### Vision
-Extend CoinPayPortal from a **payment gateway** into a **full multi-chain anonymous wallet platform**, enabling:
+Extend Tempest Touch from a **payment gateway** into a **full multi-chain anonymous wallet platform**, enabling:
 
 - Humans to use it in browser like a normal wallet
 - Bots to use it via API
@@ -14,7 +14,7 @@ Extend CoinPayPortal from a **payment gateway** into a **full multi-chain anonym
 - Users retain full custody of their keys
 
 ### Core Value Proposition
-A non-custodial, anonymous, multi-chain wallet that works for both humans and automated systems, built on top of CoinPayPortal's existing infrastructure.
+A non-custodial, anonymous, multi-chain wallet that works for both humans and automated systems, built on top of Tempest Touch's existing infrastructure.
 
 ---
 
@@ -23,7 +23,7 @@ A non-custodial, anonymous, multi-chain wallet that works for both humans and au
 ### Primary Goals
 
 1. **Anonymous Access**: No email, no password, no username - seed phrase = identity
-2. **Non-Custodial**: CoinPayPortal never stores raw private keys
+2. **Non-Custodial**: Tempest Touch never stores raw private keys
 3. **Multi-Chain Support**: BTC, BCH, ETH, POL, SOL, and USDC variants
 4. **Dual Interface**: Browser UI for humans, API/SDK for bots
 5. **Backward Compatible**: Preserve existing payment gateway functionality
@@ -50,13 +50,13 @@ A non-custodial, anonymous, multi-chain wallet that works for both humans and au
 
 ## 4. Core Principle (Non-Negotiable)
 
-> **CoinPayPortal never stores raw private keys.**
+> **Tempest Touch never stores raw private keys.**
 
 All signing happens:
 - In browser (humans) using WebCrypto + WASM
 - In bot environment (bots) using SDK
 
-CoinPayPortal becomes:
+Tempest Touch becomes:
 > Wallet coordinator + indexer + relay + API
 
 **Not a custodian.**
@@ -130,7 +130,7 @@ This keeps:
 
 ---
 
-## 8. Integration with Existing CoinPayPortal
+## 8. Integration with Existing Tempest Touch
 
 ### What Stays the Same
 - Payment gateway flows (`/api/payments/*`)
@@ -151,7 +151,7 @@ This keeps:
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                     CoinPayPortal                           │
+│                     Tempest Touch                           │
 ├─────────────────────────────┬───────────────────────────────┤
 │      Gateway Mode           │        Wallet Mode            │
 │   (Existing - Unchanged)    │        (New - Added)          │

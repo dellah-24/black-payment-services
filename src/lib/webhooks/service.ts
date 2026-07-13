@@ -237,8 +237,8 @@ export async function deliverWebhook(
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'X-CoinPay-Signature': signature,
-        'User-Agent': 'CoinPay-Webhook/1.0',
+        'X-TempestTouch-Signature': signature,
+        'User-Agent': 'TempestTouch-Webhook/1.0',
       },
       body: JSON.stringify(payloadWithTimestamp),
       signal: AbortSignal.timeout(timeout),
@@ -328,9 +328,9 @@ export async function deliverWebhookDirect(
       const response = await fetch(webhookUrl, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          'X-CoinPay-Signature': signature,
-          'User-Agent': 'CoinPay-Webhook/1.0',
+        'Content-Type': 'application/json',
+        'X-TempestTouch-Signature': signature,
+        'User-Agent': 'TempestTouch-Webhook/1.0',
         },
         body: payloadString,
         signal: AbortSignal.timeout(timeout),
@@ -533,7 +533,7 @@ export async function sendPaymentWebhook(
     const payloadString = JSON.stringify(payload);
 
     // Sign with the DECRYPTED secret. The merchant's verifier (e.g. d0rz's
-    // /api/webhooks/coinpay/* route) holds the plaintext secret in its env,
+    // /api/webhooks/tempesttouch/* route) holds the plaintext secret in its env,
     // not the AES ciphertext from our DB.
     const signature = signWebhookPayload(payload, plaintextSecret, timestamp);
 
@@ -661,3 +661,4 @@ export async function sendEscrowWebhook(
     };
   }
 }
+

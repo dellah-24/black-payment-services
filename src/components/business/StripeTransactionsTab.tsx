@@ -113,7 +113,7 @@ export function StripeTransactionsTab({ businessId }: StripeTransactionsTabProps
               {transactions.map((tx) => (
                 <tr key={tx.id} className="border-b border-gray-100 dark:border-gray-800">
                   <td className="py-2 px-3 font-medium">${tx.amount_usd || '0.00'}</td>
-                  <td className="py-2 px-3 text-gray-500 dark:text-gray-400" title="CoinPayPortal application fee">
+                  <td className="py-2 px-3 text-gray-500 dark:text-gray-400" title="Tempest Touch application fee">
                     {formatAmount(tx.platform_fee_amount || 0, tx.currency)}
                   </td>
                   <td className="py-2 px-3 text-gray-500 dark:text-gray-400" title="Stripe processing fee">

@@ -1,7 +1,7 @@
 /**
  * SDK Integration Tests
  *
- * Tests for the @profullstack/coinpay SDK integration module.
+ * Tests for the @profullstack/tempesttouch SDK integration module.
  * Uses Vitest as the testing framework.
  *
  * These tests verify that the SDK is properly integrated and
@@ -10,20 +10,20 @@
 
 import { describe, it, expect } from 'vitest';
 import {
-  CoinPayClient,
+  tempesttouchClient,
   verifyWebhookSignature,
   generateWebhookSignature,
   WebhookEvent,
-  createCoinPayClient,
+  createtempesttouchClient,
   verifyIncomingWebhook,
   generateTestWebhookSignature,
 } from './index';
 
 describe('SDK Integration Module', () => {
   describe('SDK exports', () => {
-    it('should export CoinPayClient class', () => {
-      expect(CoinPayClient).toBeDefined();
-      expect(typeof CoinPayClient).toBe('function');
+    it('should export tempesttouchClient class', () => {
+      expect(tempesttouchClient).toBeDefined();
+      expect(typeof tempesttouchClient).toBe('function');
     });
 
     it('should export verifyWebhookSignature function', () => {
@@ -47,9 +47,9 @@ describe('SDK Integration Module', () => {
       expect(WebhookEvent.PAYMENT_FAILED).toBe('payment.failed');
     });
 
-    it('should export createCoinPayClient helper', () => {
-      expect(createCoinPayClient).toBeDefined();
-      expect(typeof createCoinPayClient).toBe('function');
+    it('should export createtempesttouchClient helper', () => {
+      expect(createtempesttouchClient).toBeDefined();
+      expect(typeof createtempesttouchClient).toBe('function');
     });
 
     it('should export verifyIncomingWebhook helper', () => {
@@ -63,9 +63,9 @@ describe('SDK Integration Module', () => {
     });
   });
 
-  describe('createCoinPayClient', () => {
-    it('should create a CoinPayClient instance', () => {
-      const client = createCoinPayClient('test-api-key');
+  describe('createtempesttouchClient', () => {
+    it('should create a tempesttouchClient instance', () => {
+      const client = createtempesttouchClient('test-api-key');
       expect(client).toBeDefined();
       // Check it has the expected methods instead of instanceof
       expect(typeof client.createPayment).toBe('function');
@@ -73,7 +73,7 @@ describe('SDK Integration Module', () => {
     });
 
     it('should create client with custom base URL', () => {
-      const client = createCoinPayClient(
+      const client = createtempesttouchClient(
         'test-api-key',
         'https://custom-api.example.com'
       );
@@ -82,21 +82,21 @@ describe('SDK Integration Module', () => {
     });
 
     it('should have payment methods', () => {
-      const client = createCoinPayClient('test-api-key');
+      const client = createtempesttouchClient('test-api-key');
       expect(typeof client.createPayment).toBe('function');
       expect(typeof client.getPayment).toBe('function');
       expect(typeof client.listPayments).toBe('function');
     });
 
     it('should have business methods', () => {
-      const client = createCoinPayClient('test-api-key');
+      const client = createtempesttouchClient('test-api-key');
       expect(typeof client.createBusiness).toBe('function');
       expect(typeof client.getBusiness).toBe('function');
       expect(typeof client.listBusinesses).toBe('function');
     });
 
     it('should have rate methods', () => {
-      const client = createCoinPayClient('test-api-key');
+      const client = createtempesttouchClient('test-api-key');
       expect(typeof client.getExchangeRate).toBe('function');
       expect(typeof client.getExchangeRates).toBe('function');
     });
@@ -224,9 +224,9 @@ describe('SDK Integration Module', () => {
     });
   });
 
-  describe('CoinPayClient direct usage', () => {
+  describe('tempesttouchClient direct usage', () => {
     it('should instantiate with options object', () => {
-      const client = new CoinPayClient({
+      const client = new tempesttouchClient({
         apiKey: 'direct-api-key',
         baseUrl: 'https://api.example.com',
       });
@@ -236,8 +236,8 @@ describe('SDK Integration Module', () => {
     });
 
     it('should allow creation without API key (for auth operations)', () => {
-      const client = new CoinPayClient({} as any);
-      expect(client).toBeInstanceOf(CoinPayClient);
+      const client = new tempesttouchClient({} as any);
+      expect(client).toBeInstanceOf(tempesttouchClient);
     });
   });
 
@@ -260,8 +260,8 @@ describe('SDK Integration Module', () => {
   });
 
   describe('Type definitions', () => {
-    it('should have CoinPayClientOptions type', () => {
-      const options: import('./index').CoinPayClientOptions = {
+    it('should have tempesttouchClientOptions type', () => {
+      const options: import('./index').tempesttouchClientOptions = {
         apiKey: 'test-key',
         baseUrl: 'https://api.example.com',
       };

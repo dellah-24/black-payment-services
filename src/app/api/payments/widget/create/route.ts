@@ -232,7 +232,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://coinpayportal.com';
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://tempesttouch.com';
     const amountCents = Math.round(amount_usd * 100);
     const platformFeeAmount = Math.round(amountCents * 0.01);
     const stripeSdk = await getStripe();
@@ -252,7 +252,7 @@ export async function POST(request: NextRequest) {
         application_fee_amount: platformFeeAmount,
         transfer_data: { destination: stripe.stripe_account_id },
         metadata: {
-          coinpay_payment_id: paymentId,
+          tempesttouch_payment_id: paymentId,
           business_id: stripe.business_id,
           merchant_id,
           source: 'payments.js',
@@ -261,7 +261,7 @@ export async function POST(request: NextRequest) {
       success_url: success_url || `${appUrl}/pay/${paymentId}?status=success`,
       cancel_url: cancel_url || `${appUrl}/pay/${paymentId}`,
       metadata: {
-        coinpay_payment_id: paymentId,
+        tempesttouch_payment_id: paymentId,
         business_id: stripe.business_id,
         merchant_id,
         source: 'payments.js',
@@ -302,3 +302,4 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+

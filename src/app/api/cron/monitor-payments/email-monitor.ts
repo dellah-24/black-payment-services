@@ -17,8 +17,8 @@ export interface EmailStats {
   errors: number;
 }
 
-const FROM_EMAIL = process.env.FROM_EMAIL || 'CoinPayPortal <no-reply@coinpayportal.com>';
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://coinpayportal.com';
+const FROM_EMAIL = process.env.FROM_EMAIL || 'Tempest Touch <no-reply@tempesttouch.com>';
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://tempesttouch.com';
 
 const REMINDER_THRESHOLDS = [
   { hours: 24, field: 'reminder_24h_sent', label: '24 hours' },
@@ -225,7 +225,7 @@ function buildReminderHtml(
         View Escrow
       </a>
       <p style="color: #999; font-size: 12px; margin-top: 30px;">
-        This is an automated message from CoinPayPortal. Do not reply to this email.
+        This is an automated message from Tempest Touch. Do not reply to this email.
       </p>
     </div>
   `;
@@ -249,7 +249,7 @@ function buildSettlementHtml(
         View Details
       </a>
       <p style="color: #999; font-size: 12px; margin-top: 30px;">
-        This is an automated message from CoinPayPortal. Do not reply to this email.
+        This is an automated message from Tempest Touch. Do not reply to this email.
       </p>
     </div>
   `;
@@ -293,7 +293,7 @@ function buildStatusChangeHtml(
         View Escrow
       </a>
       <p style="color: #999; font-size: 12px; margin-top: 30px;">
-        This is an automated message from CoinPayPortal. Do not reply to this email.
+        This is an automated message from Tempest Touch. Do not reply to this email.
       </p>
     </div>
   `;

@@ -9,22 +9,22 @@
 
 ## Manual Installation
 
-1. Download the latest release zip from the [releases page](https://github.com/profullstack/coinpayportal/releases) or clone this directory.
+1. Download the latest release zip from the [releases page](https://github.com/profullstack/tempesttouch/releases) or clone this directory.
 
 2. Copy the plugin files into your FOSSBilling installation:
 
 ```bash
 # From your FOSSBilling root directory
-mkdir -p library/Payment/Adapter/CoinPayPortal
+mkdir -p library/Payment/Adapter/Tempest Touch
 
-cp /path/to/fossbilling-coinpayportal/library/Payment/Adapter/CoinPayPortal.php \
+cp /path/to/fossbilling-tempesttouch/library/Payment/Adapter/Tempest Touch.php \
    library/Payment/Adapter/
 
-cp -r /path/to/fossbilling-coinpayportal/library/Payment/Adapter/CoinPayPortal/* \
-   library/Payment/Adapter/CoinPayPortal/
+cp -r /path/to/fossbilling-tempesttouch/library/Payment/Adapter/Tempest Touch/* \
+   library/Payment/Adapter/Tempest Touch/
 
-cp -r /path/to/fossbilling-coinpayportal/src \
-   library/Payment/Adapter/CoinPayPortal/../../../coinpayportal-src
+cp -r /path/to/fossbilling-tempesttouch/src \
+   library/Payment/Adapter/Tempest Touch/../../../tempesttouch-src
 ```
 
 The final layout inside your FOSSBilling root should be:
@@ -33,38 +33,38 @@ The final layout inside your FOSSBilling root should be:
 library/
   Payment/
     Adapter/
-      CoinPayPortal.php
-      CoinPayPortal/
+      Tempest Touch.php
+      Tempest Touch/
         manifest.json
         templates/
           pay.phtml
           error.phtml
 ```
 
-And the `src/` directory should sit **three levels above** `CoinPayPortal.php`:
+And the `src/` directory should sit **three levels above** `Tempest Touch.php`:
 
 ```
-library/Payment/Adapter/CoinPayPortal.php  ← adapter
+library/Payment/Adapter/Tempest Touch.php  ← adapter
 src/
-  CoinPayPortalClient.php
+  Tempest TouchClient.php
   WebhookVerifier.php
   StatusMapper.php
 ```
 
-If you install the plugin directly from this repository into `plugins/fossbilling/` inside the coinpayportal monorepo, the relative paths are already correct.
+If you install the plugin directly from this repository into `plugins/fossbilling/` inside the tempesttouch monorepo, the relative paths are already correct.
 
 3. Log into your FOSSBilling admin panel.
 
 4. Go to **System → Payment Gateways**.
 
-5. Find **CoinPayPortal Crypto Payments** in the list and click **Install**.
+5. Find **Tempest Touch Crypto Payments** in the list and click **Install**.
 
 6. Click **Manage** and fill in your credentials (see [CONFIGURATION.md](CONFIGURATION.md)).
 
-7. Copy the **Webhook URL** shown in the configuration screen into your [CoinPayPortal merchant dashboard](https://coinpayportal.com) under **Settings → Webhooks**.
+7. Copy the **Webhook URL** shown in the configuration screen into your [Tempest Touch merchant dashboard](https://tempesttouch.com) under **Settings → Webhooks**.
 
 8. Test with a sandbox payment before going live.
 
 ## Updating
 
-Replace `CoinPayPortal.php`, the `CoinPayPortal/` directory, and the `src/` files with the new version. No database migrations are required.
+Replace `Tempest Touch.php`, the `Tempest Touch/` directory, and the `src/` files with the new version. No database migrations are required.

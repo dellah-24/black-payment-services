@@ -64,7 +64,7 @@ describe('seedphrase-backup (web UI)', () => {
   it('should trigger a download with the correct filename', async () => {
     await downloadEncryptedSeedPhrase(testMnemonic, testPassword, testWalletId);
 
-    expect(capturedFilename).toBe(`wallet_coinpayportal_${testWalletId}_seedphrase.txt.gpg`);
+    expect(capturedFilename).toBe(`wallet_tempesttouch_${testWalletId}_seedphrase.txt.gpg`);
     expect(global.URL.createObjectURL).toHaveBeenCalledTimes(1);
   });
 
@@ -94,7 +94,7 @@ describe('seedphrase-backup (web UI)', () => {
     });
 
     const text = data as string;
-    expect(text).toContain('# CoinPayPortal Wallet Seed Phrase Backup');
+    expect(text).toContain('# TempestTouch Wallet Seed Phrase Backup');
     expect(text).toContain(`# Wallet ID: ${testWalletId}`);
     expect(text).toContain('KEEP THIS FILE SAFE');
     expect(text).toContain('gpg --decrypt');

@@ -1,6 +1,6 @@
--- P2P invoicing: link CoinPay merchant + business rows to an external
+-- P2P invoicing: link Tempest Touch merchant + business rows to an external
 -- platform user (e.g. ugig.net) so invoices can be auto-provisioned
--- without the user ever seeing CoinPay merchant/business setup.
+-- without the user ever seeing Tempest Touch merchant/business setup.
 
 ALTER TABLE merchants
   ADD COLUMN IF NOT EXISTS auth_provider text NOT NULL DEFAULT 'self'

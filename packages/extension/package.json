@@ -1,9 +1,9 @@
 {
-  "name": "@profullstack/coinpay-extension",
+  "name": "@profullstack/tempesttouch-extension",
   "version": "0.0.1",
   "private": true,
   "type": "module",
-  "description": "CoinPay cross-browser (MV3) wallet + x402 payment extension. See docs/BROWSER_EXTENSION_PRD.md.",
+  "description": "Tempest Touch cross-browser (MV3) wallet + x402 payment extension. See docs/BROWSER_EXTENSION_PRD.md.",
   "scripts": {
     "build": "vite build",
     "build:firefox": "TARGET=firefox vite build",
@@ -13,7 +13,7 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
-    "@profullstack/coinpay": "workspace:*",
+    "@profullstack/tempesttouch": "workspace:*",
     "@scure/bip39": "^1.4.0"
   },
   "devDependencies": {

@@ -29,7 +29,7 @@ vi.mock('@/lib/payments/service', () => ({
     success: true,
     payment: {
       id: 'pay-p2p-1',
-      payment_address: 'bc1qcoinpaymiddleman',
+      payment_address: 'bc1qtempesttouchmiddleman',
       crypto_amount: 0.0005,
     },
   })),
@@ -198,7 +198,7 @@ describe('POST /api/p2p/request', () => {
       success: true,
       payment: {
         id: 'pay-p2p-1',
-        payment_address: 'bc1qcoinpaymiddleman',
+        payment_address: 'bc1qtempesttouchmiddleman',
         crypto_amount: 0.0005,
       } as any,
     });
@@ -248,7 +248,7 @@ describe('POST /api/p2p/request', () => {
       invoice_number: 'INV-001',
       fee_rate: 0.01,
       fee_amount_usd: 1,
-      payment_address: 'bc1qcoinpaymiddleman',
+      payment_address: 'bc1qtempesttouchmiddleman',
       crypto_amount: '0.00050000',
     });
     expect(body.pay_url).toMatch(/\/invoices\/inv-1\/pay$/);
@@ -296,3 +296,4 @@ describe('POST /api/p2p/request', () => {
     expect(inserts).toContain('invoices');
   });
 });
+

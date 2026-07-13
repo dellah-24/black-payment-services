@@ -6,13 +6,13 @@ All settings live in the &lt;Platform&gt; admin UI under **&lt;TODO: settings pa
 
 | Field | Required | Default | Description |
 |---|---|---|---|
-| **API Key** | Yes | — | Your CoinPayPortal API key (`cp_live_*` or `cp_test_*`). Get one in the CoinPayPortal dashboard under Settings → API. |
-| **Business ID** | Yes | — | Your CoinPayPortal business / merchant ID. Required when an API key is scoped to multiple businesses. |
-| **Webhook Secret** | Yes | — | Used to verify incoming webhook signatures. Generate or reveal in the CoinPayPortal dashboard. |
-| **API Base URL** | No | `https://api.coinpayportal.com` | Override only if instructed by support. |
+| **API Key** | Yes | — | Your Tempest Touch API key (`cp_live_*` or `cp_test_*`). Get one in the Tempest Touch dashboard under Settings → API. |
+| **Business ID** | Yes | — | Your Tempest Touch business / merchant ID. Required when an API key is scoped to multiple businesses. |
+| **Webhook Secret** | Yes | — | Used to verify incoming webhook signatures. Generate or reveal in the Tempest Touch dashboard. |
+| **API Base URL** | No | `https://api.tempesttouch.com` | Override only if instructed by support. |
 | **Sandbox Mode** | No | No | When on, calls the sandbox API and skips on-chain settlement. |
-| **Sandbox API Base URL** | No | `https://sandbox-api.coinpayportal.com` | Used when sandbox mode is on. |
-| **Display Name** | No | `Pay with Crypto (CoinPayPortal)` | Customer-facing name shown at checkout. |
+| **Sandbox API Base URL** | No | `https://sandbox-api.tempesttouch.com` | Used when sandbox mode is on. |
+| **Display Name** | No | `Pay with Crypto (Tempest Touch)` | Customer-facing name shown at checkout. |
 | **Payment Expiration (minutes)** | No | `30` | How long a hosted checkout stays valid before expiring. |
 | **Underpayment Tolerance (%)** | No | `0` | Accept payments that are slightly under the invoice total. `0` = exact match required. |
 | **Debug Logging** | No | No | Verbose log output. Disable in production. |
@@ -25,7 +25,7 @@ Your &lt;Platform&gt; webhook URL is:
 https://YOUR-DOMAIN.COM/<TODO: platform-specific path>
 ```
 
-Paste this into the CoinPayPortal dashboard under **Settings → Webhooks**.
+Paste this into the Tempest Touch dashboard under **Settings → Webhooks**.
 
 ## Sandbox vs production
 

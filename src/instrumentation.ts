@@ -22,7 +22,7 @@ function registerPostHogLogger() {
     return;
   }
 
-  const serviceName = process.env.POSTHOG_LOGS_SERVICE_NAME || 'coinpayportal';
+  const serviceName = process.env.POSTHOG_LOGS_SERVICE_NAME || 'tempesttouch';
   const exporter = new OTLPLogExporter({
     url: process.env.POSTHOG_LOGS_OTLP_URL || 'https://us.i.posthog.com/otlp/v1/logs',
     headers: {

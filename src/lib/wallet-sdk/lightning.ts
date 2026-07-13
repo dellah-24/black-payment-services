@@ -97,7 +97,7 @@ export function createLightningMethods(
     },
 
     /**
-     * Register a Lightning Address (username@coinpayportal.com).
+     * Register a Lightning Address (username@tempesttouch.com).
      */
     async setLightningAddress(username: string): Promise<LightningAddress> {
       const data = await client.request<any>({

@@ -61,7 +61,7 @@ describe('GET /api/stripe/webhooks', () => {
     expect(json.endpoints[0].scope).toBe('account');
   });
 
-  it('does NOT expose platform-level webhooks (CoinPay infra) to merchants', async () => {
+  it('does NOT expose platform-level webhooks (Tempest Touch infra) to merchants', async () => {
     // Even if a platform endpoint somehow has matching metadata (legacy data),
     // the merchant GET must NOT surface it. Merchants only see their own
     // connected-account webhooks.
@@ -123,12 +123,12 @@ describe('POST /api/stripe/webhooks', () => {
     mockVerifyToken.mockReturnValue({ userId: 'user-1' });
   });
 
-  it('REJECTS platform-scoped creation — only CoinPay infra owns the platform webhook (regression: d0rz incident)', async () => {
+  it('REJECTS platform-scoped creation — only Tempest Touch infra owns the platform webhook (regression: d0rz incident)', async () => {
     const req = makeRequest('http://localhost/api/stripe/webhooks', {
       method: 'POST',
       body: JSON.stringify({
         business_id: 'biz-1',
-        url: 'https://d0rz.com/api/webhooks/coinpay/stripe',
+        url: 'https://d0rz.com/api/webhooks/tempesttouch/stripe',
         events: ['checkout.session.completed'],
         scope: 'platform',
       }),
@@ -169,7 +169,7 @@ describe('POST /api/stripe/webhooks', () => {
     const res = await POST(req);
     const json = await res.json();
     expect(res.status).toBe(400);
-    expect(json.error).toMatch(/handled by CoinPay/i);
+    expect(json.error).toMatch(/handled by Tempest Touch/i);
     expect(mockStripe.webhookEndpoints.create).not.toHaveBeenCalled();
   });
 
@@ -208,3 +208,4 @@ describe('POST /api/stripe/webhooks', () => {
     expect(res.status).toBe(400);
   });
 });
+

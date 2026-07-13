@@ -69,9 +69,9 @@ function wrapTemplate(content: string): string {
 </head>
 <body>
   <div class="container">
-    <div class="header"><div class="logo">CoinPay</div></div>
+    <div class="header"><div class="logo">Tempest Touch</div></div>
     ${content}
-    <div class="footer"><p>Powered by CoinPay - Crypto Payment Gateway</p></div>
+    <div class="footer"><p>Powered by Tempest Touch - Crypto Payment Gateway</p></div>
   </div>
 </body>
 </html>`.trim();

@@ -1,16 +1,16 @@
 <?php
 declare(strict_types=1);
 
-require_once __DIR__ . '/../../../src/CoinPayPortalClient.php';
+require_once __DIR__ . '/../../../src/Tempest TouchPortalClient.php';
 require_once __DIR__ . '/../../../src/WebhookVerifier.php';
 require_once __DIR__ . '/../../../src/StatusMapper.php';
 
 /**
- * CoinPayPortal payment gateway adapter for FOSSBilling.
+ * Tempest TouchPortal payment gateway adapter for FOSSBilling.
  *
- * Install at: /library/Payment/Adapter/CoinPayPortal.php
+ * Install at: /library/Payment/Adapter/Tempest TouchPortal.php
  */
-class Payment_Adapter_CoinPayPortal
+class Payment_Adapter_Tempest TouchPortal
 {
     private array $config;
 
@@ -26,9 +26,9 @@ class Payment_Adapter_CoinPayPortal
         return [
             'supports_one_time_payments' => true,
             'supports_subscriptions'     => false,
-            'description'                => 'Accept crypto payments through CoinPayPortal. Customers are redirected to a secure CoinPayPortal checkout page and invoices are automatically marked paid after verified payment confirmation.',
+            'description'                => 'Accept crypto payments through Tempest TouchPortal. Customers are redirected to a secure Tempest TouchPortal checkout page and invoices are automatically marked paid after verified payment confirmation.',
             'logo'                       => [
-                'logo'   => 'CoinPayPortal/icon.svg',
+                'logo'   => 'Tempest TouchPortal/icon.svg',
                 'height' => '50px',
                 'width'  => '100px',
             ],
@@ -37,26 +37,26 @@ class Payment_Adapter_CoinPayPortal
                     'label'       => 'API Key',
                     'type'        => 'password',
                     'required'    => true,
-                    'description' => 'Your CoinPayPortal API key. Found in your merchant dashboard under Settings → API.',
+                    'description' => 'Your Tempest TouchPortal API key. Found in your merchant dashboard under Settings → API.',
                 ],
                 'merchant_id' => [
                     'label'       => 'Merchant ID',
                     'type'        => 'text',
                     'required'    => true,
-                    'description' => 'Your CoinPayPortal merchant or account ID.',
+                    'description' => 'Your Tempest TouchPortal merchant or account ID.',
                 ],
                 'webhook_secret' => [
                     'label'       => 'Webhook Secret',
                     'type'        => 'password',
                     'required'    => true,
-                    'description' => 'Secret used to verify incoming webhook signatures from CoinPayPortal.',
+                    'description' => 'Secret used to verify incoming webhook signatures from Tempest TouchPortal.',
                 ],
                 'api_url' => [
                     'label'       => 'API Base URL',
                     'type'        => 'text',
                     'required'    => false,
-                    'default'     => 'https://api.coinpayportal.com',
-                    'description' => 'CoinPayPortal API base URL. Do not change unless instructed.',
+                    'default'     => 'https://api.tempesttouchportal.com',
+                    'description' => 'Tempest TouchPortal API base URL. Do not change unless instructed.',
                 ],
                 'sandbox' => [
                     'label'       => 'Sandbox Mode',
@@ -70,14 +70,14 @@ class Payment_Adapter_CoinPayPortal
                     'label'       => 'Sandbox API Base URL',
                     'type'        => 'text',
                     'required'    => false,
-                    'default'     => 'https://sandbox-api.coinpayportal.com',
+                    'default'     => 'https://sandbox-api.tempesttouchportal.com',
                     'description' => 'API base URL used when sandbox mode is enabled.',
                 ],
                 'display_name' => [
                     'label'       => 'Display Name',
                     'type'        => 'text',
                     'required'    => false,
-                    'default'     => 'CoinPayPortal Crypto Payments',
+                    'default'     => 'Tempest TouchPortal Crypto Payments',
                     'description' => 'Payment method name shown to customers.',
                 ],
                 'expiration_minutes' => [
@@ -112,11 +112,11 @@ class Payment_Adapter_CoinPayPortal
     {
         $isSandbox  = ($this->config['sandbox'] ?? 'no') === 'yes';
         $baseUrl    = $isSandbox
-            ? ($this->config['sandbox_api_url'] ?? 'https://sandbox-api.coinpayportal.com')
-            : ($this->config['api_url'] ?? 'https://api.coinpayportal.com');
+            ? ($this->config['sandbox_api_url'] ?? 'https://sandbox-api.tempesttouchportal.com')
+            : ($this->config['api_url'] ?? 'https://api.tempesttouchportal.com');
         $apiKey      = $this->config['api_key'] ?? '';
         $merchantId  = $this->config['merchant_id'] ?? '';
-        $displayName = $this->config['display_name'] ?? 'CoinPayPortal Crypto Payments';
+        $displayName = $this->config['display_name'] ?? 'Tempest TouchPortal Crypto Payments';
         $expMinutes  = (int)($this->config['expiration_minutes'] ?? 30);
         $debug       = ($this->config['debug_logging'] ?? 'no') === 'yes';
 
@@ -130,12 +130,12 @@ class Payment_Adapter_CoinPayPortal
         $buyerId     = $invoice['buyer']['id'] ?? '';
 
         $returnUrl  = bb_url('client/invoice/' . $invoiceId);
-        $successUrl = $returnUrl . '?coinpayportal=success';
-        $cancelUrl  = $returnUrl . '?coinpayportal=cancel';
-        $webhookUrl = bb_url('ipn/CoinPayPortal');
+        $successUrl = $returnUrl . '?tempesttouchportal=success';
+        $cancelUrl  = $returnUrl . '?tempesttouchportal=cancel';
+        $webhookUrl = bb_url('ipn/Tempest TouchPortal');
 
         try {
-            $client = new CoinPayPortalClient(
+            $client = new Tempest TouchPortalClient(
                 $baseUrl,
                 $apiKey,
                 $debug,
@@ -170,11 +170,11 @@ class Payment_Adapter_CoinPayPortal
             $checkoutId  = $checkout['id'] ?? $checkout['checkout_id'] ?? '';
 
             if ($checkoutUrl === '') {
-                throw new RuntimeException('CoinPayPortal did not return a checkout URL.');
+                throw new RuntimeException('Tempest TouchPortal did not return a checkout URL.');
             }
 
             if ($checkoutId !== '') {
-                $_SESSION['coinpayportal_checkout_' . $invoiceId] = $checkoutId;
+                $_SESSION['tempesttouchportal_checkout_' . $invoiceId] = $checkoutId;
             }
 
             $this->log(sprintf(
@@ -203,7 +203,7 @@ class Payment_Adapter_CoinPayPortal
     public function processTransaction($api_admin, $id, $data, $gateway_id): void
     {
         $rawBody  = file_get_contents('php://input');
-        $sigHeader = $_SERVER['HTTP_X_COINPAYPORTAL_SIGNATURE'] ?? '';
+        $sigHeader = $_SERVER['HTTP_X_TEMPESTTOUCH_SIGNATURE'] ?? '';
         $secret    = $this->config['webhook_secret'] ?? '';
 
         if (!WebhookVerifier::verify((string)$rawBody, $sigHeader, $secret)) {
@@ -284,9 +284,9 @@ class Payment_Adapter_CoinPayPortal
                     'gateway_id' => $gateway_id,
                     'amount'     => $paidAmount,
                     'currency'   => $eventData['currency'] ?? $invoice['currency'] ?? 'USD',
-                    'type'       => 'coinpayportal',
+                    'type'       => 'tempesttouchportal',
                     'note'       => sprintf(
-                        'CoinPayPortal payment %s%s%s',
+                        'Tempest TouchPortal payment %s%s%s',
                         $paymentId,
                         $txHash ? ' tx:' . $txHash : '',
                         $paidCrypto ? ' ' . $paidCrypto . ' ' . $paidAsset : ''
@@ -296,7 +296,7 @@ class Payment_Adapter_CoinPayPortal
                 $api_admin->invoice->mark_as_paid(['id' => (int)$invoiceId]);
 
                 $this->log(sprintf(
-                    'Marked invoice %s paid via CoinPayPortal payment %s',
+                    'Marked invoice %s paid via Tempest TouchPortal payment %s',
                     $invoiceId,
                     $paymentId
                 ));
@@ -314,7 +314,7 @@ class Payment_Adapter_CoinPayPortal
 
     private function renderTemplate(string $name, array $vars = []): string
     {
-        $tpl = __DIR__ . '/CoinPayPortal/templates/' . $name . '.phtml';
+        $tpl = __DIR__ . '/Tempest TouchPortal/templates/' . $name . '.phtml';
 
         if (!file_exists($tpl)) {
             return '<p>Template not found: ' . htmlspecialchars($name) . '</p>';
@@ -332,7 +332,7 @@ class Payment_Adapter_CoinPayPortal
             return;
         }
 
-        $line = '[CoinPayPortal] ' . $message;
+        $line = '[Tempest TouchPortal] ' . $message;
 
         if (!empty($context)) {
             $safe = array_map(static function ($v) {

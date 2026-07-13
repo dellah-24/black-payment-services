@@ -1,6 +1,6 @@
-# Accept Crypto Payments with CoinPay
+# Accept Crypto Payments with Tempest Touch
 
-You are integrating CoinPay's Payments API into an application so it can accept cryptocurrency payments. Follow this prompt end-to-end.
+You are integrating Tempest Touch's Payments API into an application so it can accept cryptocurrency payments. Follow this prompt end-to-end.
 
 ## Goal
 
@@ -11,25 +11,25 @@ Let a customer pay an order in crypto (BTC, ETH, SOL, USDC on multiple chains, e
 Add to `.env` (server-side only — never expose to the browser):
 
 ```
-COINPAY_API_KEY=sk_live_...
-COINPAY_WEBHOOK_SECRET=whsec_...
-COINPAY_API_URL=https://coinpayportal.com
+TEMPESTTOUCH_API_KEY=sk_live_...
+TEMPESTTOUCH_WEBHOOK_SECRET=whsec_...
+TEMPESTTOUCH_API_URL=https://tempesttouch.com
 ```
 
 Where to find them:
-- `COINPAY_API_KEY` — `https://coinpayportal.com/businesses/<your-business-id>` → **API Keys** tab → **Create API Key**. Copy it once; it is not shown again.
-- `COINPAY_WEBHOOK_SECRET` — same business page → **Webhooks** tab (or `?mode=webhooks`) → create an endpoint → copy the **Signing Secret**.
-- `COINPAY_API_URL` — always `https://coinpayportal.com` for production.
+- `TEMPESTTOUCH_API_KEY` — `https://tempesttouch.com/businesses/<your-business-id>` → **API Keys** tab → **Create API Key**. Copy it once; it is not shown again.
+- `TEMPESTTOUCH_WEBHOOK_SECRET` — same business page → **Webhooks** tab (or `?mode=webhooks`) → create an endpoint → copy the **Signing Secret**.
+- `TEMPESTTOUCH_API_URL` — always `https://tempesttouch.com` for production.
 
 ## Steps
 
-1. **Get an API key.** Sign in at `https://example-business.com` (replace with the CoinPay portal you are using), open Settings → API Keys, and create one. Store it server-side only — never ship it to the browser.
+1. **Get an API key.** Sign in at `https://example-business.com` (replace with the Tempest Touch portal you are using), open Settings → API Keys, and create one. Store it server-side only — never ship it to the browser.
 
 2. **Create a payment** when the customer checks out. From your server:
 
    ```bash
-   curl -X POST https://coinpayportal.com/api/payments \
-     -H "Authorization: Bearer $COINPAY_API_KEY" \
+   curl -X POST https://tempesttouch.com/api/payments \
+     -H "Authorization: Bearer $TEMPESTTOUCH_API_KEY" \
      -H "Content-Type: application/json" \
      -d '{
        "amount": 49.99,
@@ -38,7 +38,7 @@ Where to find them:
        "chain": "base",
        "order_id": "order_123",
        "redirect_url": "https://example-business.com/checkout/success",
-       "webhook_url": "https://example-business.com/api/coinpay/webhook"
+       "webhook_url": "https://example-business.com/api/tempesttouch/webhook"
      }'
    ```
 

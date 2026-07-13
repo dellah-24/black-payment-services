@@ -88,7 +88,7 @@ export async function createPaypalOrder(params: CreateOrderParams): Promise<Payp
         },
       ],
       application_context: {
-        brand_name: params.brandName || 'CoinPay',
+        brand_name: params.brandName || 'TempestTouch',
         user_action: 'PAY_NOW',
         shipping_preference: 'NO_SHIPPING',
         return_url: params.returnUrl,

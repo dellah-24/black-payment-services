@@ -30,7 +30,7 @@ function isValidEmail(email: string): boolean {
  */
 function getResendConfig() {
   const apiKey = process.env.RESEND_API_KEY;
-  const replyTo = process.env.REPLY_TO_EMAIL || 'noreply@coinpay.com';
+  const replyTo = process.env.REPLY_TO_EMAIL || 'noreply@tempesttouch.com';
 
   return { apiKey, replyTo };
 }
@@ -81,7 +81,7 @@ export async function sendEmail(input: SendEmailInput): Promise<SendEmailResult>
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: input.from || 'CoinPay <noreply@coinpayportal.com>',
+        from: input.from || 'TempestTouch <noreply@tempesttouch.com>',
         to: [input.to],
         subject: input.subject,
         html: input.html,

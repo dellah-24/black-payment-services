@@ -15,7 +15,7 @@ const TEST_SECRET = 'test-oidc-signing-secret-for-unit-tests-min-32';
 describe('OAuth Tokens', () => {
   beforeEach(() => {
     vi.stubEnv('OIDC_SIGNING_SECRET', TEST_SECRET);
-    vi.stubEnv('NEXT_PUBLIC_APP_URL', 'https://coinpay.dev');
+    vi.stubEnv('NEXT_PUBLIC_APP_URL', 'https://tempesttouch.dev');
   });
 
   describe('generateAuthorizationCode', () => {
@@ -67,7 +67,7 @@ describe('OAuth Tokens', () => {
       expect(decoded.client_id).toBe('cp_test');
       expect(decoded.scope).toBe('openid profile email');
       expect(decoded.token_type).toBe('access');
-      expect(decoded.iss).toBe('https://coinpay.dev');
+      expect(decoded.iss).toBe('https://tempesttouch.dev');
       expect(decoded.exp).toBeDefined();
     });
   });
@@ -83,7 +83,7 @@ describe('OAuth Tokens', () => {
 
       const decoded = jwt.verify(token, TEST_SECRET) as any;
       expect(decoded.sub).toBe('user-123');
-      expect(decoded.iss).toBe('https://coinpay.dev');
+      expect(decoded.iss).toBe('https://tempesttouch.dev');
       expect(decoded.aud).toBe('cp_test');
       expect(decoded.nonce).toBe('test-nonce-123');
       expect(decoded.email).toBe('test@example.com');
@@ -217,3 +217,4 @@ describe('OAuth Tokens', () => {
     });
   });
 });
+

@@ -48,7 +48,7 @@ describe('POST /api/invoices', () => {
     vi.clearAllMocks();
   });
 
-  it('accepts a CoinPay API key from X-API-Key when creating invoices', async () => {
+  it('accepts a Tempest Touch API key from X-API-Key when creating invoices', async () => {
     const businessSelect = {
       select: vi.fn().mockReturnThis(),
       eq: vi.fn().mockReturnThis(),

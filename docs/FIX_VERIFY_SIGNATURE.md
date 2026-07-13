@@ -1,4 +1,4 @@
-# CoinPay Webhook Integration Update
+# Tempest Touch Webhook Integration Update
 
 We've fixed an issue with webhook signatures. Your existing integration should now work correctly without any changes if you followed the test webhook format.
 
@@ -48,7 +48,7 @@ All webhooks now use this nested structure:
 
 ### Header Format
 ```
-X-CoinPay-Signature: t=1705315800,v1=5d41402abc4b2a76b9719d911017c592
+X-Tempest Touch-Signature: t=1705315800,v1=5d41402abc4b2a76b9719d911017c592
 ```
 
 ### Verification Algorithm
@@ -69,8 +69,8 @@ const app = express();
 // IMPORTANT: Use express.raw() to get the raw body for signature verification
 app.post('/webhook', express.raw({ type: 'application/json' }), (req, res) => {
   const rawBody = req.body.toString();
-  const signature = req.headers['x-coinpay-signature'];
-  const secret = process.env.COINPAY_WEBHOOK_SECRET;
+  const signature = req.headers['x-tempesttouch-signature'];
+  const secret = process.env.TEMPESTTOUCH_WEBHOOK_SECRET;
 
   // Verify signature
   if (!verifySignature(rawBody, signature, secret)) {
@@ -158,7 +158,7 @@ WEBHOOK_SECRET = "your_webhook_secret"
 @app.route('/webhook', methods=['POST'])
 def webhook():
     raw_body = request.get_data(as_text=True)
-    signature = request.headers.get('X-CoinPay-Signature')
+    signature = request.headers.get('X-Tempest Touch-Signature')
 
     if not verify_signature(raw_body, signature, WEBHOOK_SECRET):
         return jsonify({'error': 'Invalid signature'}), 401
@@ -203,9 +203,9 @@ def verify_signature(raw_body, signature_header, secret):
 ```php
 <?php
 
-$webhookSecret = getenv('COINPAY_WEBHOOK_SECRET');
+$webhookSecret = getenv('TEMPESTTOUCH_WEBHOOK_SECRET');
 $rawBody = file_get_contents('php://input');
-$signature = $_SERVER['HTTP_X_COINPAY_SIGNATURE'] ?? '';
+$signature = $_SERVER['HTTP_X_TEMPESTTOUCH_SIGNATURE'] ?? '';
 
 if (!verifySignature($rawBody, $signature, $webhookSecret)) {
     http_response_code(401);

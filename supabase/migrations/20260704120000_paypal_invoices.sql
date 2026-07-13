@@ -1,11 +1,11 @@
 -- PayPal support for invoices.
 --
 -- Model mirrors Stripe Connect but merchants supply their OWN PayPal REST API
--- credentials (Client ID + Secret) per business. CoinPay creates and captures
+-- credentials (Client ID + Secret) per business. Tempest Touch creates and captures
 -- orders directly on the merchant's PayPal account — funds land 100% in the
 -- merchant's account (no platform application fee on the PayPal rail).
 --
--- Like the rest of coinpayportal, authorization is enforced in the APP LAYER
+-- Like the rest of tempesttouchportal, authorization is enforced in the APP LAYER
 -- (service-role client bypasses RLS). RLS is enabled with NO policies so direct
 -- PostgREST (anon/authenticated) access is denied; all access flows through API
 -- routes using the service-role key. See 20260615000000_team_members.sql.

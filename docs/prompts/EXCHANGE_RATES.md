@@ -1,6 +1,6 @@
-# Use the CoinPay Exchange Rates API
+# Use the Tempest Touch Exchange Rates API
 
-You are adding live crypto-to-fiat conversion to an app using CoinPay's rates endpoint.
+You are adding live crypto-to-fiat conversion to an app using Tempest Touch's rates endpoint.
 
 ## Goal
 
@@ -9,7 +9,7 @@ Quote a crypto amount in the user's local fiat currency (and vice versa) using a
 ## Environment variables
 
 ```
-COINPAY_API_URL=https://coinpayportal.com
+TEMPESTTOUCH_API_URL=https://tempesttouch.com
 ```
 
 The rates endpoint is **public** — no API key required. Only the base URL needs to be configured, and you can hardcode it if you prefer. There is no portal location to copy from.
@@ -17,7 +17,7 @@ The rates endpoint is **public** — no API key required. Only the base URL need
 ## Single rate
 
 ```js
-const response = await fetch('https://coinpayportal.com/api/rates?coin=SOL&fiat=EUR');
+const response = await fetch('https://tempesttouch.com/api/rates?coin=SOL&fiat=EUR');
 const data = await response.json();
 // { coin: 'SOL', fiat: 'EUR', rate: 142.31, ts: 1712512345 }
 ```
@@ -25,7 +25,7 @@ const data = await response.json();
 ## Batch
 
 ```js
-const response = await fetch('https://coinpayportal.com/api/rates?coins=BTC,ETH,SOL&fiat=GBP');
+const response = await fetch('https://tempesttouch.com/api/rates?coins=BTC,ETH,SOL&fiat=GBP');
 const data = await response.json();
 // { fiat: 'GBP', rates: { BTC: 52311.4, ETH: 2814.7, SOL: 121.9 }, ts: ... }
 ```

@@ -125,7 +125,7 @@ describe('Wallet', () => {
       // Verify import endpoint was called with proof_of_ownership
       const body = JSON.parse(mockFetch.mock.calls[0][1].body);
       expect(body.proof_of_ownership).toBeTruthy();
-      expect(body.proof_of_ownership.message).toContain('coinpayportal:import:');
+      expect(body.proof_of_ownership.message).toContain('tempesttouch:import:');
       expect(body.proof_of_ownership.signature).toBeTruthy();
     });
   });

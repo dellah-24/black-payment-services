@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-class CoinPayPortalClient
+class Tempest TouchPortalClient
 {
     private string $baseUrl;
     private string $apiKey;
@@ -53,7 +53,7 @@ class CoinPayPortalClient
         }
 
         if ($this->debug && $this->logger) {
-            ($this->logger)(sprintf('[CoinPayPortal] %s %s', $method, $url));
+            ($this->logger)(sprintf('[Tempest TouchPortal] %s %s', $method, $url));
         }
 
         $responseBody = curl_exec($ch);
@@ -62,11 +62,11 @@ class CoinPayPortalClient
         curl_close($ch);
 
         if ($curlError) {
-            throw new RuntimeException('CoinPayPortal request failed: ' . $curlError);
+            throw new RuntimeException('Tempest TouchPortal request failed: ' . $curlError);
         }
 
         if ($this->debug && $this->logger) {
-            ($this->logger)(sprintf('[CoinPayPortal] Response %d: %s', $httpCode, $responseBody));
+            ($this->logger)(sprintf('[Tempest TouchPortal] Response %d: %s', $httpCode, $responseBody));
         }
 
         $decoded = json_decode((string)$responseBody, true);
@@ -76,12 +76,12 @@ class CoinPayPortalClient
                 ? $decoded['message']
                 : 'Unexpected response';
             throw new RuntimeException(
-                sprintf('CoinPayPortal API error %d: %s', $httpCode, $errorMsg)
+                sprintf('Tempest TouchPortal API error %d: %s', $httpCode, $errorMsg)
             );
         }
 
         if (!is_array($decoded)) {
-            throw new RuntimeException('CoinPayPortal returned invalid JSON');
+            throw new RuntimeException('Tempest TouchPortal returned invalid JSON');
         }
 
         return $decoded;

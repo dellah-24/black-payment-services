@@ -1,6 +1,6 @@
 #!/usr/bin/env npx tsx
 /**
- * Spam Bot Cleanup Script for CoinPayPortal
+ * Spam Bot Cleanup Script for Tempest Touch
  *
  * Detects and removes bot/spam merchant signups and their associated data.
  * Safe: only deletes merchants with zero wallet transactions and bot-like patterns.
@@ -278,7 +278,7 @@ async function main() {
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   );
 
-  console.log(`\n🧹 CoinPayPortal Spam Cleanup ${DRY_RUN ? "(DRY RUN)" : "⚡ EXECUTING"}`);
+  console.log(`\n🧹 Tempest Touch Spam Cleanup ${DRY_RUN ? "(DRY RUN)" : "⚡ EXECUTING"}`);
   console.log(`   ${new Date().toISOString()}\n`);
 
   // Fetch all merchants

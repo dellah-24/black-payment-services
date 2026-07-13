@@ -3,7 +3,7 @@
 
 ## Key Positioning
 
-CoinPay is:
+Tempest Touch is:
 - A dispute mediator
 - A multisig co-signer
 - Not a custodian

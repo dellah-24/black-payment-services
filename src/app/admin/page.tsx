@@ -4,7 +4,7 @@ import AdminContent from './AdminContent';
 export const dynamic = 'force-dynamic';
 
 export const metadata = {
-  title: 'Admin · CoinPay',
+  title: 'Admin · Tempest Touch',
   robots: { index: false, follow: false },
 };
 

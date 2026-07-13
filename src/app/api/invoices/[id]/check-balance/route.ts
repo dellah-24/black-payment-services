@@ -95,7 +95,7 @@ export async function POST(
             merchantAmount: amount * (1 - feeRate),
             clientName: invoice.clients?.name,
             clientEmail: invoice.clients?.email,
-            businessName: invoice.businesses?.name || 'CoinPay Merchant',
+            businessName: invoice.businesses?.name || 'Tempest Touch Merchant',
           });
 
           await sendEmail({

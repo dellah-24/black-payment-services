@@ -120,7 +120,7 @@ describe('/api/lightning/address', () => {
 
     expect(res.status).toBe(200);
     expect(body.success).toBe(true);
-    expect(body.lightning_address).toBe('chovy@coinpayportal.com');
+    expect(body.lightning_address).toBe('chovy@tempesttouch.com');
 
     expect(mockCreatePayLink).toHaveBeenCalledTimes(2);
     expect(mockCreateUserWallet).toHaveBeenCalledTimes(1);
@@ -213,7 +213,7 @@ describe('/api/lightning/address', () => {
     const body = await res.json();
 
     expect(res.status).toBe(200);
-    expect(body.lightning_address).toBe('chovy@coinpayportal.com');
+    expect(body.lightning_address).toBe('chovy@tempesttouch.com');
     expect(mockGetPayLink).toHaveBeenCalledTimes(1);
     expect(mockCreateUserWallet).toHaveBeenCalledTimes(1);
     expect(mockCreatePayLink).toHaveBeenCalledTimes(1);

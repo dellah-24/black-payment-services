@@ -1,8 +1,8 @@
-# CoinPay for BigCommerce (stub)
+# Tempest Touch for BigCommerce (stub)
 
 > **Status:** stub. Not yet a working plugin.
 
-BigCommerce single-click app + offsite payment integration. Adds a "Pay with crypto" option that creates a CoinPayPortal hosted checkout, then reconciles the order via signed webhooks.
+BigCommerce single-click app + offsite payment integration. Adds a "Pay with crypto" option that creates a Tempest Touch hosted checkout, then reconciles the order via signed webhooks.
 
 ## Approval / scope notes
 
@@ -22,7 +22,7 @@ plugins/bigcommerce/
       auth/load.ts                 # store-load handshake
       routes/checkout.ts           # build hosted checkout, redirect
       routes/webhook-bc.ts         # BigCommerce → us
-      routes/webhook-coinpay.ts    # CoinPay → us, mark order paid via Orders API
+      routes/webhook-tempesttouch.ts    # Tempest Touch → us, mark order paid via Orders API
       lib/bigcommerce.ts           # thin BC Admin API client
 ```
 

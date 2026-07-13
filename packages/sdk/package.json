@@ -1,12 +1,12 @@
 {
-  "name": "@profullstack/coinpay",
+  "name": "@profullstack/tempesttouch",
   "version": "0.6.11",
-  "description": "CoinPay SDK & CLI — Accept cryptocurrency payments (BTC, ETH, SOL, POL, BCH, USDC) with wallet and swap support",
+  "description": "Tempest Touch SDK & CLI — Accept cryptocurrency payments (BTC, ETH, SOL, POL, BCH, USDC) with wallet and swap support",
   "type": "module",
   "main": "./src/index.js",
   "types": "./src/index.d.ts",
   "bin": {
-    "coinpay": "./bin/coinpay.js"
+    "tempesttouch": "./bin/tempesttouch.js"
   },
   "exports": {
     ".": {
@@ -52,7 +52,7 @@
     "format": "prettier --write src bin test"
   },
   "keywords": [
-    "coinpay",
+    "tempesttouch",
     "profullstack",
     "cryptocurrency",
     "crypto",
@@ -78,13 +78,13 @@
   ],
   "author": "Profullstack, Inc.",
   "license": "MIT",
-  "homepage": "https://coinpayportal.com",
+  "homepage": "https://tempesttouchportal.com",
   "bugs": {
-    "url": "https://github.com/profullstack/coinpayportal/issues"
+    "url": "https://github.com/profullstack/tempesttouchportal/issues"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/profullstack/coinpayportal.git",
+    "url": "https://github.com/profullstack/tempesttouchportal.git",
     "directory": "packages/sdk"
   },
   "engines": {

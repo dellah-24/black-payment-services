@@ -7,7 +7,7 @@ export function SubscriptionsDocs() {
   return (
     <DocSection title="Subscriptions & Entitlements">
       <p className="text-gray-300 mb-6">
-        CoinPay Portal offers two subscription tiers with different features and transaction limits.
+        TempestTouch Portal offers two subscription tiers with different features and transaction limits.
         All subscription payments are processed using cryptocurrency.
       </p>
 
@@ -80,7 +80,7 @@ export function SubscriptionsDocs() {
       {/* Get Entitlements */}
       <ApiEndpoint method="GET" path="/api/entitlements" description="Get current merchant's entitlements, features, and usage.">
         <CodeBlock title="cURL Example" language="curl">
-{`curl https://coinpayportal.com/api/entitlements \\
+{`curl https://tempesttouch.com/api/entitlements \\
   -H "Authorization: Bearer YOUR_TOKEN"`}
         </CodeBlock>
 
@@ -125,7 +125,7 @@ export function SubscriptionsDocs() {
         </CodeBlock>
 
         <CodeBlock title="cURL Example" language="curl">
-{`curl -X POST https://coinpayportal.com/api/subscriptions/checkout \\
+{`curl -X POST https://tempesttouch.com/api/subscriptions/checkout \\
   -H "Authorization: Bearer YOUR_TOKEN" \\
   -H "Content-Type: application/json" \\
   -d '{

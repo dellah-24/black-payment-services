@@ -61,7 +61,7 @@ describe('GET /api/oauth/authorize', () => {
   });
 
   it('should reject non-code response_type', async () => {
-    const req = makeRequest('https://coinpay.dev/api/oauth/authorize?response_type=token&client_id=test&redirect_uri=https://example.com/cb');
+    const req = makeRequest('https://tempesttouch.dev/api/oauth/authorize?response_type=token&client_id=test&redirect_uri=https://example.com/cb');
     const res = await GET(req);
     expect(res.status).toBe(400);
     const body = await res.json();
@@ -69,7 +69,7 @@ describe('GET /api/oauth/authorize', () => {
   });
 
   it('should reject missing client_id', async () => {
-    const req = makeRequest('https://coinpay.dev/api/oauth/authorize?response_type=code&redirect_uri=https://example.com/cb');
+    const req = makeRequest('https://tempesttouch.dev/api/oauth/authorize?response_type=code&redirect_uri=https://example.com/cb');
     const res = await GET(req);
     expect(res.status).toBe(400);
     const body = await res.json();
@@ -79,7 +79,7 @@ describe('GET /api/oauth/authorize', () => {
   it('should reject invalid client_id', async () => {
     (validateClient as any).mockResolvedValue({ valid: false, error: 'Invalid client_id' });
 
-    const req = makeRequest('https://coinpay.dev/api/oauth/authorize?response_type=code&client_id=bad&redirect_uri=https://example.com/cb');
+    const req = makeRequest('https://tempesttouch.dev/api/oauth/authorize?response_type=code&client_id=bad&redirect_uri=https://example.com/cb');
     const res = await GET(req);
     expect(res.status).toBe(400);
     const body = await res.json();
@@ -89,7 +89,7 @@ describe('GET /api/oauth/authorize', () => {
   it('should reject invalid redirect_uri', async () => {
     (validateClient as any).mockResolvedValue({ valid: false, error: 'Invalid redirect_uri' });
 
-    const req = makeRequest('https://coinpay.dev/api/oauth/authorize?response_type=code&client_id=cp_test&redirect_uri=https://evil.com/cb');
+    const req = makeRequest('https://tempesttouch.dev/api/oauth/authorize?response_type=code&client_id=cp_test&redirect_uri=https://evil.com/cb');
     const res = await GET(req);
     expect(res.status).toBe(400);
   });
@@ -101,7 +101,7 @@ describe('GET /api/oauth/authorize', () => {
     });
     (verifyToken as any).mockImplementation(() => { throw new Error('invalid'); });
 
-    const req = makeRequest('https://coinpay.dev/api/oauth/authorize?response_type=code&client_id=cp_test&redirect_uri=https://example.com/cb&scope=openid');
+    const req = makeRequest('https://tempesttouch.dev/api/oauth/authorize?response_type=code&client_id=cp_test&redirect_uri=https://example.com/cb&scope=openid');
     const res = await GET(req);
     expect(res.status).toBe(302);
     const location = res.headers.get('location');
@@ -117,7 +117,7 @@ describe('GET /api/oauth/authorize', () => {
     mockSingle.mockResolvedValue({ data: null, error: { message: 'not found' } });
 
     const req = makeRequest(
-      'https://coinpay.dev/api/oauth/authorize?response_type=code&client_id=cp_test&redirect_uri=https://example.com/cb&scope=openid+profile&state=abc123',
+      'https://tempesttouch.dev/api/oauth/authorize?response_type=code&client_id=cp_test&redirect_uri=https://example.com/cb&scope=openid+profile&state=abc123',
       { headers: { authorization: 'Bearer valid-token' } }
     );
     const res = await GET(req);
@@ -139,7 +139,7 @@ describe('GET /api/oauth/authorize', () => {
     });
 
     const req = makeRequest(
-      'https://coinpay.dev/api/oauth/authorize?response_type=code&client_id=cp_test&redirect_uri=https://example.com/cb&scope=openid+profile&state=xyz',
+      'https://tempesttouch.dev/api/oauth/authorize?response_type=code&client_id=cp_test&redirect_uri=https://example.com/cb&scope=openid+profile&state=xyz',
       { headers: { authorization: 'Bearer valid-token' } }
     );
     const res = await GET(req);
@@ -163,7 +163,7 @@ describe('POST /api/oauth/authorize', () => {
     (validateClient as any).mockResolvedValue({ valid: true, client: { client_id: 'cp_test' } });
     (verifyToken as any).mockImplementation(() => { throw new Error('invalid'); });
 
-    const req = makeRequest('https://coinpay.dev/api/oauth/authorize', {
+    const req = makeRequest('https://tempesttouch.dev/api/oauth/authorize', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({
@@ -182,7 +182,7 @@ describe('POST /api/oauth/authorize', () => {
     (validateClient as any).mockResolvedValue({ valid: true, client: { client_id: 'cp_test' } });
     (verifyToken as any).mockReturnValue({ userId: 'user-123', email: 'test@example.com' });
 
-    const req = makeRequest('https://coinpay.dev/api/oauth/authorize', {
+    const req = makeRequest('https://tempesttouch.dev/api/oauth/authorize', {
       method: 'POST',
       headers: {
         'content-type': 'application/json',
@@ -209,7 +209,7 @@ describe('POST /api/oauth/authorize', () => {
     (validateClient as any).mockResolvedValue({ valid: true, client: { client_id: 'cp_test' } });
     (verifyToken as any).mockReturnValue({ userId: 'user-123', email: 'test@example.com' });
 
-    const req = makeRequest('https://coinpay.dev/api/oauth/authorize', {
+    const req = makeRequest('https://tempesttouch.dev/api/oauth/authorize', {
       method: 'POST',
       headers: {
         'content-type': 'application/json',
@@ -231,3 +231,4 @@ describe('POST /api/oauth/authorize', () => {
     expect(body.redirect).toContain('state=mystate');
   });
 });
+

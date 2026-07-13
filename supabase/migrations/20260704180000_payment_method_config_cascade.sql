@@ -7,7 +7,7 @@
 --                              global defaults, feature flags, force_disabled
 --                              kill switch.
 --     v inherits
---   business_payment_policy     legal entity (a coinpayportal `business` — the
+--   business_payment_policy     legal entity (a tempesttouchportal `business` — the
 --                              unit that owns the Stripe/PayPal connected
 --                              account and gets underwritten): whether a method
 --                              is unlocked, compliance status, entity params.
@@ -16,14 +16,14 @@
 --                              unlocked set, per-method min/max, display, currency.
 --
 -- TERMINOLOGY: the PRD separates "business (legal entity)" from "merchant (store)".
--- coinpayportal has no store entity below `business`, so BOTH lower layers key on
+-- tempesttouchportal has no store entity below `business`, so BOTH lower layers key on
 -- business_id but stay distinct tables (compliance facts vs. presentation), which
 -- preserves the restrict-only cascade and leaves room for a future store split.
 --
 -- Restrict-only invariant + kill switch are enforced at MERGE time in the
 -- resolver, and at WRITE time in src/lib/payment-methods/policy.ts.
 --
--- As with the rest of coinpayportal, authorization is enforced in the app layer;
+-- As with the rest of tempesttouchportal, authorization is enforced in the app layer;
 -- RLS is enabled with no policies so only the service-role key can read/write.
 
 -- =====================================================

@@ -21,7 +21,7 @@ interface ManualMethodCardProps {
 }
 
 /**
- * One 3rd-party manual rail (Venmo / Cash App / Zelle). CoinPay never touches
+ * One 3rd-party manual rail (Venmo / Cash App / Zelle). Tempest Touch never touches
  * the money here — the merchant saves their own handle, the customer pays them
  * directly, and the merchant marks the invoice paid. Off until a handle is saved.
  */
@@ -113,7 +113,7 @@ export function ManualMethodCard({ businessId, method, handlePlaceholder, onChan
         )}
       </div>
       <p className="mt-2 text-[11px] text-gray-500">
-        Customers pay you directly via {method.display_name}; you mark the invoice paid once you receive it. No CoinPay fee.
+        Customers pay you directly via {method.display_name}; you mark the invoice paid once you receive it. No Tempest Touch fee.
       </p>
     </div>
   );

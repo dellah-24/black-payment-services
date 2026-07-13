@@ -90,7 +90,7 @@ function makeDb(initial: Record<string, any[]>) {
   return { client: { from } as unknown as SupabaseClient, store };
 }
 
-const BASE = 'https://coinpayportal.com';
+const BASE = 'https://tempesttouch.com';
 
 beforeEach(() => {
   vi.clearAllMocks();

@@ -70,7 +70,7 @@ async function ensureLightningAddressBackend(supabase: ReturnType<typeof getSupa
   };
 
   const createPayLinkForWallet = async () => createPayLink(adminKey!, {
-    description: `Lightning Address for ${username}@coinpayportal.com`,
+    description: `Lightning Address for ${username}@tempesttouch.com`,
     min: 1,
     max: 1000000,
     username,
@@ -109,7 +109,7 @@ async function ensureLightningAddressBackend(supabase: ReturnType<typeof getSupa
 
 /**
  * POST /api/lightning/address
- * Register a Lightning Address (username@coinpayportal.com)
+ * Register a Lightning Address (username@tempesttouch.com)
  * 
  * Body: { wallet_id: string, username: string }
  */
@@ -217,7 +217,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      lightning_address: `${username}@coinpayportal.com`,
+      lightning_address: `${username}@tempesttouch.com`,
       username,
     });
   } catch (error: unknown) {
@@ -309,7 +309,7 @@ export async function GET(request: NextRequest) {
   }
 
   return NextResponse.json({
-    lightning_address: `${wallet.ln_username}@coinpayportal.com`,
+    lightning_address: `${wallet.ln_username}@tempesttouch.com`,
     username: wallet.ln_username,
   });
 }

@@ -1,8 +1,8 @@
-# CoinPay Architecture
+# Tempest Touch Architecture
 
 ## System Overview
 
-CoinPay is a non-custodial cryptocurrency payment gateway that enables e-commerce merchants to accept crypto payments with automatic fee handling and real-time transaction monitoring.
+Tempest Touch is a non-custodial cryptocurrency payment gateway that enables e-commerce merchants to accept crypto payments with automatic fee handling and real-time transaction monitoring.
 
 ## High-Level Architecture
 
@@ -177,21 +177,21 @@ All Supabase interactions go through server-side API routes for security.
 sequenceDiagram
     participant Customer
     participant MerchantSite
-    participant CoinPay
+    participant Tempest Touch
     participant Blockchain
     participant MerchantWallet
     participant WebhookEndpoint
 
-    MerchantSite->>CoinPay: Create Payment Request
-    CoinPay->>CoinPay: Generate Forwarding Address
-    CoinPay->>MerchantSite: Return Payment Details + QR
+    MerchantSite->>Tempest Touch: Create Payment Request
+    Tempest Touch->>Tempest Touch: Generate Forwarding Address
+    Tempest Touch->>MerchantSite: Return Payment Details + QR
     MerchantSite->>Customer: Display QR Code
     Customer->>Blockchain: Send Payment to Forwarding Address
-    Blockchain->>CoinPay: Transaction Detected
-    CoinPay->>CoinPay: Wait for Confirmations
-    CoinPay->>CoinPay: Calculate 2% Fee
-    CoinPay->>MerchantWallet: Forward Payment minus Fee
-    CoinPay->>WebhookEndpoint: Send Payment Notification
+    Blockchain->>Tempest Touch: Transaction Detected
+    Tempest Touch->>Tempest Touch: Wait for Confirmations
+    Tempest Touch->>Tempest Touch: Calculate 2% Fee
+    Tempest Touch->>MerchantWallet: Forward Payment minus Fee
+    Tempest Touch->>WebhookEndpoint: Send Payment Notification
     WebhookEndpoint->>MerchantSite: Update Order Status
 ```
 

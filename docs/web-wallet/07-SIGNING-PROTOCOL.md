@@ -1,4 +1,4 @@
-# CoinPayPortal Wallet Mode - Signing Protocol
+# Tempest Touch Wallet Mode - Signing Protocol
 
 ## 1. Overview
 
@@ -24,7 +24,7 @@ This document describes the client-side transaction signing protocol. All signin
 sequenceDiagram
     participant User
     participant Client as Client/Browser
-    participant API as CoinPayPortal API
+    participant API as Tempest Touch API
     participant Chain as Blockchain
 
     User->>Client: Initiate send

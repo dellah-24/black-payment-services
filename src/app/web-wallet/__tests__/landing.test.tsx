@@ -49,7 +49,7 @@ describe('WebWalletPage', () => {
     it('should show landing page when no wallet exists', () => {
       render(<WebWalletPage />);
 
-      expect(screen.getByText('CoinPay Wallet')).toBeInTheDocument();
+      expect(screen.getByText('Tempest Touch Wallet')).toBeInTheDocument();
       expect(
         screen.getByText(/Non-custodial multi-chain wallet/)
       ).toBeInTheDocument();

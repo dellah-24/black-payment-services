@@ -95,14 +95,14 @@ export default function Header() {
   };
 
   return (
-    <header className="bg-gray-900 border-b border-gray-800 sticky top-0 z-50" style={{ WebkitTransform: 'translateZ(0)' }}>
+    <header className="sticky top-0 z-50 w-full border-b border-white/10 bg-[#0a0a0f]/80 backdrop-blur-xl" style={{ WebkitTransform: 'translateZ(0)' }}>
       <nav className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8" aria-label="Top">
         <div className="flex w-full items-center justify-between py-3">
           {/* Logo */}
           <Link href="/" className="block">
             <img
               src="/logo.svg"
-              alt="CoinPay"
+              alt="TempestTouch"
               className="h-14 w-auto"
             />
           </Link>
@@ -136,32 +136,32 @@ export default function Header() {
                   </button>
                   
                   {userMenuOpen && (
-                    <div className="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5">
+                    <div className="absolute right-0 mt-2 w-48 rounded-xl shadow-xl bg-[#0a0a0f]/95 backdrop-blur-xl border border-white/10 overflow-hidden">
                       <div className="py-1">
                         <Link
                           href="/dashboard"
-                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                          className="block px-4 py-2 text-sm text-gray-300 hover:bg-white/5 hover:text-white transition-colors"
                           onClick={() => setUserMenuOpen(false)}
                         >
                           Dashboard
                         </Link>
                         <Link
                           href="/settings/wallets"
-                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                          className="block px-4 py-2 text-sm text-gray-300 hover:bg-white/5 hover:text-white transition-colors"
                           onClick={() => setUserMenuOpen(false)}
                         >
                           Global Wallets
                         </Link>
                         <Link
                           href="/settings/security"
-                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                          className="block px-4 py-2 text-sm text-gray-300 hover:bg-white/5 hover:text-white transition-colors"
                           onClick={() => setUserMenuOpen(false)}
                         >
                           Security
                         </Link>
                         <Link
                           href="/settings"
-                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                          className="block px-4 py-2 text-sm text-gray-300 hover:bg-white/5 hover:text-white transition-colors"
                           onClick={() => setUserMenuOpen(false)}
                         >
                           Settings
@@ -169,7 +169,7 @@ export default function Header() {
                         {isAdmin && (
                           <Link
                             href="/admin"
-                            className="block px-4 py-2 text-sm font-semibold text-purple-700 hover:bg-gray-100"
+                            className="block px-4 py-2 text-sm font-semibold text-purple-300 hover:bg-white/5 hover:text-white transition-colors"
                             onClick={() => setUserMenuOpen(false)}
                           >
                             Admin
@@ -177,7 +177,7 @@ export default function Header() {
                         )}
                         <button
                           onClick={handleLogout}
-                          className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                          className="block w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-white/5 hover:text-white transition-colors"
                         >
                           Log out
                         </button>
@@ -251,13 +251,13 @@ export default function Header() {
 
         {/* Mobile menu */}
         {mobileMenuOpen && (
-          <div className="md:hidden border-t border-gray-800 py-4">
+          <div className="md:hidden border-t border-white/10 py-4 bg-[#0a0a0f]/95 backdrop-blur-xl">
             <div className="space-y-1">
               {currentNav.map((item) => (
                 <Link
                   key={item.name}
                   href={getNavHref(item.href)}
-                  className="block px-3 py-2 text-base font-medium text-gray-300 hover:bg-gray-800 hover:text-white rounded-md transition-colors"
+                  className="block px-3 py-2 text-base font-medium text-gray-300 hover:bg-white/5 hover:text-white rounded-md transition-colors"
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   {item.name}
@@ -266,31 +266,31 @@ export default function Header() {
               
               {/* Mobile Auth Buttons / User Menu */}
               {isHydrated && isLoggedIn ? (
-                <div className="pt-4 space-y-2 border-t border-gray-800 mt-4">
+                <div className="pt-4 space-y-2 border-t border-white/10 mt-4">
                   <Link
                     href="/dashboard"
-                    className="block px-3 py-2 text-base font-medium text-gray-300 hover:bg-gray-800 hover:text-white rounded-md transition-colors"
+                    className="block px-3 py-2 text-base font-medium text-gray-300 hover:bg-white/5 hover:text-white rounded-md transition-colors"
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     Dashboard
                   </Link>
                   <Link
                     href="/settings/wallets"
-                    className="block px-3 py-2 text-base font-medium text-gray-300 hover:bg-gray-800 hover:text-white rounded-md transition-colors"
+                    className="block px-3 py-2 text-base font-medium text-gray-300 hover:bg-white/5 hover:text-white rounded-md transition-colors"
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     Global Wallets
                   </Link>
                   <Link
                     href="/settings/security"
-                    className="block px-3 py-2 text-base font-medium text-gray-300 hover:bg-gray-800 hover:text-white rounded-md transition-colors"
+                    className="block px-3 py-2 text-base font-medium text-gray-300 hover:bg-white/5 hover:text-white rounded-md transition-colors"
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     Security
                   </Link>
                   <Link
                     href="/settings"
-                    className="block px-3 py-2 text-base font-medium text-gray-300 hover:bg-gray-800 hover:text-white rounded-md transition-colors"
+                    className="block px-3 py-2 text-base font-medium text-gray-300 hover:bg-white/5 hover:text-white rounded-md transition-colors"
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     Settings
@@ -298,7 +298,7 @@ export default function Header() {
                   {isAdmin && (
                     <Link
                       href="/admin"
-                      className="block px-3 py-2 text-base font-semibold text-purple-300 hover:bg-gray-800 hover:text-white rounded-md transition-colors"
+                      className="block px-3 py-2 text-base font-semibold text-purple-300 hover:bg-white/5 hover:text-white rounded-md transition-colors"
                       onClick={() => setMobileMenuOpen(false)}
                     >
                       Admin
@@ -309,7 +309,7 @@ export default function Header() {
                       handleLogout();
                       setMobileMenuOpen(false);
                     }}
-                    className="block w-full text-left px-3 py-2 text-base font-medium text-gray-300 hover:bg-gray-800 hover:text-white rounded-md transition-colors"
+                    className="block w-full text-left px-3 py-2 text-base font-medium text-gray-300 hover:bg-white/5 hover:text-white rounded-md transition-colors"
                   >
                     Log out
                   </button>
@@ -318,7 +318,7 @@ export default function Header() {
                 <div className="pt-4 space-y-2">
                   <Link
                     href="/login"
-                    className="block px-3 py-2 text-base font-medium text-gray-300 hover:bg-gray-800 hover:text-white rounded-md transition-colors"
+                    className="block px-3 py-2 text-base font-medium text-gray-300 hover:bg-white/5 hover:text-white rounded-md transition-colors"
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     Log in

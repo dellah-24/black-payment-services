@@ -1,8 +1,8 @@
-# CoinPay for Magento / Adobe Commerce (stub)
+# Tempest Touch for Magento / Adobe Commerce (stub)
 
 > **Status:** stub. Not yet a working plugin.
 
-Magento 2 / Adobe Commerce module that adds CoinPayPortal as a payment method. The customer selects "Pay with crypto", the module creates a CoinPay hosted checkout, redirects, and reconciles the order via signed webhooks.
+Magento 2 / Adobe Commerce module that adds Tempest Touch as a payment method. The customer selects "Pay with crypto", the module creates a Tempest Touch hosted checkout, redirects, and reconciles the order via signed webhooks.
 
 ## Files (planned)
 
@@ -10,7 +10,7 @@ Magento 2 / Adobe Commerce module that adds CoinPayPortal as a payment method. T
 plugins/magento/
   README.md
   manifest.json
-  CoinPayPortal/PaymentGateway/
+  Tempest Touch/PaymentGateway/
     composer.json
     registration.php
     etc/
@@ -21,16 +21,16 @@ plugins/magento/
       webapi.xml                 # exposes the webhook receiver
       payment.xml                # method config
     Model/
-      Ui/CoinPayConfigProvider.php
+      Ui/Tempest TouchConfigProvider.php
       ConfigProvider.php
-      Webhook/Receiver.php       # POST /rest/V1/coinpay/webhook
+      Webhook/Receiver.php       # POST /rest/V1/tempesttouch/webhook
       StatusMapper.php
     Controller/
       Redirect/Index.php         # builds checkout, redirects customer
       Return/Index.php           # post-checkout return page
     view/frontend/
-      web/js/view/payment/method-renderer/coinpay.js
-      web/template/payment/coinpay.html
+      web/js/view/payment/method-renderer/tempesttouch.js
+      web/template/payment/tempesttouch.html
       layout/checkout_index_index.xml
 ```
 

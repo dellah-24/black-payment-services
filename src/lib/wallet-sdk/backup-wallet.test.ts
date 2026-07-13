@@ -110,7 +110,7 @@ describe('Wallet backup methods', () => {
 
       expect(backup.data).toBeInstanceOf(Uint8Array);
       expect(backup.data.length).toBeGreaterThan(0);
-      expect(backup.filename).toMatch(/^wallet_coinpayportal_.*_seedphrase\.txt\.gpg$/);
+      expect(backup.filename).toMatch(/^wallet_tempesttouchportal_.*_seedphrase\.txt\.gpg$/);
       expect(backup.walletId).toBeTruthy();
     });
 
@@ -142,3 +142,4 @@ describe('Wallet backup methods', () => {
     });
   });
 });
+

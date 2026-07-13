@@ -439,7 +439,7 @@ export default function PricingPage() {
               </h3>
               <p className="mt-2 text-gray-400">
                 Blockchain network fees (also called "gas fees" on Ethereum or "transaction fees" on other networks)
-                are charged by the blockchain network itself, not by CoinPay. These fees vary based on network
+                are charged by the blockchain network itself, not by TempestTouch. These fees vary based on network
                 congestion and are deducted from the payment amount when funds are forwarded to your wallet.
                 Network fees are typically very small (fractions of a cent to a few dollars depending on the blockchain).
               </p>

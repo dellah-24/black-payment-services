@@ -1,15 +1,15 @@
 /**
- * Idempotently ensure CoinPay's single platform-level Stripe webhook
- * exists, points at the correct CoinPay URL, and is subscribed to every
+ * Idempotently ensure Tempest Touch's single platform-level Stripe webhook
+ * exists, points at the correct Tempest Touch URL, and is subscribed to every
  * event our handler at /api/stripe/webhook actually processes. Also
  * audits every other webhook on the platform Stripe account and reports
- * any that are NOT pointing at coinpayportal.com — those are the rogue
+ * any that are NOT pointing at tempesttouch.com — those are the rogue
  * "merchant pasted their own URL" webhooks that intercept Stripe events
- * before CoinPay sees them (the d0rz incident).
+ * before Tempest Touch sees them (the d0rz incident).
  *
- * Stripe should ONLY know about coinpayportal.com. Per-merchant fan-out
- * happens AFTER CoinPay processes the event, by reading
- * businesses.webhook_url and POSTing a CoinPay-format payload signed
+ * Stripe should ONLY know about tempesttouch.com. Per-merchant fan-out
+ * happens AFTER Tempest Touch processes the event, by reading
+ * businesses.webhook_url and POSTing a Tempest Touch-format payload signed
  * with the merchant's webhook_secret. Stripe must never know about
  * d0rz.com, ugig.net, or any other merchant URL.
  *
@@ -21,8 +21,8 @@
 
 import Stripe from 'stripe';
 
-const COINPAY_HOST = 'coinpayportal.com';
-const COINPAY_WEBHOOK_URL = `https://${COINPAY_HOST}/api/stripe/webhook`;
+const TEMPESTTOUCH_HOST = 'tempesttouch.com';
+const TEMPESTTOUCH_WEBHOOK_URL = `https://${TEMPESTTOUCH_HOST}/api/stripe/webhook`;
 
 // Every event the handler at src/app/api/stripe/webhook/route.ts switches on.
 const REQUIRED_EVENTS: Stripe.WebhookEndpointCreateParams.EnabledEvent[] = [
@@ -60,9 +60,9 @@ async function main() {
   for (const ep of all.data) {
     let host = '';
     try { host = new URL(ep.url).host; } catch { /* ignore */ }
-    if (host === COINPAY_HOST) {
+    if (host === TEMPESTTOUCH_HOST) {
       if (canonical) {
-        // Multiple coinpay endpoints — keep the one with most events as canonical, mark others as duplicates.
+        // Multiple tempesttouch endpoints — keep the one with most events as canonical, mark others as duplicates.
         if ((ep.enabled_events || []).length > (canonical.enabled_events || []).length) {
           rogues.push(canonical);
           canonical = ep;
@@ -79,7 +79,7 @@ async function main() {
 
   // === Audit ===
   if (canonical) {
-    console.log(`✓ Canonical CoinPay endpoint: ${canonical.id}`);
+    console.log(`✓ Canonical Tempest Touch endpoint: ${canonical.id}`);
     console.log(`    url:    ${canonical.url}`);
     console.log(`    events: ${(canonical.enabled_events || []).join(', ') || '(none)'}`);
     const missing = REQUIRED_EVENTS.filter((e) => !(canonical!.enabled_events || []).includes(e as any));
@@ -87,12 +87,12 @@ async function main() {
       console.log(`    ⚠ missing events: ${missing.join(', ')}`);
     }
   } else {
-    console.log(`✗ No CoinPay platform endpoint exists. Stripe is not delivering events to CoinPay at all.`);
+    console.log(`✗ No Tempest Touch platform endpoint exists. Stripe is not delivering events to Tempest Touch at all.`);
   }
 
   console.log('');
   if (rogues.length > 0) {
-    console.log(`⚠ ${rogues.length} ROGUE endpoint(s) — Stripe is sending events somewhere other than CoinPay:`);
+    console.log(`⚠ ${rogues.length} ROGUE endpoint(s) — Stripe is sending events somewhere other than Tempest Touch:`);
     for (const r of rogues) {
       console.log(`    ${r.id}  ${r.url}`);
       console.log(`      events: ${(r.enabled_events || []).slice(0, 6).join(', ')}${(r.enabled_events || []).length > 6 ? ', …' : ''}`);
@@ -110,15 +110,15 @@ async function main() {
   // === Apply ===
   console.log('\n--- Applying changes ---');
 
-  // 1. Create or update the canonical CoinPay endpoint.
+  // 1. Create or update the canonical Tempest Touch endpoint.
   let secret: string | undefined;
   if (!canonical) {
-    console.log(`Creating canonical CoinPay endpoint at ${COINPAY_WEBHOOK_URL}…`);
+    console.log(`Creating canonical Tempest Touch endpoint at ${TEMPESTTOUCH_WEBHOOK_URL}…`);
     const created = await stripe.webhookEndpoints.create({
-      url: COINPAY_WEBHOOK_URL,
+      url: TEMPESTTOUCH_WEBHOOK_URL,
       enabled_events: REQUIRED_EVENTS,
       connect: true, // also receive events from connected accounts
-      metadata: { managed_by: 'coinpay-platform', role: 'ingestion' },
+      metadata: { managed_by: 'tempesttouch-platform', role: 'ingestion' },
     });
     canonical = created;
     secret = created.secret || undefined;
@@ -128,12 +128,12 @@ async function main() {
       console.log(`  ${secret}\n`);
     }
   } else {
-    const needsUrlUpdate = canonical.url !== COINPAY_WEBHOOK_URL;
+    const needsUrlUpdate = canonical.url !== TEMPESTTOUCH_WEBHOOK_URL;
     const missing = REQUIRED_EVENTS.filter((e) => !(canonical!.enabled_events || []).includes(e as any));
     if (needsUrlUpdate || missing.length > 0) {
       console.log(`Updating canonical endpoint ${canonical.id}…`);
       const updated = await stripe.webhookEndpoints.update(canonical.id, {
-        url: COINPAY_WEBHOOK_URL,
+        url: TEMPESTTOUCH_WEBHOOK_URL,
         enabled_events: REQUIRED_EVENTS,
       });
       canonical = updated;

@@ -1,30 +1,30 @@
 # Webhooks
 
-CoinPayPortal uses signed webhooks to notify FOSSBilling when a payment status changes.
+Tempest Touch uses signed webhooks to notify FOSSBilling when a payment status changes.
 
 ## Webhook URL
 
 Your webhook endpoint is automatically available at:
 
 ```
-https://YOUR-DOMAIN.COM/ipn/CoinPayPortal
+https://YOUR-DOMAIN.COM/ipn/Tempest Touch
 ```
 
 This URL must be reachable from the internet. It does not require authentication — all security is handled via signature verification.
 
 ## Registering the Webhook
 
-1. Log into your [CoinPayPortal merchant dashboard](https://coinpayportal.com).
+1. Log into your [Tempest Touch merchant dashboard](https://tempesttouch.com).
 2. Go to **Settings → Webhooks**.
 3. Add a new webhook with the URL above.
 4. Copy the generated **Webhook Secret** into your FOSSBilling gateway configuration.
 
 ## Signature Verification
 
-Every webhook from CoinPayPortal includes an `X-CoinPayPortal-Signature` header:
+Every webhook from Tempest Touch includes an `X-Tempest Touch-Signature` header:
 
 ```
-X-CoinPayPortal-Signature: sha256=<hmac-sha256-hex>
+X-Tempest Touch-Signature: sha256=<hmac-sha256-hex>
 ```
 
 The plugin verifies this using constant-time comparison (`hash_equals`). Any request with a missing or invalid signature is rejected with HTTP 401.
@@ -78,4 +78,4 @@ The plugin checks whether an invoice is already marked paid before processing a 
 
 ## Testing Webhooks
 
-Use the CoinPayPortal sandbox and enable **Debug Logging** in the gateway settings to trace webhook receipt, signature verification, and invoice matching in your PHP error log.
+Use the Tempest Touch sandbox and enable **Debug Logging** in the gateway settings to trace webhook receipt, signature verification, and invoice matching in your PHP error log.

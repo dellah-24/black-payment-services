@@ -8,7 +8,7 @@ export default function PrivacyPage() {
         <section className="mb-8">
           <h2 className="text-2xl font-bold mb-4 text-white">Information We Collect</h2>
           <p className="text-gray-300 mb-4">
-            CoinPay collects minimal information necessary to provide our payment gateway service:
+            TempestTouch collects minimal information necessary to provide our payment gateway service:
           </p>
           <ul className="list-disc list-inside text-gray-300 space-y-2">
             <li>Email address and account credentials</li>
@@ -41,7 +41,7 @@ export default function PrivacyPage() {
           <ul className="list-disc list-inside text-gray-300 space-y-2">
             <li>With service providers who assist in operating our platform (e.g., hosting, analytics)</li>
             <li>When required by law, regulation, or legal process</li>
-            <li>To protect the rights, property, or safety of CoinPay, our users, or the public</li>
+            <li>To protect the rights, property, or safety of TempestTouch, our users, or the public</li>
             <li>In connection with a merger, acquisition, or sale of assets (with prior notice)</li>
           </ul>
         </section>
@@ -93,8 +93,8 @@ export default function PrivacyPage() {
           </ul>
           <p className="text-gray-300 mt-4">
             To exercise any of these rights, contact us at{' '}
-            <a href="mailto:privacy@coinpayportal.com" className="text-purple-600 hover:text-purple-700">
-              privacy@coinpayportal.com
+            <a href="mailto:privacy@tempesttouch.com" className="text-purple-600 hover:text-purple-700">
+              privacy@tempesttouch.com
             </a>.
           </p>
         </section>
@@ -103,8 +103,8 @@ export default function PrivacyPage() {
           <h2 className="text-2xl font-bold mb-4 text-white">Contact</h2>
           <p className="text-gray-300">
             For privacy-related questions, contact us at{' '}
-            <a href="mailto:privacy@coinpayportal.com" className="text-purple-600 hover:text-purple-700">
-              privacy@coinpayportal.com
+            <a href="mailto:privacy@tempesttouch.com" className="text-purple-600 hover:text-purple-700">
+              privacy@tempesttouch.com
             </a>
           </p>
         </section>

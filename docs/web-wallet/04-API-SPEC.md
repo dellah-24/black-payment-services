@@ -1,4 +1,4 @@
-# CoinPayPortal Wallet Mode - API Specification
+# Tempest Touch Wallet Mode - API Specification
 
 ## 1. Overview
 
@@ -6,7 +6,7 @@ This document defines the API endpoints for Wallet Mode. All wallet endpoints ar
 
 ### Base URL
 ```
-Production: https://coinpayportal.com/api/web-wallet
+Production: https://tempesttouch.com/api/web-wallet
 Development: http://localhost:3000/api/web-wallet
 ```
 
@@ -131,7 +131,7 @@ Register an existing wallet (from seed) with the server.
     }
   ],
   "proof_of_ownership": {
-    "message": "CoinPayPortal wallet import: <timestamp>",
+    "message": "Tempest Touch wallet import: <timestamp>",
     "signature": "signed_message_hex"
   }
 }
@@ -670,7 +670,7 @@ Get a challenge for signature-based authentication.
 {
   "success": true,
   "data": {
-    "challenge": "coinpayportal:auth:1705320000:abc123random",
+    "challenge": "tempesttouch:auth:1705320000:abc123random",
     "expires_at": "2024-01-15T12:05:00.000Z",
     "challenge_id": "uuid-challenge-id"
   }

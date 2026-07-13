@@ -10,21 +10,21 @@ A Discord/Telegram-style bot that creates crypto invoices and monitors payment s
 // payment-bot.mjs
 // A simple payment bot that creates invoices and waits for payment
 
-import { CoinPayClient, Blockchain, WebhookEvent, verifyWebhookSignature, parseWebhookPayload } from '@profullstack/coinpay';
+import { Tempest TouchClient, Blockchain, WebhookEvent, verifyWebhookSignature, parseWebhookPayload } from '@profullstack/tempesttouch';
 import http from 'http';
 
 // ─── Configuration ──────────────────────────────────────────────────────
-const COINPAY_API_KEY = process.env.COINPAY_API_KEY;
-const COINPAY_WEBHOOK_SECRET = process.env.COINPAY_WEBHOOK_SECRET;
-const BUSINESS_ID = process.env.COINPAY_BUSINESS_ID;
+const TEMPESTTOUCH_API_KEY = process.env.TEMPESTTOUCH_API_KEY;
+const TEMPESTTOUCH_WEBHOOK_SECRET = process.env.TEMPESTTOUCH_WEBHOOK_SECRET;
+const BUSINESS_ID = process.env.TEMPESTTOUCH_BUSINESS_ID;
 const WEBHOOK_PORT = process.env.WEBHOOK_PORT || 4000;
 
-if (!COINPAY_API_KEY || !BUSINESS_ID) {
-  console.error('Set COINPAY_API_KEY and COINPAY_BUSINESS_ID environment variables');
+if (!TEMPESTTOUCH_API_KEY || !BUSINESS_ID) {
+  console.error('Set TEMPESTTOUCH_API_KEY and TEMPESTTOUCH_BUSINESS_ID environment variables');
   process.exit(1);
 }
 
-const client = new CoinPayClient({ apiKey: COINPAY_API_KEY });
+const client = new Tempest TouchClient({ apiKey: TEMPESTTOUCH_API_KEY });
 
 // ─── In-memory order store (use a DB in production) ─────────────────────
 const orders = new Map();
@@ -98,7 +98,7 @@ async function waitForPayment(paymentId) {
 // ─── Webhook handler (production approach) ──────────────────────────────
 function startWebhookServer() {
   const server = http.createServer(async (req, res) => {
-    if (req.method !== 'POST' || req.url !== '/webhooks/coinpay') {
+    if (req.method !== 'POST' || req.url !== '/webhooks/tempesttouch') {
       res.writeHead(404);
       res.end('Not found');
       return;
@@ -112,12 +112,12 @@ function startWebhookServer() {
     const rawBody = Buffer.concat(chunks).toString();
 
     // Verify signature
-    const signature = req.headers['x-coinpay-signature'];
-    if (COINPAY_WEBHOOK_SECRET && signature) {
+    const signature = req.headers['x-tempesttouch-signature'];
+    if (TEMPESTTOUCH_WEBHOOK_SECRET && signature) {
       const isValid = verifyWebhookSignature({
         payload: rawBody,
         signature,
-        secret: COINPAY_WEBHOOK_SECRET,
+        secret: TEMPESTTOUCH_WEBHOOK_SECRET,
       });
 
       if (!isValid) {
@@ -166,7 +166,7 @@ function startWebhookServer() {
 
   server.listen(WEBHOOK_PORT, () => {
     console.log(`🌐 Webhook server listening on port ${WEBHOOK_PORT}`);
-    console.log(`   Configure your webhook URL as: https://yourserver.com/webhooks/coinpay`);
+    console.log(`   Configure your webhook URL as: https://yourserver.com/webhooks/tempesttouch`);
   });
 
   return server;
@@ -193,7 +193,7 @@ function cancelOrder(paymentId) {
 
 // ─── Main ───────────────────────────────────────────────────────────────
 async function main() {
-  console.log('🤖 CoinPay Payment Bot');
+  console.log('🤖 Tempest Touch Payment Bot');
   console.log('────────────────────────');
 
   // Start webhook server in background
@@ -220,9 +220,9 @@ main().catch(console.error);
 
 ```bash
 # Set environment variables
-export COINPAY_API_KEY="cp_live_your_key"
-export COINPAY_BUSINESS_ID="your-business-uuid"
-export COINPAY_WEBHOOK_SECRET="whsec_your_secret"  # optional
+export TEMPESTTOUCH_API_KEY="cp_live_your_key"
+export TEMPESTTOUCH_BUSINESS_ID="your-business-uuid"
+export TEMPESTTOUCH_WEBHOOK_SECRET="whsec_your_secret"  # optional
 
 # Run the bot
 node payment-bot.mjs
@@ -230,7 +230,7 @@ node payment-bot.mjs
 
 **Output:**
 ```
-🤖 CoinPay Payment Bot
+🤖 Tempest Touch Payment Bot
 ────────────────────────
 🌐 Webhook server listening on port 4000
 
@@ -240,7 +240,7 @@ node payment-bot.mjs
    Address:     0x7a1b2c3d4e5f...
    Amount:      0.00723 ETH
    Expires:     2025-01-15T11:30:00.000Z
-   QR Code:     https://coinpayportal.com/api/payments/pay_550.../qr
+   QR Code:     https://tempesttouch.com/api/payments/pay_550.../qr
 
 ⏳ Waiting for payment pay_550e8400...
    Status changed: confirmed
@@ -276,7 +276,7 @@ client.on('messageCreate', async (message) => {
           { name: 'Address', value: `\`${payment.payment_address}\`` },
           { name: 'Expires', value: payment.expires_at },
         ],
-        image: { url: coinpay.getPaymentQRUrl(payment.id) },
+        image: { url: tempesttouch.getPaymentQRUrl(payment.id) },
       }],
     });
 
@@ -301,7 +301,7 @@ bot.command('pay', async (ctx) => {
   );
 
   await ctx.replyWithPhoto(
-    coinpay.getPaymentQRUrl(payment.id),
+    tempesttouch.getPaymentQRUrl(payment.id),
     {
       caption: `Send ${payment.crypto_amount} ${chain || 'BTC'} to:\n\`${payment.payment_address}\``,
       parse_mode: 'Markdown',

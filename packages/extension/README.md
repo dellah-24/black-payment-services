@@ -1,15 +1,15 @@
-# @profullstack/coinpay-extension
+# @profullstack/tempesttouch-extension
 
-Cross-browser (MV3) CoinPay wallet + x402 payment extension for Chromium and
+Cross-browser (MV3) Tempest Touch wallet + x402 payment extension for Chromium and
 Firefox. Product spec: [`docs/BROWSER_EXTENSION_PRD.md`](../../docs/BROWSER_EXTENSION_PRD.md).
 
 ## Status — Phase 1 (wallet core) in progress
 
 This package currently contains the **tested, browser-native wallet core** plus
-extension scaffolding. It reuses `@profullstack/coinpay` for BIP-44/SLIP-0010
-derivation so addresses match the CoinPay web wallet exactly.
+extension scaffolding. It reuses `@profullstack/tempesttouch` for BIP-44/SLIP-0010
+derivation so addresses match the Tempest Touch web wallet exactly.
 
-### Built & tested (`pnpm --filter @profullstack/coinpay-extension test`)
+### Built & tested (`pnpm --filter @profullstack/tempesttouch-extension test`)
 
 | Module | Purpose | PRD |
 |--------|---------|-----|
@@ -36,9 +36,9 @@ confirmed (P0-2).
 ### Build & load
 
 ```bash
-pnpm --filter @profullstack/coinpay-extension build           # -> dist/ (Chrome MV3)
-pnpm --filter @profullstack/coinpay-extension build:firefox   # -> dist/ (Firefox MV3)
-pnpm --filter @profullstack/coinpay-extension dev             # rebuild on change
+pnpm --filter @profullstack/tempesttouch-extension build           # -> dist/ (Chrome MV3)
+pnpm --filter @profullstack/tempesttouch-extension build:firefox   # -> dist/ (Firefox MV3)
+pnpm --filter @profullstack/tempesttouch-extension dev             # rebuild on change
 ```
 
 `dist/` layout: `manifest.json`, `background/index.js` (self-contained ES module
@@ -54,14 +54,14 @@ service worker), `popup/index.html` + `popup/main.js`, `icons/`.
 - **Send** (prepare → approve → sign → broadcast) — Phase 2. Note the PRD's
   key finding: the transaction signer is **not** free SDK reuse and must be
   ported/de-Node-ified from `src/lib/web-wallet/signing.ts` or replaced.
-- **x402** provider (`window.coinpay`), approval window, payer-side pay→retry
+- **x402** provider (`window.tempesttouch`), approval window, payer-side pay→retry
   loop — Phase 3.
 
 ## Develop
 
 ```bash
-pnpm --filter @profullstack/coinpay-extension test        # unit tests
-pnpm --filter @profullstack/coinpay-extension type-check  # tsc --noEmit
+pnpm --filter @profullstack/tempesttouch-extension test        # unit tests
+pnpm --filter @profullstack/tempesttouch-extension type-check  # tsc --noEmit
 ```
 
 ## Security notes

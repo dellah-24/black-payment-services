@@ -6,10 +6,10 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
-- FOSSBilling payment adapter (`Payment_Adapter_CoinPayPortal`)
-- CoinPayPortal API client with cURL, Bearer auth, 30s timeout
+- FOSSBilling payment adapter (`Payment_Adapter_Tempest Touch`)
+- Tempest Touch API client with cURL, Bearer auth, 30s timeout
 - Webhook signature verifier using HMAC-SHA256 and constant-time comparison
-- Payment status mapper covering all CoinPayPortal event types
+- Payment status mapper covering all Tempest Touch event types
 - Admin configuration: API key, merchant ID, webhook secret, sandbox mode, expiration, underpayment tolerance, debug logging
 - Customer payment button template (`pay.phtml`)
 - Error template (`error.phtml`)

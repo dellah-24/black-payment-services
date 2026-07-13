@@ -235,7 +235,7 @@ describe('POST /api/businesses/[id]/webhook-test', () => {
     expect(data.test_result.request.url).toBe('https://example.com/webhook');
     expect(data.test_result.request.method).toBe('POST');
     expect(data.test_result.request.body.type).toBe('test.webhook');
-    expect(data.test_result.request.body.data.message).toBe('This is a test webhook from CoinPay');
+    expect(data.test_result.request.body.data.message).toBe('This is a test webhook from Tempest Touch');
   });
 
   it('should handle failed webhook delivery', async () => {
@@ -398,7 +398,7 @@ describe('POST /api/businesses/[id]/webhook-test', () => {
     expect(data.test_result.response_time_ms).toBeGreaterThanOrEqual(0);
   });
 
-  it('should use SDK signature format with X-CoinPay-Signature header', async () => {
+  it('should use SDK signature format with X-TempestTouch-Signature header', async () => {
     vi.mocked(verifySession).mockResolvedValue({
       success: true,
       merchant: { id: 'merchant-123', email: 'test@test.com' },
@@ -436,10 +436,10 @@ describe('POST /api/businesses/[id]/webhook-test', () => {
     const signCall = vi.mocked(generateTestWebhookSignature).mock.calls[0];
     expect(signCall[1]).toBe('secret-123');
     
-    // Verify fetch was called with X-CoinPay-Signature header
+    // Verify fetch was called with X-TempestTouch-Signature header
     expect(mockFetch).toHaveBeenCalled();
     const fetchCall = mockFetch.mock.calls[0];
-    expect(fetchCall[1].headers['X-CoinPay-Signature']).toBe('t=1234567890,v1=abc123def456');
+    expect(fetchCall[1].headers['X-TempestTouch-Signature']).toBe('t=1234567890,v1=abc123def456');
   });
 
   it('should send payload in SDK-compatible format', async () => {

@@ -235,7 +235,7 @@ describe('WalletAPIClient', () => {
       // Mock challenge endpoint
       mockFetch.mockResolvedValueOnce(
         okResponse({
-          challenge: 'coinpayportal:auth:123:abc',
+          challenge: 'tempesttouch:auth:123:abc',
           challenge_id: 'ch-1',
           expires_at: new Date(Date.now() + 300_000).toISOString(),
         })

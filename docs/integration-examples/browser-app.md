@@ -102,7 +102,7 @@ A minimal browser-based payment page that lets customers pay with crypto. No bui
     // ─── Configuration ──────────────────────────────────────────────────
     // In production, payment creation should go through YOUR backend
     // to avoid exposing the API key in the browser.
-    const API_BASE = 'https://coinpayportal.com/api';
+    const API_BASE = 'https://tempesttouch.com/api';
     const BUSINESS_ID = 'YOUR_BUSINESS_ID'; // Replace with your business UUID
 
     let currentPaymentId = null;
@@ -120,7 +120,7 @@ A minimal browser-based payment page that lets customers pay with crypto. No bui
       btn.textContent = 'Creating...';
 
       try {
-        // ⚠️  In production, call YOUR backend instead of the CoinPay API directly.
+        // ⚠️  In production, call YOUR backend instead of the Tempest Touch API directly.
         //     Your backend creates the payment and returns the details.
         //     This avoids exposing your API key in browser code.
         const response = await fetch('/api/create-payment', {
@@ -280,17 +280,17 @@ A minimal browser-based payment page that lets customers pay with crypto. No bui
 ```javascript
 // server.mjs
 import express from 'express';
-import { CoinPayClient } from '@profullstack/coinpay';
+import { Tempest TouchClient } from '@profullstack/tempesttouch';
 
 const app = express();
 app.use(express.json());
 app.use(express.static('public')); // Serve the HTML above from public/
 
-const client = new CoinPayClient({
-  apiKey: process.env.COINPAY_API_KEY,
+const client = new Tempest TouchClient({
+  apiKey: process.env.TEMPESTTOUCH_API_KEY,
 });
 
-const BUSINESS_ID = process.env.COINPAY_BUSINESS_ID;
+const BUSINESS_ID = process.env.TEMPESTTOUCH_BUSINESS_ID;
 
 // Payment creation proxy
 app.post('/api/create-payment', async (req, res) => {
@@ -333,7 +333,7 @@ app.listen(3000, () => console.log('Server running on port 3000'));
 import { useState, useEffect, useCallback } from 'react';
 
 const API_BASE = '/api';   // Your backend proxy
-const COINPAY_API = 'https://coinpayportal.com/api';
+const TEMPESTTOUCH_API = 'https://tempesttouch.com/api';
 
 const CHAINS = [
   { value: 'BTC', label: 'Bitcoin' },
@@ -379,7 +379,7 @@ export function PaymentWidget({ amount, orderId, onSuccess, onExpired }) {
 
     const interval = setInterval(async () => {
       try {
-        const res = await fetch(`${COINPAY_API}/payments/${payment.id}/check-balance`, {
+        const res = await fetch(`${TEMPESTTOUCH_API}/payments/${payment.id}/check-balance`, {
           method: 'POST',
         });
         const data = await res.json();
@@ -419,7 +419,7 @@ export function PaymentWidget({ amount, orderId, onSuccess, onExpired }) {
       <div className="text-center p-6">
         <h2>Scan to Pay</h2>
         <img
-          src={`${COINPAY_API}/payments/${payment.id}/qr`}
+          src={`${TEMPESTTOUCH_API}/payments/${payment.id}/qr`}
           alt="QR Code"
           className="mx-auto my-4 w-48"
         />

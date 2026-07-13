@@ -2,7 +2,7 @@
  * System Wallet Service for Payment Address Generation
  *
  * This service manages the SYSTEM's HD wallet for generating unique payment addresses.
- * The system (CoinPay) owns these wallets, NOT the merchants.
+ * The system (TempestTouch) owns these wallets, NOT the merchants.
  *
  * Payment Flow:
  * 1. Customer initiates payment
@@ -13,7 +13,7 @@
  *    - System forwards 99.5% to merchant's wallet
  *
  * This ensures:
- * - CoinPay can collect commission on every transaction
+ * - TempestTouch can collect commission on every transaction
  * - Each payment has a unique trackable address
  * - Merchants never receive direct payments (all go through system)
  */

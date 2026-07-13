@@ -1,4 +1,4 @@
--- CoinPay Initial Schema Migration
+-- Tempest Touch Initial Schema Migration
 -- This creates all tables, indexes, RLS policies, and functions for the payment gateway
 
 -- Enable pgcrypto extension for gen_random_uuid()

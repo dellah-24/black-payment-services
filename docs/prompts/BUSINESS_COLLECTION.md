@@ -1,6 +1,6 @@
 # Business Collection: Receive Payments Across Many Coins/Chains
 
-You are integrating CoinPay's Business Collection feature, which gives a merchant a single "collection" that aggregates inbound payments across multiple coins and chains into one ledger.
+You are integrating Tempest Touch's Business Collection feature, which gives a merchant a single "collection" that aggregates inbound payments across multiple coins and chains into one ledger.
 
 ## Goal
 
@@ -9,23 +9,23 @@ Generate a payment address per customer/order under a merchant's collection. Fun
 ## Environment variables
 
 ```
-COINPAY_API_KEY=sk_live_...
-COINPAY_WEBHOOK_SECRET=whsec_...
-COINPAY_API_URL=https://coinpayportal.com
+TEMPESTTOUCH_API_KEY=sk_live_...
+TEMPESTTOUCH_WEBHOOK_SECRET=whsec_...
+TEMPESTTOUCH_API_URL=https://tempesttouch.com
 ```
 
 Where to find them:
-- `COINPAY_API_KEY` — `https://coinpayportal.com/businesses/<your-business-id>` → **API Keys** tab → **Create API Key**. Shown once.
-- `COINPAY_WEBHOOK_SECRET` — same business page → **Webhooks** tab (or `?mode=webhooks`) → create an endpoint → **Signing Secret**.
-- The merchant payout wallet must be configured first at `https://coinpayportal.com/settings/wallets` (or per-business under the **Wallets** tab). No private keys touch your code.
+- `TEMPESTTOUCH_API_KEY` — `https://tempesttouch.com/businesses/<your-business-id>` → **API Keys** tab → **Create API Key**. Shown once.
+- `TEMPESTTOUCH_WEBHOOK_SECRET` — same business page → **Webhooks** tab (or `?mode=webhooks`) → create an endpoint → **Signing Secret**.
+- The merchant payout wallet must be configured first at `https://tempesttouch.com/settings/wallets` (or per-business under the **Wallets** tab). No private keys touch your code.
 
 ## Steps
 
 1. **Create a collection payment** server-side:
 
    ```bash
-   curl -X POST https://coinpayportal.com/api/collection/payments \
-     -H "Authorization: Bearer $COINPAY_API_KEY" \
+   curl -X POST https://tempesttouch.com/api/collection/payments \
+     -H "Authorization: Bearer $TEMPESTTOUCH_API_KEY" \
      -H "Content-Type: application/json" \
      -d '{
        "amount": 75.00,
@@ -33,7 +33,7 @@ Where to find them:
        "coin": "USDC",
        "chain": "polygon",
        "reference": "invoice_789",
-       "webhook_url": "https://example-business.com/api/coinpay/webhook"
+       "webhook_url": "https://example-business.com/api/tempesttouch/webhook"
      }'
    ```
 
@@ -44,8 +44,8 @@ Where to find them:
 3. **List collection payments** for reconciliation:
 
    ```bash
-   curl https://coinpayportal.com/api/collection/payments?status=confirmed \
-     -H "Authorization: Bearer $COINPAY_API_KEY"
+   curl https://tempesttouch.com/api/collection/payments?status=confirmed \
+     -H "Authorization: Bearer $TEMPESTTOUCH_API_KEY"
    ```
 
 ## Rules

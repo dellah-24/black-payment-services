@@ -2,8 +2,8 @@
  * Multi-Wallet Registry
  *
  * Manages multiple wallets in localStorage under:
- * - coinpay_wallets: Record<string, WalletEntry>
- * - coinpay_active_wallet: string (wallet ID)
+ * - tempesttouch_wallets: Record<string, WalletEntry>
+ * - tempesttouch_active_wallet: string (wallet ID)
  */
 
 import type { EncryptedData } from './client-crypto';
@@ -16,8 +16,8 @@ export interface WalletEntry {
   chains: string[];
 }
 
-const REGISTRY_KEY = 'coinpay_wallets';
-const ACTIVE_KEY = 'coinpay_active_wallet';
+const REGISTRY_KEY = 'tempesttouch_wallets';
+const ACTIVE_KEY = 'tempesttouch_active_wallet';
 const MAX_WALLETS = 10;
 
 export function getWalletRegistry(): Record<string, WalletEntry> {
@@ -96,7 +96,7 @@ export function getWalletCount(): number {
 export function hasAnyWallet(): boolean {
   return (
     getWalletCount() > 0 ||
-    localStorage.getItem('coinpay_wallet') !== null
+    localStorage.getItem('tempesttouch_wallet') !== null
   );
 }
 

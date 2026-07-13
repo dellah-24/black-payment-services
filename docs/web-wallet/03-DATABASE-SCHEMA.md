@@ -1,4 +1,4 @@
-# CoinPayPortal Wallet Mode - Database Schema
+# Tempest Touch Wallet Mode - Database Schema
 
 ## 1. Overview
 

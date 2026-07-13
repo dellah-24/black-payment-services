@@ -1,13 +1,13 @@
 {
   "$schema": "./manifest.schema.json",
-  "name": "coinpayportal-<platform>",
-  "displayName": "CoinPayPortal for <Platform>",
+  "name": "tempesttouch-<platform>",
+  "displayName": "Tempest Touch for <Platform>",
   "version": "0.0.0",
   "status": "stub",
   "platform": "<platform>",
   "platformMinVersion": "TODO",
   "language": "TODO (php|node|ruby|...)",
-  "sdk": "TODO (packages/sdk | packages/coinpay-php)",
+  "sdk": "TODO (packages/sdk | packages/tempesttouch-php)",
   "supportedEvents": [
     "payment.confirmed",
     "payment.forwarded",

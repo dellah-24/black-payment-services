@@ -19,7 +19,7 @@ export interface InvoiceStripeCheckout {
 
 /**
  * Create a Stripe Connect checkout session for an invoice and route the funds to
- * the business's connected account, taking the CoinPay platform fee as an
+ * the business's connected account, taking the Tempest Touch platform fee as an
  * application fee. Returns `null` when the business has no usable Stripe Connect
  * account (not connected, or charges not yet enabled) — callers decide whether
  * that is fatal.
@@ -47,7 +47,7 @@ export async function createInvoiceStripeCheckout(
   const platformFeeRate = isPaidTier ? 0.005 : 0.01;
   const platformFeeAmount = Math.round(amountCents * platformFeeRate);
 
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://coinpayportal.com';
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://tempesttouch.com';
   const stripe = await getStripe();
   const session = await stripe.checkout.sessions.create({
     line_items: [
@@ -67,7 +67,7 @@ export async function createInvoiceStripeCheckout(
         destination: stripeAccount.stripe_account_id,
       },
       metadata: {
-        coinpay_invoice_id: invoice.id,
+        tempesttouch_invoice_id: invoice.id,
         business_id: invoice.business_id,
         merchant_id: invoice.businesses?.merchant_id,
       },
@@ -75,7 +75,7 @@ export async function createInvoiceStripeCheckout(
     success_url: `${appUrl}/invoices/${invoice.id}/pay?status=success`,
     cancel_url: `${appUrl}/invoices/${invoice.id}/pay`,
     metadata: {
-      coinpay_invoice_id: invoice.id,
+      tempesttouch_invoice_id: invoice.id,
       business_id: invoice.business_id,
       merchant_id: invoice.businesses?.merchant_id,
       platform_fee_amount: platformFeeAmount.toString(),
@@ -84,3 +84,4 @@ export async function createInvoiceStripeCheckout(
 
   return { stripeCheckoutUrl: session.url!, stripeSessionId: session.id };
 }
+

@@ -51,8 +51,8 @@ vi.mock('@/lib/webauthn/challenges', () => ({
 }));
 
 vi.mock('@/lib/webauthn/config', () => ({
-  getRpId: vi.fn(() => 'coinpayportal.com'),
-  getOrigin: vi.fn(() => 'https://coinpayportal.com'),
+  getRpId: vi.fn(() => 'tempesttouch.com'),
+  getOrigin: vi.fn(() => 'https://tempesttouch.com'),
 }));
 
 import { POST } from './route';

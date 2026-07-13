@@ -1,6 +1,6 @@
 #!/usr/bin/env npx tsx
 /**
- * coinpayportal.com Stats Dashboard
+ * tempesttouch.com Stats Dashboard
  * Usage: npx tsx scripts/stats.ts
  */
 
@@ -68,7 +68,7 @@ function line(label: string, value: number | string) {
 }
 
 async function main() {
-  console.log("📊 coinpayportal.com Stats Dashboard");
+  console.log("📊 tempesttouch.com Stats Dashboard");
   console.log(`   ${new Date().toISOString()}\n`);
 
   // ── Merchants ──

@@ -1,6 +1,6 @@
 # Integration Examples
 
-Practical, copy-paste-ready examples for common CoinPay integration patterns.
+Practical, copy-paste-ready examples for common Tempest Touch integration patterns.
 
 ## Examples
 
@@ -15,12 +15,12 @@ Practical, copy-paste-ready examples for common CoinPay integration patterns.
 All integrations follow the same flow:
 
 ```
-1. Your Backend → POST /api/payments/create → CoinPay
-2. CoinPay → Returns payment address + QR code
+1. Your Backend → POST /api/payments/create → Tempest Touch
+2. Tempest Touch → Returns payment address + QR code
 3. Your Frontend → Shows address/QR to customer
 4. Customer → Sends crypto to the address
-5. CoinPay → Detects funds on-chain
-6. CoinPay → POST webhook → Your Backend
+5. Tempest Touch → Detects funds on-chain
+6. Tempest Touch → POST webhook → Your Backend
 7. Your Backend → Fulfills the order
 ```
 
@@ -32,7 +32,7 @@ All integrations follow the same flow:
 
 ## Prerequisites
 
-1. CoinPay account with at least one business
+1. Tempest Touch account with at least one business
 2. Wallet addresses configured for your supported chains
 3. API key (from business settings)
 4. Webhook secret (from business settings) — for webhook verification

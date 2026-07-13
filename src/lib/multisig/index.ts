@@ -2,7 +2,7 @@
  * Multisig Escrow Module
  *
  * Non-custodial 2-of-3 multisig escrow secured via multisignature.
- * CoinPay is a dispute mediator and multisig co-signer — never a custodian.
+ * Tempest Touch is a dispute mediator and multisig co-signer — never a custodian.
  */
 
 // Core engine

@@ -1,6 +1,6 @@
-# ai.txt for CoinPay
-# Base: https://coinpayportal.com
-# Contact: support@coinpayportal.com
+# ai.txt for Tempest Touch
+# Base: https://tempesttouch.com
+# Contact: support@tempesttouch.com
 # Models: *
 # Capabilities: chat, embed, fine_tune, crawl, train
 

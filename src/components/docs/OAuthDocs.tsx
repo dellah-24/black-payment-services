@@ -6,7 +6,7 @@ export function OAuthDocs() {
   return (
     <DocSection title="OAuth 2.0 / OpenID Connect">
       <p className="text-gray-300 mb-6">
-        CoinPayPortal is a full <strong>OAuth 2.0 / OIDC provider</strong>. Third-party apps can authenticate users,
+        TempestTouch is a full <strong>OAuth 2.0 / OIDC provider</strong>. Third-party apps can authenticate users,
         access profile data, wallet addresses, and DIDs — all with standard authorization code flow + PKCE.
       </p>
 
@@ -15,7 +15,7 @@ export function OAuthDocs() {
         <ol className="text-purple-200 text-sm space-y-1 list-decimal list-inside">
           <li><strong>Register</strong> an OAuth client in your dashboard (<code className="text-purple-100">/dashboard/oauth</code>)</li>
           <li><strong>Redirect</strong> users to <code className="text-purple-100">/api/oauth/authorize</code> with your client_id and scopes</li>
-          <li><strong>User consents</strong> on the CoinPayPortal consent screen</li>
+          <li><strong>User consents</strong> on the TempestTouch consent screen</li>
           <li><strong>Exchange</strong> the authorization code for tokens at <code className="text-purple-100">/api/oauth/token</code></li>
           <li><strong>Fetch</strong> user info from <code className="text-purple-100">/api/oauth/userinfo</code></li>
         </ol>
@@ -82,7 +82,7 @@ code_challenge_method = S256                    (required if code_challenge pres
         </CodeBlock>
 
         <CodeBlock title="Example Redirect URL">
-{`https://coinpayportal.com/api/oauth/authorize?
+{`https://tempesttouch.com/api/oauth/authorize?
   response_type=code&
   client_id=cp_a1b2c3d4e5f6...&
   redirect_uri=https://myapp.com/callback&
@@ -110,7 +110,7 @@ code_verifier=YOUR_PKCE_VERIFIER   (if PKCE was used)`}
         </CodeBlock>
 
         <CodeBlock title="cURL Example" language="curl">
-{`curl -X POST https://coinpayportal.com/api/oauth/token \\
+{`curl -X POST https://tempesttouch.com/api/oauth/token \\
   -H "Content-Type: application/x-www-form-urlencoded" \\
   -d "grant_type=authorization_code" \\
   -d "code=AUTH_CODE_HERE" \\
@@ -142,7 +142,7 @@ client_secret=cps_xxxxxxxxxxxx...`}
 
       <ApiEndpoint method="GET" path="/api/oauth/userinfo" description="Get user claims based on the access token's scopes.">
         <CodeBlock title="cURL Example" language="curl">
-{`curl https://coinpayportal.com/api/oauth/userinfo \\
+{`curl https://tempesttouch.com/api/oauth/userinfo \\
   -H "Authorization: Bearer ACCESS_TOKEN"`}
         </CodeBlock>
 
@@ -191,7 +191,7 @@ const challenge = crypto
   .digest('base64url');
 
 // 2. Redirect user to authorize
-const authUrl = new URL('https://coinpayportal.com/api/oauth/authorize');
+const authUrl = new URL('https://tempesttouch.com/api/oauth/authorize');
 authUrl.searchParams.set('response_type', 'code');
 authUrl.searchParams.set('client_id', 'cp_your_client_id');
 authUrl.searchParams.set('redirect_uri', 'https://myapp.com/callback');
@@ -206,7 +206,7 @@ app.get('/callback', async (req, res) => {
   const { code, state } = req.query;
   // Verify state matches what you stored in session
 
-  const tokenRes = await fetch('https://coinpayportal.com/api/oauth/token', {
+  const tokenRes = await fetch('https://tempesttouch.com/api/oauth/token', {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body: new URLSearchParams({
@@ -222,7 +222,7 @@ app.get('/callback', async (req, res) => {
   const tokens = await tokenRes.json();
 
   // 4. Fetch user info
-  const userRes = await fetch('https://coinpayportal.com/api/oauth/userinfo', {
+  const userRes = await fetch('https://tempesttouch.com/api/oauth/userinfo', {
     headers: { Authorization: \`Bearer \${tokens.access_token}\` },
   });
   const user = await userRes.json();

@@ -27,7 +27,7 @@ describe('POST /api/subscriptions/checkout', () => {
     vi.clearAllMocks();
     process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://test.supabase.co';
     process.env.SUPABASE_SERVICE_ROLE_KEY = 'service-role-key';
-    process.env.NEXT_PUBLIC_APP_URL = 'https://coinpayportal.com';
+    process.env.NEXT_PUBLIC_APP_URL = 'https://tempesttouch.com';
 
     vi.mocked(authenticateRequest).mockResolvedValue({
       success: true,
@@ -51,7 +51,7 @@ describe('POST /api/subscriptions/checkout', () => {
     });
   });
 
-  it('returns a hosted CoinPay checkout URL for subscription payments', async () => {
+  it('returns a hosted Tempest Touch checkout URL for subscription payments', async () => {
     const request = new NextRequest('http://localhost/api/subscriptions/checkout', {
       method: 'POST',
       headers: {
@@ -72,6 +72,6 @@ describe('POST /api/subscriptions/checkout', () => {
     expect(data.success).toBe(true);
     expect(data.payment.id).toBe('pay_sub_123');
     expect(data.payment.checkout_path).toBe('/pay/pay_sub_123');
-    expect(data.payment.checkout_url).toBe('https://coinpayportal.com/pay/pay_sub_123');
+    expect(data.payment.checkout_url).toBe('https://tempesttouch.com/pay/pay_sub_123');
   });
 });

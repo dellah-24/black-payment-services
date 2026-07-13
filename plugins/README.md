@@ -1,6 +1,6 @@
-# CoinPayPortal — Ecommerce / Billing Plugins
+# Tempest Touch — Ecommerce / Billing Plugins
 
-Each subdirectory ships a CoinPayPortal integration for one host platform. New plugins should be scaffolded from [`_template/`](./_template/).
+Each subdirectory ships a Tempest Touch integration for one host platform. New plugins should be scaffolded from [`_template/`](./_template/).
 
 ## Status
 
@@ -35,8 +35,8 @@ All plugins must:
 
 - Authenticate with a `cp_live_*` / `cp_test_*` API key.
 - Build hosted checkouts via `POST /api/invoices` or `POST /api/payments/create`.
-- Verify webhooks with HMAC-SHA256 (`X-CoinPayPortal-Signature: t=<ts>,v1=<hex>`) and a 5-minute replay window.
+- Verify webhooks with HMAC-SHA256 (`X-Tempest Touch-Signature: t=<ts>,v1=<hex>`) and a 5-minute replay window.
 - Process `payment.confirmed` idempotently — duplicate deliveries must be no-ops.
-- Use the canonical SDK from `packages/sdk` (JS) or `packages/coinpay-php` (PHP). Do **not** re-implement HMAC, retries, or SSRF protection.
+- Use the canonical SDK from `packages/sdk` (JS) or `packages/tempesttouch-php` (PHP). Do **not** re-implement HMAC, retries, or SSRF protection.
 
 See [`_template/README.md`](./_template/README.md) for the full contract.

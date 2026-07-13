@@ -7,14 +7,14 @@ export default function ContactPage() {
         <div>
           <h2 className="text-2xl font-bold mb-4 text-white">Get in Touch</h2>
           <p className="text-gray-300 mb-6">
-            Have questions about CoinPay? We're here to help.
+            Have questions about Tempest Touch? We're here to help.
           </p>
           
           <div className="space-y-4">
             <div>
               <h3 className="font-semibold mb-2 text-white">Email</h3>
-              <a href="mailto:support@coinpayportal.com" className="text-purple-600 hover:text-purple-700">
-                support@coinpayportal.com
+              <a href="mailto:support@tempesttouch.com" className="text-purple-600 hover:text-purple-700">
+                support@tempesttouch.com
               </a>
             </div>
             
@@ -34,7 +34,7 @@ export default function ContactPage() {
             
             <div>
               <h3 className="font-semibold mb-2 text-white">GitHub</h3>
-              <a href="https://github.com/profullstack/coinpayportal" target="_blank" rel="noopener noreferrer" className="text-purple-600 hover:text-purple-700">
+              <a href="https://github.com/profullstack/tempesttouch" target="_blank" rel="noopener noreferrer" className="text-purple-600 hover:text-purple-700">
                 Report issues or contribute
               </a>
             </div>

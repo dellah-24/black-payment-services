@@ -26,7 +26,7 @@ describe('POST /api/auth/forgot-password', () => {
   beforeEach(() => {
     process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://test.supabase.co';
     process.env.SUPABASE_SERVICE_ROLE_KEY = 'test-key';
-    process.env.NEXT_PUBLIC_APP_URL = 'https://coinpayportal.com';
+    process.env.NEXT_PUBLIC_APP_URL = 'https://tempesttouch.com';
   });
 
   it('should return success for valid email', async () => {

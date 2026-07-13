@@ -10,7 +10,7 @@ export default function HelpPage() {
             <div>
               <h3 className="font-semibold mb-2 text-white">How do I start accepting crypto payments?</h3>
               <p className="text-gray-300">
-                Sign up for a CoinPay account, create a business, and add your wallet addresses. 
+                Sign up for a Tempest Touch account, create a business, and add your wallet addresses. 
                 You'll get API credentials to integrate payments into your website.
               </p>
             </div>
@@ -27,7 +27,7 @@ export default function HelpPage() {
             <div>
               <h3 className="font-semibold mb-2 text-white">What are the fees?</h3>
               <p className="text-gray-300">
-                CoinPay charges a simple 0.5% platform fee. You receive 99.5% of each payment
+                Tempest Touch charges a simple 0.5% platform fee. You receive 99.5% of each payment
                 directly to your wallet, minus blockchain network fees. Network fees vary by
                 blockchain (e.g., ~$0.00025 for Solana, ~$0.50-5 for Ethereum) and are outside our control.
               </p>

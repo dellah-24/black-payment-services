@@ -158,7 +158,7 @@ export class Wallet {
 
     // Sign proof with the master account key (m/44'/60'/0') that matches
     // the public_key_secp256k1 stored on the wallet record
-    const proofMessage = `coinpayportal:import:${Date.now()}`;
+    const proofMessage = `tempesttouch:import:${Date.now()}`;
     const messageBytes = new TextEncoder().encode(proofMessage);
     const masterPrivKeyBytes = hexToUint8Array(bundle.privateKeySecp256k1);
     const signatureBytes = secp256k1.sign(messageBytes, masterPrivKeyBytes);
@@ -887,3 +887,4 @@ function mapWebhook(raw: any): WebhookRegistration {
     createdAt: raw.created_at,
   };
 }
+

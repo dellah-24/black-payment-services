@@ -111,7 +111,7 @@ describe('POST /api/invoices/[id]/send', () => {
     });
     process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://test.supabase.co';
     process.env.SUPABASE_SERVICE_ROLE_KEY = 'test-key';
-    process.env.NEXT_PUBLIC_APP_URL = 'https://coinpayportal.com';
+    process.env.NEXT_PUBLIC_APP_URL = 'https://tempesttouch.com';
   });
 
   function setupMocks(overrides: { invoice?: any; stripeAccount?: any } = {}) {
@@ -179,7 +179,7 @@ describe('POST /api/invoices/[id]/send', () => {
     expect(createCall.line_items[0].price_data.unit_amount).toBe(10000); // $100 in cents
     expect(createCall.payment_intent_data.transfer_data.destination).toBe('acct_test123');
     expect(createCall.payment_intent_data.application_fee_amount).toBe(100); // 1% of 10000
-    expect(createCall.metadata.coinpay_invoice_id).toBe('inv-1');
+    expect(createCall.metadata.tempesttouch_invoice_id).toBe('inv-1');
     expect(createCall.metadata.business_id).toBe('biz-1');
   });
 

@@ -446,7 +446,7 @@ export default function PublicPaymentPage() {
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
             </svg>
-            <span className="font-semibold">CoinPay</span>
+            <span className="font-semibold">Tempest Touch</span>
           </Link>
           {business && (
             <p className="text-gray-400 text-sm">Payment to {business.name}</p>
@@ -885,7 +885,7 @@ export default function PublicPaymentPage() {
           <p className="text-gray-500 text-sm">
             Powered by{' '}
             <Link href="/" className="text-purple-400 hover:text-purple-300 transition-colors">
-              CoinPay
+              Tempest Touch
             </Link>
           </p>
         </div>

@@ -4,11 +4,11 @@
 
 x402 is Coinbase's open HTTP-native payment protocol that uses the HTTP 402 "Payment Required" status code to enable machine-to-machine and human-to-machine payments. When a client requests a paid resource, the server responds with HTTP 402 containing payment instructions. The client signs a payment, then retries the request with proof in the `X-PAYMENT` header.
 
-## Why CoinPayPortal + x402?
+## Why Tempest Touch + x402?
 
-Everyone else's x402 implementation is USDC-on-Base only. **CoinPayPortal is the first multi-chain, multi-asset x402 facilitator.**
+Everyone else's x402 implementation is USDC-on-Base only. **Tempest Touch is the first multi-chain, multi-asset x402 facilitator.**
 
-The 402 response's `accepts` array includes every payment method CoinPayPortal supports — the buyer picks their preferred chain and asset:
+The 402 response's `accepts` array includes every payment method Tempest Touch supports — the buyer picks their preferred chain and asset:
 
 | Category | Methods |
 |----------|---------|
@@ -17,7 +17,7 @@ The 402 response's `accepts` array includes every payment method CoinPayPortal s
 | **Lightning** | BOLT12 (instant, near-zero fees) |
 | **Fiat** | Stripe (card payments) |
 
-Plus all existing CoinPayPortal features work alongside x402: **escrow**, **swaps**, **subscriptions**, and **payouts**.
+Plus all existing Tempest Touch features work alongside x402: **escrow**, **swaps**, **subscriptions**, and **payouts**.
 
 ## Architecture
 
@@ -36,7 +36,7 @@ Plus all existing CoinPayPortal features work alongside x402: **escrow**, **swap
                                            6. Verify & Settle
                                                   │
                                            ┌──────▼───────┐
-                                           │ CoinPayPortal │
+                                           │ Tempest Touch │
                                            │  Facilitator  │
                                            │               │
                                            │ Multi-chain:  │
@@ -60,7 +60,7 @@ When a client hits a 402-protected endpoint, they receive ALL available payment 
       "asset": "BTC",
       "maxAmountRequired": "769",
       "payTo": "bc1qMerchant...",
-      "extra": { "label": "Bitcoin", "facilitator": "https://coinpayportal.com/api/x402" }
+      "extra": { "label": "Bitcoin", "facilitator": "https://tempesttouch.com/api/x402" }
     },
     {
       "scheme": "exact",
@@ -153,7 +153,7 @@ Decoded (USDC on Base example):
 For AI agents, bots, and programmatic clients, use `x402fetch()` — it wraps `fetch()` and automatically handles the 402 → pay → retry loop:
 
 ```js
-import { x402fetch } from '@profullstack/coinpay';
+import { x402fetch } from '@profullstack/tempesttouch';
 
 const response = await x402fetch('https://api.example.com/premium', {
   paymentMethods: {
@@ -169,7 +169,7 @@ const data = await response.json();
 
 ## Fees
 
-CoinPayPortal takes a commission on each x402 payment, deducted before forwarding to the merchant:
+Tempest Touch takes a commission on each x402 payment, deducted before forwarding to the merchant:
 
 | Plan | Commission | Merchant Receives | Price |
 |------|-----------|-------------------|-------|
@@ -183,13 +183,13 @@ Network fees (gas, miner fees) are separate and vary by chain. Lightning payment
 ### Quick Start
 
 ```bash
-npm install @profullstack/coinpay
+npm install @profullstack/tempesttouch
 ```
 
 #### Express — Multi-Asset (Recommended)
 
 ```javascript
-import { createX402Middleware } from '@profullstack/coinpay';
+import { createX402Middleware } from '@profullstack/tempesttouch';
 
 const x402 = createX402Middleware({
   apiKey: 'cp_live_xxxxx',
@@ -205,7 +205,7 @@ const x402 = createX402Middleware({
   },
   rates: { BTC: 65000, ETH: 3500, SOL: 150, POL: 0.50, BCH: 350 },
   // Or fetch live rates automatically:
-  // ratesEndpoint: 'https://coinpayportal.com/api/rates',
+  // ratesEndpoint: 'https://tempesttouch.com/api/rates',
 });
 
 // Charge $5 — buyer picks their chain
@@ -229,7 +229,7 @@ app.get('/api/data', x402({ amount: '1000', network: 'bitcoin' }), handler);
 #### Next.js App Router
 
 ```javascript
-import { buildPaymentRequired, verifyX402Payment } from '@profullstack/coinpay';
+import { buildPaymentRequired, verifyX402Payment } from '@profullstack/tempesttouch';
 
 export async function GET(request) {
   const paymentHeader = request.headers.get('x-payment');
@@ -277,15 +277,15 @@ const x402 = createX402Middleware({
 
 ```bash
 # Check facilitator status
-coinpay x402 status
+tempesttouch x402 status
 
 # Test the x402 flow against a local endpoint
-coinpay x402 test --url http://localhost:3000/api/premium
+tempesttouch x402 test --url http://localhost:3000/api/premium
 ```
 
 ### Dashboard
 
-Log into CoinPayPortal and navigate to the **x402** section to:
+Log into Tempest Touch and navigate to the **x402** section to:
 - View setup instructions and code snippets
 - Monitor active x402-protected endpoints
 - See payment history for x402 transactions
@@ -344,6 +344,6 @@ Log into CoinPayPortal and navigate to the **x402** section to:
 ## Resources
 
 - [x402 Protocol Specification](https://docs.x402.org)
-- [CoinPayPortal Documentation](https://docs.coinpayportal.com)
+- [Tempest Touch Documentation](https://docs.tempesttouch.com)
 - [USDC Developer Docs](https://developers.circle.com/stablecoins/docs)
 - [BOLT12 Specification](https://bolt12.org)

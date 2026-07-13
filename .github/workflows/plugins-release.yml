@@ -56,20 +56,20 @@ jobs:
           echo "Building plugins version ${VERSION}"
 
       - name: Run webhook contract tests
-        run: php packages/coinpay-php/tests/WebhookTest.php
+        run: php packages/tempesttouch-php/tests/WebhookTest.php
 
       - name: Run client integration tests
-        run: php packages/coinpay-php/tests/ClientTest.php
+        run: php packages/tempesttouch-php/tests/ClientTest.php
 
       - name: Build zips
         env:
-          COINPAY_PLUGIN_VERSION: ${{ steps.meta.outputs.version }}
+          TEMPESTTOUCH_PLUGIN_VERSION: ${{ steps.meta.outputs.version }}
         run: ./scripts/build-plugin-zips.sh
 
       - uses: actions/upload-artifact@v4
         with:
           name: plugin-zips
-          path: dist/coinpay-*.zip
+          path: dist/tempesttouch-*.zip
           retention-days: 90
 
   github-release:
@@ -90,20 +90,20 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.ref_type == 'tag' && github.ref_name || format('plugins-v{0}', needs.build.outputs.version) }}
-          name: CoinPay Plugins ${{ needs.build.outputs.version }}
+          name: Tempest Touch Plugins ${{ needs.build.outputs.version }}
           body: |
-            CoinPay for WooCommerce and CoinPay for WHMCS — version ${{ needs.build.outputs.version }}.
+            Tempest Touch for WooCommerce and Tempest Touch for WHMCS — version ${{ needs.build.outputs.version }}.
 
             ## Downloads
-            - `coinpay-woocommerce-${{ needs.build.outputs.version }}.zip` — install via WordPress → Plugins → Add New → Upload Plugin.
-            - `coinpay-whmcs-${{ needs.build.outputs.version }}.zip` — unzip into your WHMCS install root.
+            - `tempesttouch-woocommerce-${{ needs.build.outputs.version }}.zip` — install via WordPress → Plugins → Add New → Upload Plugin.
+            - `tempesttouch-whmcs-${{ needs.build.outputs.version }}.zip` — unzip into your WHMCS install root.
 
             ## Distribution status
             - [x] GitHub Release assets (you are here)
             - [ ] WordPress.org plugin directory (SVN deploy — runs automatically when `WP_ORG_SVN_USERNAME` is configured)
             - [ ] WooCommerce.com Marketplace — **manual upload required** (no public API). Vendor dashboard: https://woocommerce.com/my-dashboard/
             - [ ] WHMCS Marketplace — **manual upload required** (no public API). Vendor dashboard: https://marketplace.whmcs.com/
-          files: dist/coinpay-*.zip
+          files: dist/tempesttouch-*.zip
           generate_release_notes: true
 
   wordpress-org-deploy:
@@ -119,7 +119,7 @@ jobs:
       - name: Prepare plugin dir
         run: |
           mkdir -p _deploy
-          cp -r plugins/woocommerce/coinpay-woocommerce/* _deploy/
+          cp -r plugins/woocommerce/tempesttouch-woocommerce/* _deploy/
           ls -la _deploy
 
       - name: Deploy to WordPress.org SVN
@@ -127,7 +127,7 @@ jobs:
         env:
           SVN_USERNAME: ${{ secrets.WP_ORG_SVN_USERNAME }}
           SVN_PASSWORD: ${{ secrets.WP_ORG_SVN_PASSWORD }}
-          SLUG: coinpay-woocommerce
+          SLUG: tempesttouch-woocommerce
           VERSION: ${{ needs.build.outputs.version }}
           BUILD_DIR: ./_deploy
           # ASSETS_DIR: ./plugins/woocommerce/.wordpress-org  # add if/when we ship banners/icons
@@ -149,5 +149,5 @@ jobs:
             exit 0
           fi
           curl -fsS -X POST -H 'Content-Type: application/json' \
-            -d "{\"text\": \"CoinPay plugins v${VERSION} built. Manual upload needed:\\n• WooCommerce.com: https://woocommerce.com/my-dashboard/\\n• WHMCS Marketplace: https://marketplace.whmcs.com/\\nArtifacts: ${RUN_URL}\"}" \
+            -d "{\"text\": \"Tempest Touch plugins v${VERSION} built. Manual upload needed:\\n• WooCommerce.com: https://woocommerce.com/my-dashboard/\\n• WHMCS Marketplace: https://marketplace.whmcs.com/\\nArtifacts: ${RUN_URL}\"}" \
             "${NOTIFY_URL}"

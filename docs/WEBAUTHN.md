@@ -1,6 +1,6 @@
 # WebAuthn / Passkeys
 
-CoinPay supports passwordless authentication via WebAuthn (FIDO2) passkeys. Users can register hardware security keys, platform authenticators (Touch ID, Windows Hello), or software passkeys (e.g., Bitwarden) and use them to log in without a password.
+Tempest Touch supports passwordless authentication via WebAuthn (FIDO2) passkeys. Users can register hardware security keys, platform authenticators (Touch ID, Windows Hello), or software passkeys (e.g., Bitwarden) and use them to log in without a password.
 
 ## Overview
 
@@ -43,7 +43,7 @@ Authorization: Bearer <session-token>
   "success": true,
   "options": {
     "challenge": "base64url-encoded-challenge",
-    "rp": { "name": "CoinPay", "id": "coinpayportal.com" },
+    "rp": { "name": "Tempest Touch", "id": "tempesttouch.com" },
     "user": {
       "id": "base64url-encoded-user-id",
       "name": "user@example.com",
@@ -122,7 +122,7 @@ Content-Type: application/json
   "success": true,
   "options": {
     "challenge": "base64url-encoded-challenge",
-    "rpId": "coinpayportal.com",
+    "rpId": "tempesttouch.com",
     "allowCredentials": [...],
     "userVerification": "preferred",
     "timeout": 60000
@@ -223,7 +223,7 @@ Authorization: Bearer <session-token>
 
 | Variable | Required | Default | Description |
 |---|---|---|---|
-| `WEBAUTHN_RP_ID` | No | Derived from `Host` header or `coinpayportal.com` | Relying Party ID (domain) |
+| `WEBAUTHN_RP_ID` | No | Derived from `Host` header or `tempesttouch.com` | Relying Party ID (domain) |
 | `WEBAUTHN_ORIGIN` | No | Derived from request headers | Expected origin for verification |
 
 The RP ID must match the domain where WebAuthn is used. For local development, it will auto-detect from the request `Host` header.

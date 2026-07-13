@@ -1,22 +1,22 @@
 # PRD.md
 
 ## Product Requirements Document
-## CoinPay for WooCommerce and WHMCS
+## Tempest Touch for WooCommerce and WHMCS
 ## Version: 0.1.0
 ## Date: 2026-04-16
 
 ## 1. Overview
 
-CoinPay needs first-party merchant plugins for WooCommerce and WHMCS so merchants can accept crypto and credit card payments through CoinPay with minimal setup, consistent branding, and a unified API experience.
+Tempest Touch needs first-party merchant plugins for WooCommerce and WHMCS so merchants can accept crypto and credit card payments through Tempest Touch with minimal setup, consistent branding, and a unified API experience.
 
 This project covers two installable integrations:
 
-- CoinPay for WooCommerce
-- CoinPay for WHMCS
+- Tempest Touch for WooCommerce
+- Tempest Touch for WHMCS
 
-Both integrations must use CoinPay as the payment orchestration layer and should support hosted checkout first, with room for deeper native checkout and advanced platform-specific features later.
+Both integrations must use Tempest Touch as the payment orchestration layer and should support hosted checkout first, with room for deeper native checkout and advanced platform-specific features later.
 
-The goal is to make CoinPay easy to install for merchants already using WordPress + WooCommerce or WHMCS, while preserving CoinPay's positioning around crypto, card payments, and extensible merchant tooling.
+The goal is to make Tempest Touch easy to install for merchants already using WordPress + WooCommerce or WHMCS, while preserving Tempest Touch's positioning around crypto, card payments, and extensible merchant tooling.
 
 ## 2. Goals
 
@@ -24,15 +24,15 @@ The goal is to make CoinPay easy to install for merchants already using WordPres
 
 - Increase merchant adoption by meeting merchants where they already sell
 - Reduce custom integration effort for small and mid-size merchants
-- Establish CoinPay as a dual-mode payment provider for crypto and cards
+- Establish Tempest Touch as a dual-mode payment provider for crypto and cards
 - Create reusable plugin architecture patterns for later platform integrations like BigCommerce, PrestaShop, Magento, and Shopify if feasible
 - Drive recurring revenue through plugin-enabled merchant subscriptions and transaction volume
 
 ### Product Goals
 
 - Allow a merchant to install a plugin, enter API credentials, and begin accepting payments quickly
-- Support both crypto and credit card payment methods through the same CoinPay integration
-- Provide order and invoice synchronization between merchant platform and CoinPay
+- Support both crypto and credit card payment methods through the same Tempest Touch integration
+- Provide order and invoice synchronization between merchant platform and Tempest Touch
 - Offer reliable payment status updates through webhooks plus manual reconciliation tools
 - Keep implementation simple enough for a fast MVP while leaving room for subscriptions, refunds, escrow, and marketplace use cases later
 
@@ -43,7 +43,7 @@ The goal is to make CoinPay easy to install for merchants already using WordPres
 - Full escrow milestone workflows inside WooCommerce or WHMCS admin
 - Dispute management UI inside the plugins
 - Subscription rebilling for all gateways and all order types
-- Deep analytics dashboards beyond basic payment logs and links back to CoinPay
+- Deep analytics dashboards beyond basic payment logs and links back to Tempest Touch
 
 ## 3. Platforms
 
@@ -56,7 +56,7 @@ Merchant expectations:
 - Payment gateway appears alongside other WooCommerce gateways
 - Simple merchant settings in WordPress admin
 - Order status updates when payment is created, paid, failed, expired, or refunded
-- Notes added to the order for key CoinPay events
+- Notes added to the order for key Tempest Touch events
 - Clear customer redirect and return flow
 
 ### 3.2 WHMCS
@@ -66,18 +66,18 @@ Primary use case:
 
 Merchant expectations:
 - Payment gateway available on invoices and checkout flows
-- Ability to pay unpaid invoices with CoinPay
-- Reliable mapping between WHMCS invoice state and CoinPay payment state
+- Ability to pay unpaid invoices with Tempest Touch
+- Reliable mapping between WHMCS invoice state and Tempest Touch payment state
 - Clear admin logs for payment attempts and webhook activity
 - Minimal disruption to existing WHMCS billing workflows
 
 ## 4. Problem Statement
 
-CoinPay currently requires merchants to integrate at the API level or through custom implementation. That limits adoption among merchants who prefer off-the-shelf extensions. WooCommerce and WHMCS merchants expect ready-made payment plugins that behave like native gateways.
+Tempest Touch currently requires merchants to integrate at the API level or through custom implementation. That limits adoption among merchants who prefer off-the-shelf extensions. WooCommerce and WHMCS merchants expect ready-made payment plugins that behave like native gateways.
 
 Without these plugins:
 - merchants face technical integration friction
-- CoinPay loses merchants to easier-to-install competitors
+- Tempest Touch loses merchants to easier-to-install competitors
 - support burden rises because every merchant integration is custom
 - platform discoverability is weak compared with marketplace-listed payment extensions
 
@@ -107,11 +107,11 @@ Who they are:
 
 What they need:
 - Clear payment choice
-- Fast redirect to CoinPay hosted checkout
+- Fast redirect to Tempest Touch hosted checkout
 - Transparent status and return flow
 - Clear confirmation when payment succeeds or fails
 
-### 5.3 CoinPay Operations / Support
+### 5.3 Tempest Touch Operations / Support
 
 What they need:
 - Predictable request and webhook payloads
@@ -121,7 +121,7 @@ What they need:
 
 ## 6. Core Value Proposition
 
-CoinPay gives merchants one integration for:
+Tempest Touch gives merchants one integration for:
 - crypto payments
 - credit card payments
 - a unified hosted checkout experience
@@ -134,7 +134,7 @@ CoinPay gives merchants one integration for:
 ### 7.1.1 Merchant Authentication and Setup
 
 The plugin must allow the merchant to configure:
-- CoinPay API base URL
+- Tempest Touch API base URL
 - API key or merchant credential pair
 - webhook secret or signature verification secret
 - environment mode:
@@ -155,7 +155,7 @@ Acceptance criteria:
 
 ### 7.1.2 Payment Creation
 
-The plugin must create a CoinPay payment session when a customer chooses CoinPay and submits payment.
+The plugin must create a Tempest Touch payment session when a customer chooses Tempest Touch and submits payment.
 
 The session creation payload should include, as available:
 - platform identifier
@@ -173,23 +173,23 @@ The session creation payload should include, as available:
 - selected payment mode if customer chose crypto vs card
 
 Acceptance criteria:
-- Unique CoinPay payment created per order or invoice payment attempt
+- Unique Tempest Touch payment created per order or invoice payment attempt
 - Payment metadata includes platform order/invoice reference
 - Duplicate submissions are handled idempotently when possible
 
 ### 7.1.3 Hosted Checkout Redirect
 
-For MVP, both plugins should use CoinPay hosted checkout after payment creation.
+For MVP, both plugins should use Tempest Touch hosted checkout after payment creation.
 
 Acceptance criteria:
-- Customer is redirected to CoinPay hosted checkout
+- Customer is redirected to Tempest Touch hosted checkout
 - Hosted checkout URL is validated before redirect
-- Merchant branding options can be passed if supported by CoinPay
+- Merchant branding options can be passed if supported by Tempest Touch
 - Return flow brings user back to originating platform
 
 ### 7.1.4 Payment Status Synchronization
 
-The plugin must consume CoinPay webhook events and update platform records accordingly.
+The plugin must consume Tempest Touch webhook events and update platform records accordingly.
 
 Supported status classes for MVP:
 - created
@@ -198,7 +198,7 @@ Supported status classes for MVP:
 - failed
 - expired
 - cancelled
-- refunded, if supported by CoinPay API in MVP
+- refunded, if supported by Tempest Touch API in MVP
 
 Acceptance criteria:
 - Webhook signature is verified
@@ -240,7 +240,7 @@ Acceptance criteria:
 
 ### 7.2.1 Gateway Registration
 
-The plugin must register CoinPay as a WooCommerce payment gateway.
+The plugin must register Tempest Touch as a WooCommerce payment gateway.
 
 Requirements:
 - Admin can enable or disable the gateway
@@ -249,49 +249,49 @@ Requirements:
 - Admin can restrict availability by currency or country if needed later
 
 Acceptance criteria:
-- CoinPay appears in WooCommerce payment settings
-- CoinPay appears at checkout when enabled and validly configured
+- Tempest Touch appears in WooCommerce payment settings
+- Tempest Touch appears at checkout when enabled and validly configured
 
 ### 7.2.2 Order Flow
 
 Expected flow:
 1. Customer adds products to cart
 2. Customer proceeds to checkout
-3. Customer selects CoinPay
+3. Customer selects Tempest Touch
 4. WooCommerce creates order
-5. Plugin calls CoinPay API to create payment
-6. Customer is redirected to CoinPay hosted checkout
-7. CoinPay sends webhook updates
+5. Plugin calls Tempest Touch API to create payment
+6. Customer is redirected to Tempest Touch hosted checkout
+7. Tempest Touch sends webhook updates
 8. WooCommerce order status updates
 9. Customer returns to success or failure page
 
 Suggested WooCommerce status mapping:
-- CoinPay created/pending -> on-hold or pending payment
-- CoinPay paid/completed -> processing or completed depending on product type
-- CoinPay failed/expired/cancelled -> failed or pending payment based on merchant preference
-- CoinPay refunded -> refunded
+- Tempest Touch created/pending -> on-hold or pending payment
+- Tempest Touch paid/completed -> processing or completed depending on product type
+- Tempest Touch failed/expired/cancelled -> failed or pending payment based on merchant preference
+- Tempest Touch refunded -> refunded
 
 Acceptance criteria:
 - Order note added for payment creation and status updates
-- Store admin can see CoinPay transaction reference in order admin
+- Store admin can see Tempest Touch transaction reference in order admin
 - Customer thank-you page reflects latest known state
 
 ### 7.2.3 Refund Support
 
 MVP options:
-- Phase 1: read-only refund awareness if refunds happen in CoinPay dashboard/API
+- Phase 1: read-only refund awareness if refunds happen in Tempest Touch dashboard/API
 - Phase 2: merchant can initiate refunds from WooCommerce admin
 
 Acceptance criteria for MVP:
-- If CoinPay sends refund webhook, WooCommerce order note and status update correctly
-- If native refund action is not implemented yet, admin sees a note directing them to CoinPay dashboard
+- If Tempest Touch sends refund webhook, WooCommerce order note and status update correctly
+- If native refund action is not implemented yet, admin sees a note directing them to Tempest Touch dashboard
 
 ### 7.2.4 Currency and Totals Handling
 
 Requirements:
 - Plugin must respect WooCommerce order currency
 - Plugin must send final payable amount including taxes, shipping, and discounts
-- Plugin must preserve order total integrity between WooCommerce and CoinPay
+- Plugin must preserve order total integrity between WooCommerce and Tempest Touch
 
 Acceptance criteria:
 - Amount mismatch checks exist
@@ -301,15 +301,15 @@ Acceptance criteria:
 ### 7.2.5 Webhook Endpoint
 
 Requirements:
-- Public endpoint in WordPress for CoinPay webhook delivery
+- Public endpoint in WordPress for Tempest Touch webhook delivery
 - Signature verification
 - Graceful handling when order not found
 - Safe behavior on repeated webhook calls
 
 Acceptance criteria:
-- Endpoint can be copy-pasted into CoinPay merchant dashboard
+- Endpoint can be copy-pasted into Tempest Touch merchant dashboard
 - Admin page displays webhook URL
-- Endpoint responses are machine-friendly for CoinPay retries
+- Endpoint responses are machine-friendly for Tempest Touch retries
 
 ## 7.3 WHMCS Functional Requirements
 
@@ -324,17 +324,17 @@ Requirements:
 - Admin can choose allowed payment modes if supported
 
 Acceptance criteria:
-- CoinPay shows up as a selectable payment gateway in WHMCS
-- Invoices can be paid through CoinPay when enabled
+- Tempest Touch shows up as a selectable payment gateway in WHMCS
+- Invoices can be paid through Tempest Touch when enabled
 
 ### 7.3.2 Invoice Payment Flow
 
 Expected flow:
 1. Customer opens unpaid invoice
-2. Customer selects CoinPay
-3. Plugin creates CoinPay payment session tied to WHMCS invoice ID
-4. Customer is redirected to CoinPay hosted checkout
-5. CoinPay webhooks update payment state
+2. Customer selects Tempest Touch
+3. Plugin creates Tempest Touch payment session tied to WHMCS invoice ID
+4. Customer is redirected to Tempest Touch hosted checkout
+5. Tempest Touch webhooks update payment state
 6. WHMCS records payment and marks invoice paid when appropriate
 
 Acceptance criteria:
@@ -345,7 +345,7 @@ Acceptance criteria:
 ### 7.3.3 Callback / Notification Handling
 
 Requirements:
-- WHMCS callback file or route receives CoinPay notifications
+- WHMCS callback file or route receives Tempest Touch notifications
 - Signature verification
 - Invoice lookup by metadata and reference
 - Safe idempotent handling of repeated events
@@ -358,7 +358,7 @@ Acceptance criteria:
 ### 7.3.4 Partial Payments and Credits
 
 MVP stance:
-- Defer complex partial-payment support unless already natively supported by CoinPay session model
+- Defer complex partial-payment support unless already natively supported by Tempest Touch session model
 - Prefer full invoice payment only for initial release
 
 Acceptance criteria:
@@ -373,14 +373,14 @@ MVP stance:
 
 Acceptance criteria:
 - Existing WHMCS recurring invoice generation remains unaffected
-- Customers can pay generated invoices manually via CoinPay
+- Customers can pay generated invoices manually via Tempest Touch
 - Future recurring features have placeholders in architecture but no half-implemented UI
 
 ## 8. API Requirements
 
-Both plugins should integrate against a shared CoinPay API contract.
+Both plugins should integrate against a shared Tempest Touch API contract.
 
-Required capabilities from CoinPay API:
+Required capabilities from Tempest Touch API:
 - create payment session
 - retrieve payment status
 - verify webhook event or webhook signatures
@@ -437,7 +437,7 @@ Merchant must be able to:
 ## 9.2 Buyer UX
 
 Buyer-facing experience should:
-- show CoinPay as a trusted payment option
+- show Tempest Touch as a trusted payment option
 - optionally mention crypto and credit card support in short text
 - explain redirect behavior
 - explain success, pending, and failure states on return
@@ -459,10 +459,10 @@ Buyer-facing experience should:
 
 - Idempotent webhook processing
 - Retry-safe payment creation logic where feasible
-- Graceful handling of CoinPay API downtime
+- Graceful handling of Tempest Touch API downtime
 - Clear admin notices for misconfiguration
 - Manual reconciliation option for support teams
-- No fatal checkout breakage if CoinPay is disabled or misconfigured; gateway should hide itself or fail clearly
+- No fatal checkout breakage if Tempest Touch is disabled or misconfigured; gateway should hide itself or fail clearly
 
 ## 12. Performance Requirements
 
@@ -514,9 +514,9 @@ Must support:
 
 Recommended implementation:
 - one monorepo for plugins
-- shared internal SDK package for CoinPay API communication
+- shared internal SDK package for Tempest Touch API communication
 - platform-specific adapters:
-  - packages/coinpay-sdk
+  - packages/tempesttouch-sdk
   - plugins/woocommerce
   - plugins/whmcs
 
@@ -539,14 +539,14 @@ Benefits:
 - hosted checkout first
 - platform-native admin settings
 - thin platform layer, shared API logic
-- explicit event mapping layer from CoinPay statuses to platform statuses
+- explicit event mapping layer from Tempest Touch statuses to platform statuses
 - no business logic hidden in templates
-- versioned API compatibility layer in case CoinPay API changes later
+- versioned API compatibility layer in case Tempest Touch API changes later
 
 ## 16. Admin Settings Detail
 
 Common settings:
-- Enable CoinPay
+- Enable Tempest Touch
 - Display title
 - Display description
 - Sandbox mode
@@ -599,7 +599,7 @@ Included:
 - payment creation
 - webhook processing
 - order status updates
-- admin order notes with CoinPay references
+- admin order notes with Tempest Touch references
 - basic logs
 - connection test
 - sandbox + production modes
@@ -661,7 +661,7 @@ Potential next features:
 ### Revenue Metrics
 - GMV processed through plugins
 - crypto/card mix
-- plugin-driven MRR from CoinPay merchant subscriptions
+- plugin-driven MRR from Tempest Touch merchant subscriptions
 - payment conversion rate
 
 ### Reliability Metrics
@@ -672,7 +672,7 @@ Potential next features:
 
 ## 21. Risks
 
-- CoinPay API may need additional fields or webhook guarantees for plugin-grade reliability
+- Tempest Touch API may need additional fields or webhook guarantees for plugin-grade reliability
 - Shopify-like expectations may spill into WooCommerce/WHMCS requests before core plugin maturity
 - Card processing compliance and UX requirements may vary by merchant geography
 - WooCommerce ecosystem variation may create theme/checkout plugin conflicts
@@ -681,14 +681,14 @@ Potential next features:
 
 ## 22. Open Questions
 
-- What exact CoinPay payment statuses exist today and which should be canonical for plugins?
-- Does CoinPay support card and crypto under the same payment session or separate session types?
-- Does CoinPay expose refund APIs now or only dashboard/manual operations?
+- What exact Tempest Touch payment statuses exist today and which should be canonical for plugins?
+- Does Tempest Touch support card and crypto under the same payment session or separate session types?
+- Does Tempest Touch expose refund APIs now or only dashboard/manual operations?
 - What level of branding control exists for hosted checkout?
-- Does CoinPay support sandbox webhooks distinct from production?
-- What metadata limits exist on CoinPay payment creation?
+- Does Tempest Touch support sandbox webhooks distinct from production?
+- What metadata limits exist on Tempest Touch payment creation?
 - Should WooCommerce block checkout support be in MVP or immediately after?
-- Does WHMCS need support for multiple CoinPay gateway instances per currency or per business line?
+- Does WHMCS need support for multiple Tempest Touch gateway instances per currency or per business line?
 
 ## 23. Release Plan
 
@@ -738,9 +738,9 @@ However, each plugin must ultimately ship in the native format expected by the t
 ### Suggested Repository Layout
 
 ```text
-coinpayportal/
+tempesttouch/
   packages/
-    coinpay-sdk/
+    tempesttouch-sdk/
   plugins/
     woocommerce/
     whmcs/
@@ -752,7 +752,7 @@ coinpayportal/
 
 Build WooCommerce first, but define the shared SDK and webhook/status model before writing platform-specific logic. WHMCS should follow immediately after using the same API client, signature verification, event mapping, and logging conventions.
 
-This gives CoinPay:
+This gives Tempest Touch:
 - fastest merchant adoption path
 - lowest long-term maintenance cost
 - clean foundation for future plugins on other platforms

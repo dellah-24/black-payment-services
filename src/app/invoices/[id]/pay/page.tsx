@@ -216,7 +216,7 @@ export default function InvoicePayPage() {
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
             </svg>
-            <span className="font-semibold">CoinPay</span>
+            <span className="font-semibold">TempestTouch</span>
           </Link>
           {invoice.businesses && (
             <p className="text-gray-400 text-sm">Invoice from {invoice.businesses.name}</p>
@@ -499,7 +499,7 @@ export default function InvoicePayPage() {
         {/* Footer */}
         <div className="mt-6 text-center">
           <p className="text-gray-500 text-sm">
-            Powered by <Link href="/" className="text-purple-400 hover:text-purple-300">CoinPay</Link>
+            Powered by <Link href="/" className="text-purple-400 hover:text-purple-300">TempestTouch</Link>
           </p>
         </div>
       </div>

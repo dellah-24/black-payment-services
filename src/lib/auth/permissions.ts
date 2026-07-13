@@ -1,7 +1,7 @@
 /**
  * Team-member roles and capabilities (pure — no DB access).
  *
- * coinpayportal enforces authorization in the app layer (the Supabase service-role
+ * tempesttouch enforces authorization in the app layer (the Supabase service-role
  * client bypasses RLS), so these roles are the source of truth for what a team member
  * may do. `src/lib/auth/authz.ts` resolves a merchant's effective Role for a given
  * business/org, then routes call `can(role, capability)` to gate each action.

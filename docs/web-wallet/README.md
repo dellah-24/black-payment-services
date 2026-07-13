@@ -1,8 +1,8 @@
-# CoinPayPortal Anonymous Wallet Platform (AWP) - Documentation
+# Tempest Touch Anonymous Wallet Platform (AWP) - Documentation
 
 ## Overview
 
-This directory contains the complete specification for extending CoinPayPortal from a payment gateway into a full multi-chain anonymous wallet platform.
+This directory contains the complete specification for extending Tempest Touch from a payment gateway into a full multi-chain anonymous wallet platform.
 
 ## Document Index
 
@@ -39,7 +39,7 @@ This directory contains the complete specification for extending CoinPayPortal f
 
 ## Key Principles
 
-1. **Non-Custodial**: CoinPayPortal never stores private keys
+1. **Non-Custodial**: Tempest Touch never stores private keys
 2. **Anonymous**: No KYC, no email, no identity - seed = identity
 3. **Multi-Chain**: BTC, BCH, ETH, POL, SOL, and USDC variants
 4. **Dual Interface**: Browser UI for humans, API/SDK for bots
@@ -49,7 +49,7 @@ This directory contains the complete specification for extending CoinPayPortal f
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                     CoinPayPortal                           │
+│                     Tempest Touch                           │
 ├─────────────────────────────┬───────────────────────────────┤
 │      Gateway Mode           │        Wallet Mode            │
 │   (Existing - Unchanged)    │        (New - Added)          │
@@ -77,7 +77,7 @@ This directory contains the complete specification for extending CoinPayPortal f
 - Fee estimation
 
 ### Phase 3: SDK & UI
-- Bot SDK (`@coinpayportal/wallet-sdk`)
+- Bot SDK (`@tempesttouch/wallet-sdk`)
 - Web wallet UI
 - Security settings
 - Documentation
@@ -90,7 +90,7 @@ This directory contains the complete specification for extending CoinPayPortal f
 
 ## Related Documentation
 
-- [Main CoinPayPortal Architecture](../ARCHITECTURE.md)
+- [Main Tempest Touch Architecture](../ARCHITECTURE.md)
 - [Existing Database Schema](../DATABASE.md)
 - [Existing API Documentation](../API.md)
 - [Security Documentation](../SECURITY.md)

@@ -90,7 +90,7 @@ describe('PricingPage', () => {
             payment: {
               id: 'pay_upgrade_123',
               checkout_path: '/pay/pay_upgrade_123',
-              checkout_url: 'https://coinpayportal.com/pay/pay_upgrade_123',
+              checkout_url: 'https://tempesttouch.com/pay/pay_upgrade_123',
             },
           },
         };
@@ -100,7 +100,7 @@ describe('PricingPage', () => {
     });
   });
 
-  it('redirects subscription upgrades to hosted CoinPay checkout', async () => {
+  it('redirects subscription upgrades to hosted Tempest Touch checkout', async () => {
     render(<PricingPage />);
 
     const upgradeButton = await screen.findByRole('button', { name: /upgrade to professional/i });

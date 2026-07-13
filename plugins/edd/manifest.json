@@ -1,12 +1,12 @@
 {
-  "name": "coinpayportal-edd",
-  "displayName": "CoinPayPortal for Easy Digital Downloads",
+  "name": "tempesttouch-edd",
+  "displayName": "Tempest Touch for Easy Digital Downloads",
   "version": "0.0.0",
   "status": "stub",
   "platform": "easy-digital-downloads",
   "platformMinVersion": "3.2",
   "language": "php",
-  "sdk": "packages/coinpay-php",
+  "sdk": "packages/tempesttouch-php",
   "supportedEvents": [
     "payment.confirmed",
     "payment.expired",

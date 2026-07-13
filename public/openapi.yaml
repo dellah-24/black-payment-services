@@ -1,20 +1,20 @@
 openapi: 3.1.0
 info:
-  title: CoinPay Public API
+  title: Tempest Touch Public API
   version: 0.6.11
   description: |
-    Public, read-only endpoints for CoinPay — health, supported coins,
+    Public, read-only endpoints for Tempest Touch — health, supported coins,
     exchange rates. Authenticated merchant endpoints (invoices, payments,
     payouts) require an API key and are documented in /docs.
   contact:
-    name: CoinPay
-    email: hello@coinpayportal.com
-    url: https://coinpayportal.com
+    name: Tempest Touch
+    email: hello@tempesttouch.com
+    url: https://tempesttouch.com
   license:
     name: MIT
 
 servers:
-  - url: https://coinpayportal.com
+  - url: https://tempesttouch.com
     description: Production
 
 paths:

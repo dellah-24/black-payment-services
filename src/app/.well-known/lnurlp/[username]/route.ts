@@ -1,14 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const LNBITS_URL = process.env.LNBITS_URL || 'https://ln.coinpayportal.com';
-const PUBLIC_DOMAIN = process.env.NEXT_PUBLIC_DOMAIN || 'coinpayportal.com';
+const LNBITS_URL = process.env.LNBITS_URL || 'https://ln.tempesttouch.com';
+const PUBLIC_DOMAIN = process.env.NEXT_PUBLIC_DOMAIN || 'tempesttouch.com';
 
 /**
  * Proxy /.well-known/lnurlp/<username> to LNbits
  * 
- * This is what makes user@coinpayportal.com Lightning Addresses work.
- * When a wallet looks up chovy@coinpayportal.com, it fetches:
- *   https://coinpayportal.com/.well-known/lnurlp/chovy
+ * This is what makes user@tempesttouch.com Lightning Addresses work.
+ * When a wallet looks up chovy@tempesttouch.com, it fetches:
+ *   https://tempesttouch.com/.well-known/lnurlp/chovy
  * 
  * We proxy that to our LNbits instance which handles the LNURL-pay flow.
  */
@@ -41,7 +41,7 @@ export async function GET(
 
     const data = await res.json();
     
-    // Rewrite callback URL to go through our domain instead of ln.coinpayportal.com
+    // Rewrite callback URL to go through our domain instead of ln.tempesttouch.com
     if (data.callback && data.callback.includes(LNBITS_URL)) {
       data.callback = data.callback.replace(
         LNBITS_URL,

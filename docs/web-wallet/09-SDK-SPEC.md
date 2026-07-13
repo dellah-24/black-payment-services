@@ -1,8 +1,8 @@
-# CoinPayPortal Wallet Mode - SDK Specification
+# Tempest Touch Wallet Mode - SDK Specification
 
 ## 1. Overview
 
-The Wallet SDK (`@coinpayportal/wallet-sdk`) provides a TypeScript/JavaScript library for bots and applications to interact with CoinPayPortal Wallet Mode.
+The Wallet SDK (`@tempesttouch/wallet-sdk`) provides a TypeScript/JavaScript library for bots and applications to interact with Tempest Touch Wallet Mode.
 
 ### Design Goals
 
@@ -18,13 +18,13 @@ The Wallet SDK (`@coinpayportal/wallet-sdk`) provides a TypeScript/JavaScript li
 
 ```bash
 # npm
-npm install @coinpayportal/wallet-sdk
+npm install @tempesttouch/wallet-sdk
 
 # yarn
-yarn add @coinpayportal/wallet-sdk
+yarn add @tempesttouch/wallet-sdk
 
 # pnpm
-pnpm add @coinpayportal/wallet-sdk
+pnpm add @tempesttouch/wallet-sdk
 ```
 
 ---
@@ -32,7 +32,7 @@ pnpm add @coinpayportal/wallet-sdk
 ## 3. Quick Start
 
 ```typescript
-import { Wallet } from '@coinpayportal/wallet-sdk';
+import { Wallet } from '@tempesttouch/wallet-sdk';
 
 // Create wallet from seed
 const wallet = Wallet.fromSeed('your twelve word seed phrase here ...');
@@ -300,7 +300,7 @@ type EventHandler = (data: any) => void;
 ### 5.1 Basic Send
 
 ```typescript
-import { Wallet } from '@coinpayportal/wallet-sdk';
+import { Wallet } from '@tempesttouch/wallet-sdk';
 
 const wallet = Wallet.fromSeed(process.env.WALLET_SEED!);
 
@@ -474,7 +474,7 @@ import {
   InvalidAddressError,
   NetworkError,
   AuthenticationError
-} from '@coinpayportal/wallet-sdk';
+} from '@tempesttouch/wallet-sdk';
 
 try {
   await wallet.send({ chain: 'ETH', to: '0x...', amount: '100' });
@@ -496,7 +496,7 @@ try {
 ### 7.2 Retry Logic
 
 ```typescript
-import { retry } from '@coinpayportal/wallet-sdk';
+import { retry } from '@tempesttouch/wallet-sdk';
 
 // Automatic retry with exponential backoff
 const tx = await retry(
@@ -527,7 +527,7 @@ import type {
   TransactionResult,
   FeeEstimate,
   WalletEvent
-} from '@coinpayportal/wallet-sdk';
+} from '@tempesttouch/wallet-sdk';
 ```
 
 ### 8.2 Generic Event Handlers
@@ -577,7 +577,7 @@ try {
 ### 9.3 Validate Addresses
 
 ```typescript
-import { isValidAddress } from '@coinpayportal/wallet-sdk';
+import { isValidAddress } from '@tempesttouch/wallet-sdk';
 
 const userInput = '0x...';
 if (!isValidAddress(userInput, 'ETH')) {
@@ -594,39 +594,39 @@ The SDK includes a CLI for quick operations.
 ### 10.1 Installation
 
 ```bash
-npm install -g @coinpayportal/wallet-sdk
+npm install -g @tempesttouch/wallet-sdk
 ```
 
 ### 10.2 Commands
 
 ```bash
 # Create new wallet
-coinpay-wallet create
+tempesttouch-wallet create
 
 # Import wallet
-coinpay-wallet import --seed "word1 word2 ..."
+tempesttouch-wallet import --seed "word1 word2 ..."
 
 # Check balance
-coinpay-wallet balance --chain ETH
+tempesttouch-wallet balance --chain ETH
 
 # Send transaction
-coinpay-wallet send --chain ETH --to 0x... --amount 0.1
+tempesttouch-wallet send --chain ETH --to 0x... --amount 0.1
 
 # Get address
-coinpay-wallet address --chain ETH
+tempesttouch-wallet address --chain ETH
 
 # Transaction history
-coinpay-wallet history --limit 10
+tempesttouch-wallet history --limit 10
 ```
 
 ### 10.3 Configuration
 
 ```bash
 # Set seed via environment
-export COINPAY_WALLET_SEED="word1 word2 ..."
+export TEMPESTTOUCH_WALLET_SEED="word1 word2 ..."
 
 # Or use config file
-echo "seed: word1 word2 ..." > ~/.coinpay-wallet.yaml
+echo "seed: word1 word2 ..." > ~/.tempesttouch-wallet.yaml
 ```
 
 ---
@@ -634,7 +634,7 @@ echo "seed: word1 word2 ..." > ~/.coinpay-wallet.yaml
 ## 11. Package Structure
 
 ```
-@coinpayportal/wallet-sdk/
+@tempesttouch/wallet-sdk/
 ├── dist/
 │   ├── index.js          # CommonJS build
 │   ├── index.mjs         # ESM build

@@ -3,7 +3,7 @@
  * GET  /api/escrow/multisig — Get a multisig escrow by ID (query param)
  *
  * Non-custodial 2-of-3 multisig escrow.
- * CoinPay is a dispute mediator and co-signer — never a custodian.
+ * Tempest Touch is a dispute mediator and co-signer — never a custodian.
  */
 
 import { NextRequest, NextResponse } from 'next/server';

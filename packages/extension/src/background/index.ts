@@ -16,7 +16,7 @@ import { WalletService } from '../core/wallet.js';
 import { WebExtStorage, type WebExtStorageArea } from '../core/storage.js';
 import type { WalletRequest, WalletResponse } from '../messages.js';
 
-const AUTO_LOCK_ALARM = 'coinpay-auto-lock';
+const AUTO_LOCK_ALARM = 'tempesttouch-auto-lock';
 const DEFAULT_IDLE_MINUTES = 15;
 
 // chrome.storage promise API — cast to our minimal area interface.

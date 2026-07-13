@@ -1,6 +1,6 @@
 # Webhooks — &lt;Platform&gt;
 
-CoinPayPortal uses signed webhooks to notify &lt;Platform&gt; when a payment status changes.
+Tempest Touch uses signed webhooks to notify &lt;Platform&gt; when a payment status changes.
 
 ## Webhook URL
 
@@ -12,24 +12,24 @@ The endpoint is publicly reachable. All security comes from HMAC signature verif
 
 ## Registering the webhook
 
-1. Sign in to the [CoinPayPortal merchant dashboard](https://coinpayportal.com).
+1. Sign in to the [Tempest Touch merchant dashboard](https://tempesttouch.com).
 2. **Settings → Webhooks → Add webhook**.
 3. Paste the URL above.
 4. Copy the generated **Webhook Secret** into the &lt;Platform&gt; gateway settings.
 
 ## Signature verification
 
-Every CoinPayPortal webhook includes:
+Every Tempest Touch webhook includes:
 
 ```
-X-CoinPayPortal-Signature: t=<unix_ts>,v1=<hmac_sha256_hex>
+X-Tempest Touch-Signature: t=<unix_ts>,v1=<hmac_sha256_hex>
 ```
 
 The plugin verifies the signature with constant-time comparison and rejects requests where `|now - t| > 300s` (replay window).
 
 ## Supported events → &lt;Platform&gt; action
 
-| CoinPayPortal event | &lt;Platform&gt; action |
+| Tempest Touch event | &lt;Platform&gt; action |
 |---|---|
 | `payment.confirmed` | Mark order paid |
 | `payment.forwarded` | (Optional) note funds swept to merchant wallet |
@@ -71,4 +71,4 @@ The plugin verifies the signature with constant-time comparison and rejects requ
 
 ## Idempotency
 
-The plugin must check whether the order is already paid before processing `payment.confirmed`. CoinPayPortal retries delivery up to 3 times with exponential backoff (1s, 2s, 4s, 8s).
+The plugin must check whether the order is already paid before processing `payment.confirmed`. Tempest Touch retries delivery up to 3 times with exponential backoff (1s, 2s, 4s, 8s).

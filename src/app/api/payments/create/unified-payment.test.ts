@@ -146,7 +146,7 @@ describe('Unified Payment Creation - POST /api/payments/create', () => {
     process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://test.supabase.co';
     process.env.SUPABASE_SERVICE_ROLE_KEY = 'test-key';
     process.env.STRIPE_SECRET_KEY = 'sk_test_123';
-    process.env.NEXT_PUBLIC_APP_URL = 'https://coinpayportal.com';
+    process.env.NEXT_PUBLIC_APP_URL = 'https://tempesttouch.com';
     setupMockChain();
   });
 

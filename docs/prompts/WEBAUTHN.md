@@ -1,6 +1,6 @@
-# Add Passkey Login (WebAuthn) via CoinPay
+# Add Passkey Login (WebAuthn) via Tempest Touch
 
-You are adding passkey-based authentication to an app using CoinPay's WebAuthn endpoints.
+You are adding passkey-based authentication to an app using Tempest Touch's WebAuthn endpoints.
 
 ## Goal
 
@@ -9,14 +9,14 @@ Users register a passkey (Touch ID, Face ID, Windows Hello, hardware key) and us
 ## Environment variables
 
 ```
-COINPAY_API_KEY=sk_live_...
-COINPAY_API_URL=https://coinpayportal.com
+TEMPESTTOUCH_API_KEY=sk_live_...
+TEMPESTTOUCH_API_URL=https://tempesttouch.com
 WEBAUTHN_RP_ID=example-business.com
 WEBAUTHN_RP_ORIGIN=https://example-business.com
 ```
 
 Where to find them:
-- `COINPAY_API_KEY` — `https://coinpayportal.com/businesses/<your-business-id>` → **API Keys** tab → **Create API Key**. Shown once.
+- `TEMPESTTOUCH_API_KEY` — `https://tempesttouch.com/businesses/<your-business-id>` → **API Keys** tab → **Create API Key**. Shown once.
 - `WEBAUTHN_RP_ID` — your bare domain (no scheme, no port). Passkeys are bound to it forever, so pick the production domain.
 - `WEBAUTHN_RP_ORIGIN` — full origin including scheme. Must be HTTPS in production.
 
@@ -25,8 +25,8 @@ Where to find them:
 1. **Begin** — server fetches a challenge:
 
    ```bash
-   curl -X POST https://coinpayportal.com/api/webauthn/register/begin \
-     -H "Authorization: Bearer $COINPAY_API_KEY" \
+   curl -X POST https://tempesttouch.com/api/webauthn/register/begin \
+     -H "Authorization: Bearer $TEMPESTTOUCH_API_KEY" \
      -d '{"user_id": "user_123", "username": "alice@example-business.com"}'
    ```
 
@@ -37,7 +37,7 @@ Where to find them:
 3. **Finish** — POST the resulting attestation back to:
 
    ```
-   POST https://coinpayportal.com/api/webauthn/register/finish
+   POST https://tempesttouch.com/api/webauthn/register/finish
    ```
 
    The server verifies and stores the credential.
@@ -47,7 +47,7 @@ Where to find them:
 1. **Begin:**
 
    ```bash
-   curl -X POST https://coinpayportal.com/api/webauthn/login/begin \
+   curl -X POST https://tempesttouch.com/api/webauthn/login/begin \
      -d '{"username": "alice@example-business.com"}'
    ```
 
@@ -66,6 +66,6 @@ Where to find them:
 
 ## Deliverable
 
-- Register / authenticate routes wired to the CoinPay endpoints.
+- Register / authenticate routes wired to the Tempest Touch endpoints.
 - Browser-side helpers using `@simplewebauthn/browser` (or equivalent).
 - A "manage passkeys" UI listing the user's credentials with delete buttons.

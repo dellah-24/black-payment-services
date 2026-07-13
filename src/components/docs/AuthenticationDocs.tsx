@@ -19,7 +19,7 @@ export function AuthenticationDocs() {
         </CodeBlock>
 
         <CodeBlock title="cURL Example" language="curl">
-{`curl -X POST https://coinpayportal.com/api/auth/register \\
+{`curl -X POST https://tempesttouch.com/api/auth/register \\
   -H "Content-Type: application/json" \\
   -d '{
     "email": "merchant@example.com",
@@ -29,7 +29,7 @@ export function AuthenticationDocs() {
         </CodeBlock>
 
         <CodeBlock title="Node.js Example" language="javascript">
-{`const response = await fetch('https://coinpayportal.com/api/auth/register', {
+{`const response = await fetch('https://tempesttouch.com/api/auth/register', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({
@@ -66,7 +66,7 @@ console.log(data.token); // Save this token`}
 
       <ApiEndpoint method="GET" path="/api/auth/me" description="Get current authenticated merchant information.">
         <CodeBlock title="cURL Example" language="curl">
-{`curl https://coinpayportal.com/api/auth/me \\
+{`curl https://tempesttouch.com/api/auth/me \\
   -H "Authorization: Bearer YOUR_TOKEN"`}
         </CodeBlock>
 

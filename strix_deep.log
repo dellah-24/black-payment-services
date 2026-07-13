@@ -4,8 +4,8 @@
 │                                                                              │
 │  Penetration test initiated                                                  │
 │                                                                              │
-│  Target  /home/ubuntu/src/coinpayportal                                      │
-│  Output  strix_runs/coinpayportal_7b16                                       │
+│  Target  /home/ubuntu/src/tempesttouchportal                                      │
+│  Output  strix_runs/tempesttouchportal_7b16                                       │
 │                                                                              │
 │  Vulnerabilities will be displayed in real-time.                             │
 │                                                                              │
@@ -22,7 +22,7 @@
 │                                                                              │
 │  CVSS Score: 9.1                                                             │
 │                                                                              │
-│  Target: /workspace/coinpayportal                                            │
+│  Target: /workspace/tempesttouchportal                                            │
 │                                                                              │
 │  Endpoint: /src/app/api/webhook-receiver/route.ts                            │
 │                                                                              │
@@ -50,7 +50,7 @@
 │                                                                              │
 │  PoC Description                                                             │
 │  1. Inspect the `route.ts` file under                                        │
-│  `/workspace/coinpayportal/src/app/api/webhook-receiver/` for database       │
+│  `/workspace/tempesttouchportal/src/app/api/webhook-receiver/` for database       │
 │  operations leveraging unsanitized user inputs.                              │
 │  2. Identify queries where `req.body` inputs are directly used and attempt   │
 │  SQL injection attacks by crafting payloads to manipulate database logic.    │
@@ -97,7 +97,7 @@
 │                                                                              │
 │  # Executive Summary                                                         │
 │                                                                              │
-│  The security assessment of the CoinPay Portal identified several security   │
+│  The security assessment of the Tempest Touch Portal identified several security   │
 │  concerns. Notably, multiple API endpoints are improperly handling user      │
 │  inputs in database queries, leading to potential SQL injection              │
 │  vulnerabilities. While no immediate authentication bypass issues were       │
@@ -140,13 +140,13 @@
 │                                                                              │
 │  Penetration test completed                                                  │
 │                                                                              │
-│  Target  /home/ubuntu/src/coinpayportal                                      │
+│  Target  /home/ubuntu/src/tempesttouchportal                                      │
 │  Vulnerabilities  CRITICAL: 1 (Total: 1)                                     │
 │  Agents  6  ·  Tools  41                                                     │
 │  Input Tokens 352.9K  ·  Cached Tokens 284.2K  ·  Output Tokens 1.1K · Cost  │
 │  $0.5384                                                                     │
 │                                                                              │
-│  Output  strix_runs/coinpayportal_7b16                                       │
+│  Output  strix_runs/tempesttouchportal_7b16                                       │
 │                                                                              │
 ╰──────────────────────────────────────────────────────────────────────────────╯
 

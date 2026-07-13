@@ -196,7 +196,7 @@ export default function OAuthDashboardPage() {
             </svg>
             <h3 className="mt-4 text-lg font-medium text-gray-900 dark:text-white">No OAuth apps yet</h3>
             <p className="mt-2 text-gray-500 dark:text-gray-400">
-              Register an OAuth client to allow third-party apps to authenticate with CoinPay.
+              Register an OAuth client to allow third-party apps to authenticate with Tempest Touch.
             </p>
             <Link
               href="/dashboard/oauth/new"

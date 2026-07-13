@@ -1,11 +1,11 @@
 /**
  * LNbits API Client
  * 
- * Connects to our CLN + LNbits infrastructure at ln.coinpayportal.com
+ * Connects to our CLN + LNbits infrastructure at ln.tempesttouch.com
  * for multi-user Lightning wallets, invoices, and Lightning Addresses.
  */
 
-const LNBITS_URL = process.env.LNBITS_URL || 'https://ln.coinpayportal.com';
+const LNBITS_URL = process.env.LNBITS_URL || 'https://ln.tempesttouch.com';
 const LNBITS_ADMIN_KEY = process.env.LNBITS_ADMIN_KEY || '';
 const LNBITS_INVOICE_KEY = process.env.LNBITS_INVOICE_KEY || '';
 

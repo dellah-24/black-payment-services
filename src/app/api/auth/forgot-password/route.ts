@@ -51,17 +51,17 @@ export async function POST(request: NextRequest) {
     const result = await requestPasswordReset(supabase, validation.data.email);
 
     if (result.token) {
-      const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://coinpayportal.com';
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://tempesttouch.com';
       const resetLink = `${appUrl}/reset-password?token=${result.token}`;
 
       console.log(`[Forgot Password] Sending reset email to ${validation.data.email}`);
       const emailResult = await sendEmail({
         to: validation.data.email,
-        subject: 'Reset your CoinPay password',
+        subject: 'Reset your Tempest Touch password',
         html: `
           <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
             <h2 style="color: #7c3aed;">Reset Your Password</h2>
-            <p>You requested a password reset for your CoinPay account.</p>
+            <p>You requested a password reset for your Tempest Touch account.</p>
             <p>Click the link below to set a new password. This link expires in 1 hour.</p>
             <p style="margin: 24px 0;">
               <a href="${resetLink}" style="background-color: #7c3aed; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; display: inline-block;">

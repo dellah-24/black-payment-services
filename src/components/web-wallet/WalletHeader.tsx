@@ -14,7 +14,7 @@ export function WalletHeader() {
           href="/web-wallet"
           className="text-lg font-bold text-white hover:text-purple-400 transition-colors"
         >
-          CoinPay Wallet
+          TempestTouch Wallet
         </Link>
 
         {isUnlocked && (

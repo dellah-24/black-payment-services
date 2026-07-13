@@ -1,6 +1,6 @@
-# CoinPayPortal Payment Gateway for FOSSBilling
+# Tempest Touch Payment Gateway for FOSSBilling
 
-Accept cryptocurrency payments in FOSSBilling through CoinPayPortal. Customers are redirected to a secure CoinPayPortal checkout and invoices are automatically marked paid after verified on-chain confirmation.
+Accept cryptocurrency payments in FOSSBilling through Tempest Touch. Customers are redirected to a secure Tempest Touch checkout and invoices are automatically marked paid after verified on-chain confirmation.
 
 ## Features
 
@@ -21,10 +21,10 @@ Accept cryptocurrency payments in FOSSBilling through CoinPayPortal. Customers a
 
 ## Quick Install
 
-1. Copy `library/Payment/Adapter/CoinPayPortal.php` and `library/Payment/Adapter/CoinPayPortal/` into your FOSSBilling installation.
-2. Copy `src/` to the correct relative path (three levels above `CoinPayPortal.php`).
-3. In the FOSSBilling admin, go to **System → Payment Gateways**, install **CoinPayPortal**, and enter your credentials.
-4. Copy the Webhook URL into your [CoinPayPortal dashboard](https://coinpayportal.com) under **Settings → Webhooks**.
+1. Copy `library/Payment/Adapter/Tempest Touch.php` and `library/Payment/Adapter/Tempest Touch/` into your FOSSBilling installation.
+2. Copy `src/` to the correct relative path (three levels above `Tempest Touch.php`).
+3. In the FOSSBilling admin, go to **System → Payment Gateways**, install **Tempest Touch**, and enter your credentials.
+4. Copy the Webhook URL into your [Tempest Touch dashboard](https://tempesttouch.com) under **Settings → Webhooks**.
 
 See [docs/INSTALL.md](docs/INSTALL.md) for full instructions.
 
@@ -32,8 +32,8 @@ See [docs/INSTALL.md](docs/INSTALL.md) for full instructions.
 
 | Setting | Description |
 |---|---|
-| API Key | From your CoinPayPortal merchant dashboard |
-| Merchant ID | Your CoinPayPortal account ID |
+| API Key | From your Tempest Touch merchant dashboard |
+| Merchant ID | Your Tempest Touch account ID |
 | Webhook Secret | Used to verify incoming webhook signatures |
 | Sandbox Mode | Test without real funds |
 
@@ -44,7 +44,7 @@ Full field reference: [docs/CONFIGURATION.md](docs/CONFIGURATION.md)
 Your webhook endpoint:
 
 ```
-https://YOUR-DOMAIN.COM/ipn/CoinPayPortal
+https://YOUR-DOMAIN.COM/ipn/Tempest Touch
 ```
 
 See [docs/WEBHOOKS.md](docs/WEBHOOKS.md) for signature verification details and supported event types.
@@ -62,9 +62,9 @@ See [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md).
 
 ## Support
 
-- Issues: [github.com/profullstack/coinpayportal](https://github.com/profullstack/coinpayportal/issues)
-- Email: [support@coinpayportal.com](mailto:support@coinpayportal.com)
-- Website: [coinpayportal.com](https://coinpayportal.com)
+- Issues: [github.com/profullstack/tempesttouch](https://github.com/profullstack/tempesttouch/issues)
+- Email: [support@tempesttouch.com](mailto:support@tempesttouch.com)
+- Website: [tempesttouch.com](https://tempesttouch.com)
 
 ## License
 

@@ -1,10 +1,10 @@
 {
   "manifest_version": 3,
-  "name": "CoinPay Wallet",
-  "description": "Non-custodial multi-chain CoinPay wallet with one-click x402 payments.",
+  "name": "Tempest Touch Wallet",
+  "description": "Non-custodial multi-chain Tempest Touch wallet with one-click x402 payments.",
   "version": "0.0.1",
   "action": {
-    "default_title": "CoinPay",
+    "default_title": "Tempest Touch",
     "default_popup": "popup/index.html"
   },
   "background": {
@@ -12,10 +12,10 @@
     "type": "module"
   },
   "permissions": ["storage", "alarms"],
-  "host_permissions": ["https://coinpayportal.com/*"],
+  "host_permissions": ["https://tempesttouch.com/*"],
   "browser_specific_settings": {
     "gecko": {
-      "id": "coinpay@profullstack.com",
+      "id": "tempesttouch@profullstack.com",
       "strict_min_version": "121.0"
     }
   },

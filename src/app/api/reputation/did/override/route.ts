@@ -2,9 +2,9 @@
  * POST /api/reputation/did/override
  *
  * Network apps (d0rz, c0mpute, etc.) are the source of truth for their
- * users' DIDs. When a user connects their CoinPay account from an app, the
+ * users' DIDs. When a user connects their Tempest Touch account from an app, the
  * app calls this endpoint to declare "the user identified by `merchant_id`
- * now uses `did`." CoinPay upserts merchant_dids so its own userinfo + any
+ * now uses `did`." Tempest Touch upserts merchant_dids so its own userinfo + any
  * other OIDC client reading from us converges on the same DID. This is the
  * keystone of the cross-app portable-reputation story.
  *

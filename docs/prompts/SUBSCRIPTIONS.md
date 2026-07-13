@@ -1,6 +1,6 @@
-# Recurring Payments / Subscriptions with CoinPay
+# Recurring Payments / Subscriptions with Tempest Touch
 
-You are adding recurring crypto billing to an app using CoinPay's recurring escrow series.
+You are adding recurring crypto billing to an app using Tempest Touch's recurring escrow series.
 
 ## Goal
 
@@ -9,23 +9,23 @@ A customer authorizes a recurring charge (e.g. $20/month). On each interval, a n
 ## Environment variables
 
 ```
-COINPAY_API_KEY=sk_live_...
-COINPAY_WEBHOOK_SECRET=whsec_...
-COINPAY_API_URL=https://coinpayportal.com
+TEMPESTTOUCH_API_KEY=sk_live_...
+TEMPESTTOUCH_WEBHOOK_SECRET=whsec_...
+TEMPESTTOUCH_API_URL=https://tempesttouch.com
 ```
 
 Where to find them:
-- `COINPAY_API_KEY` — `https://coinpayportal.com/businesses/<your-business-id>` → **API Keys** tab → **Create API Key**. Shown once.
-- `COINPAY_WEBHOOK_SECRET` — same business page → **Webhooks** tab (or `?mode=webhooks`) → create an endpoint → **Signing Secret**.
-- `COINPAY_API_URL` — `https://coinpayportal.com` in production.
+- `TEMPESTTOUCH_API_KEY` — `https://tempesttouch.com/businesses/<your-business-id>` → **API Keys** tab → **Create API Key**. Shown once.
+- `TEMPESTTOUCH_WEBHOOK_SECRET` — same business page → **Webhooks** tab (or `?mode=webhooks`) → create an endpoint → **Signing Secret**.
+- `TEMPESTTOUCH_API_URL` — `https://tempesttouch.com` in production.
 
 ## Steps
 
 1. **Create a recurring series** server-side when the customer subscribes:
 
    ```bash
-   curl -X POST https://coinpayportal.com/api/escrow/series \
-     -H "Authorization: Bearer $COINPAY_API_KEY" \
+   curl -X POST https://tempesttouch.com/api/escrow/series \
+     -H "Authorization: Bearer $TEMPESTTOUCH_API_KEY" \
      -H "Content-Type: application/json" \
      -d '{
        "amount": 20.00,
@@ -36,7 +36,7 @@ Where to find them:
        "interval_count": 1,
        "buyer_email": "customer@example-business.com",
        "description": "Pro plan — example-business.com",
-       "webhook_url": "https://example-business.com/api/coinpay/subscription"
+       "webhook_url": "https://example-business.com/api/tempesttouch/subscription"
      }'
    ```
 
@@ -53,8 +53,8 @@ Where to find them:
 4. **Cancel:**
 
    ```bash
-   curl -X POST https://coinpayportal.com/api/escrow/series/$ID/cancel \
-     -H "Authorization: Bearer $COINPAY_API_KEY"
+   curl -X POST https://tempesttouch.com/api/escrow/series/$ID/cancel \
+     -H "Authorization: Bearer $TEMPESTTOUCH_API_KEY"
    ```
 
 ## Rules

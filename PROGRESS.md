@@ -1,4 +1,4 @@
-# CoinPay - Development Progress
+# Tempest Touch - Development Progress
 
 ## 🎉 Current Status: 340/340 Tests Passing (100%)
 

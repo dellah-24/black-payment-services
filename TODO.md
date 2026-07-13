@@ -200,7 +200,7 @@
 ## Phase 3: Bot SDK
 
 ### SDK Core
-- [x] Create `@coinpayportal/wallet-sdk` package structure
+- [x] Create `@tempesttouch/wallet-sdk` package structure
 - [x] Implement `Wallet.create()` - Create new wallet
 - [x] Implement `Wallet.fromSeed()` - Import from seed
 - [x] Implement `Wallet.fromWalletId()` - Read-only mode
@@ -234,12 +234,12 @@
 - [x] Add TypeScript type definitions
 
 ### SDK CLI Tool
-- [x] Create `coinpay-wallet create` command
-- [x] Create `coinpay-wallet import` command
-- [x] Create `coinpay-wallet balance` command
-- [x] Create `coinpay-wallet send` command
-- [x] Create `coinpay-wallet address` command
-- [x] Create `coinpay-wallet history` command
+- [x] Create `tempesttouch-wallet create` command
+- [x] Create `tempesttouch-wallet import` command
+- [x] Create `tempesttouch-wallet balance` command
+- [x] Create `tempesttouch-wallet send` command
+- [x] Create `tempesttouch-wallet address` command
+- [x] Create `tempesttouch-wallet history` command
 - [x] Support environment variable configuration
 - [x] Support config file
 

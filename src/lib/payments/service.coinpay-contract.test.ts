@@ -62,7 +62,7 @@ function createInsertOnlySupabase() {
   };
 }
 
-describe('createPayment CoinPay contract', () => {
+describe('createPayment Tempest Touch contract', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(getEstimatedNetworkFee).mockResolvedValue(0);
@@ -78,7 +78,7 @@ describe('createPayment CoinPay contract', () => {
     ['USDT_POL', 'USDT'],
     ['USDT_SOL', 'USDT'],
   ] as Array<[Blockchain, string]>)(
-    'keeps %s on the CoinPay address while pricing as %s',
+    'keeps %s on the Tempest Touch address while pricing as %s',
     async (blockchain, priceTicker) => {
       const { supabase, getInsertedPayment } = createInsertOnlySupabase();
       vi.mocked(getCryptoPrice).mockResolvedValue(100);
@@ -113,7 +113,7 @@ describe('createPayment CoinPay contract', () => {
     }
   );
 
-  it('passes paid-tier status into CoinPay address generation for commission split', async () => {
+  it('passes paid-tier status into Tempest Touch address generation for commission split', async () => {
     const { supabase } = createInsertOnlySupabase();
     vi.mocked(getCryptoPrice).mockResolvedValue(250);
     vi.mocked(isBusinessPaidTier).mockResolvedValue(true);

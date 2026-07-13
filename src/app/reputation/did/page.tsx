@@ -325,7 +325,7 @@ export default function ClaimDidPage() {
               <div>
                 <p className="font-semibold">Complete escrow transactions</p>
                 <p className="text-gray-400">
-                  Every escrow you settle on CoinPayPortal generates a signed task receipt tied to your DID.
+                  Every escrow you settle on Tempest Touch generates a signed task receipt tied to your DID.
                   These receipts build your on-chain reputation score — no fake reviews possible.
                 </p>
               </div>
@@ -345,7 +345,7 @@ export default function ClaimDidPage() {
               <div>
                 <p className="font-semibold">It&apos;s portable</p>
                 <p className="text-gray-400">
-                  Your DID and reputation are not locked to CoinPayPortal. Any platform can query your
+                  Your DID and reputation are not locked to Tempest Touch. Any platform can query your
                   reputation via the open API. Your identity follows you — not the other way around.
                 </p>
               </div>
@@ -559,9 +559,9 @@ export default function ClaimDidPage() {
             You can also manage your DID and reputation from the command line:
           </p>
           <div className="bg-gray-900 rounded-lg p-4 font-mono text-sm space-y-2 text-gray-300">
-            <p><span className="text-gray-500">$</span> coinpay reputation did <span className="text-gray-500"># View your DID</span></p>
-            <p><span className="text-gray-500">$</span> coinpay reputation query {didInfo.did.substring(0, 20)}... <span className="text-gray-500"># Check score</span></p>
-            <p><span className="text-gray-500">$</span> coinpay reputation submit <span className="text-gray-500"># Submit a task receipt</span></p>
+            <p><span className="text-gray-500">$</span> tempesttouch reputation did <span className="text-gray-500"># View your DID</span></p>
+            <p><span className="text-gray-500">$</span> tempesttouch reputation query {didInfo.did.substring(0, 20)}... <span className="text-gray-500"># Check score</span></p>
+            <p><span className="text-gray-500">$</span> tempesttouch reputation submit <span className="text-gray-500"># Submit a task receipt</span></p>
           </div>
         </div>
       </div>
@@ -586,7 +586,7 @@ export default function ClaimDidPage() {
         <h2 className="text-lg font-bold mb-3">Why Claim a DID?</h2>
         <ul className="space-y-2 text-sm text-gray-300">
           <li className="flex gap-2"><span>✅</span> Build reputation from real escrow settlements — not fake reviews</li>
-          <li className="flex gap-2"><span>✅</span> Use the same identity across ugig.net, CoinPayPortal, and any supporting platform</li>
+          <li className="flex gap-2"><span>✅</span> Use the same identity across ugig.net, Tempest Touch, and any supporting platform</li>
           <li className="flex gap-2"><span>✅</span> Let clients verify your track record before hiring you</li>
           <li className="flex gap-2"><span>✅</span> Your reputation is portable — if a platform shuts down, your history survives</li>
           <li className="flex gap-2"><span>✅</span> Anti-gaming protection: scores are backed by real economic activity</li>

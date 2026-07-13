@@ -54,7 +54,7 @@ function validCredential(overrides: Record<string, unknown> = {}) {
 describe('Receipt Schema', () => {
   it('should accept valid receipt with all fields', () => {
     const receipt = validReceipt({
-      platform_did: 'did:web:coinpayportal.com',
+      platform_did: 'did:web:tempesttouch.com',
       escrow_tx: 'tx-123',
       sla: { latency: '< 100ms' },
       dispute: false,
@@ -627,12 +627,12 @@ describe('SDK reputation.js methods', () => {
   }
 
   it('submitReceipt sends POST request', async () => {
-    const { CoinPayClient } = await import('../../../packages/sdk/src/client.js');
+    const { tempesttouchClient } = await import('../../../packages/sdk/src/client.js');
     const { submitReceipt } = await import('../../../packages/sdk/src/reputation.js');
 
     setupFetchMock({ success: true, receipt: { id: '123' } }, 201);
 
-    const client = new CoinPayClient({ apiKey: 'test-key' });
+    const client = new tempesttouchClient({ apiKey: 'test-key' });
     const result = await submitReceipt(client, validReceipt());
 
     expect(result.success).toBe(true);
@@ -640,13 +640,13 @@ describe('SDK reputation.js methods', () => {
   });
 
   it('getReputation sends GET request with encoded DID', async () => {
-    const { CoinPayClient } = await import('../../../packages/sdk/src/client.js');
+    const { tempesttouchClient } = await import('../../../packages/sdk/src/client.js');
     const { getReputation } = await import('../../../packages/sdk/src/reputation.js');
 
     const repData = { success: true, reputation: { agent_did: 'did:web:test' } };
     setupFetchMock(repData);
 
-    const client = new CoinPayClient({ apiKey: 'test-key' });
+    const client = new tempesttouchClient({ apiKey: 'test-key' });
     const result = await getReputation(client, 'did:web:test.com');
 
     expect(result.success).toBe(true);
@@ -655,80 +655,80 @@ describe('SDK reputation.js methods', () => {
   });
 
   it('getCredential sends GET request', async () => {
-    const { CoinPayClient } = await import('../../../packages/sdk/src/client.js');
+    const { tempesttouchClient } = await import('../../../packages/sdk/src/client.js');
     const { getCredential } = await import('../../../packages/sdk/src/reputation.js');
 
     setupFetchMock({ success: true, credential: { id: 'cred-1' } });
 
-    const client = new CoinPayClient({ apiKey: 'test-key' });
+    const client = new tempesttouchClient({ apiKey: 'test-key' });
     const result = await getCredential(client, 'cred-1');
     expect(result.success).toBe(true);
   });
 
   it('verifyCredential sends POST request', async () => {
-    const { CoinPayClient } = await import('../../../packages/sdk/src/client.js');
+    const { tempesttouchClient } = await import('../../../packages/sdk/src/client.js');
     const { verifyCredential } = await import('../../../packages/sdk/src/reputation.js');
 
     setupFetchMock({ valid: true });
 
-    const client = new CoinPayClient({ apiKey: 'test-key' });
+    const client = new tempesttouchClient({ apiKey: 'test-key' });
     const result = await verifyCredential(client, { credential_id: 'cred-1' });
     expect(result.valid).toBe(true);
   });
 
   it('getRevocationList sends GET request', async () => {
-    const { CoinPayClient } = await import('../../../packages/sdk/src/client.js');
+    const { tempesttouchClient } = await import('../../../packages/sdk/src/client.js');
     const { getRevocationList } = await import('../../../packages/sdk/src/reputation.js');
 
     setupFetchMock({ success: true, revoked_credentials: [], revocations: [] });
 
-    const client = new CoinPayClient({ apiKey: 'test-key' });
+    const client = new tempesttouchClient({ apiKey: 'test-key' });
     const result = await getRevocationList(client);
     expect(result.success).toBe(true);
     expect(result.revocations).toEqual([]);
   });
 
   it('should handle API errors gracefully', async () => {
-    const { CoinPayClient } = await import('../../../packages/sdk/src/client.js');
+    const { tempesttouchClient } = await import('../../../packages/sdk/src/client.js');
     const { getReputation } = await import('../../../packages/sdk/src/reputation.js');
 
     setupFetchMock({ error: 'Not found' }, 404);
 
-    const client = new CoinPayClient({ apiKey: 'test-key' });
+    const client = new tempesttouchClient({ apiKey: 'test-key' });
     await expect(getReputation(client, 'did:web:unknown')).rejects.toThrow();
   });
 
   it('getMyDid sends GET request to /reputation/did/me', async () => {
-    const { CoinPayClient } = await import('../../../packages/sdk/src/client.js');
+    const { tempesttouchClient } = await import('../../../packages/sdk/src/client.js');
     const { getMyDid } = await import('../../../packages/sdk/src/reputation.js');
 
     setupFetchMock({ did: 'did:key:z123', public_key: 'abc', verified: true, created_at: '2026-01-01' });
 
-    const client = new CoinPayClient({ apiKey: 'test-key' });
+    const client = new tempesttouchClient({ apiKey: 'test-key' });
     const result = await getMyDid(client);
     expect(result.did).toBe('did:key:z123');
     expect(result.public_key).toBe('abc');
   });
 
   it('claimDid sends POST request to /reputation/did/claim', async () => {
-    const { CoinPayClient } = await import('../../../packages/sdk/src/client.js');
+    const { tempesttouchClient } = await import('../../../packages/sdk/src/client.js');
     const { claimDid } = await import('../../../packages/sdk/src/reputation.js');
 
     setupFetchMock({ did: 'did:key:zNew', public_key: 'xyz', verified: true, created_at: '2026-01-01' }, 201);
 
-    const client = new CoinPayClient({ apiKey: 'test-key' });
+    const client = new tempesttouchClient({ apiKey: 'test-key' });
     const result = await claimDid(client);
     expect(result.did).toBe('did:key:zNew');
     expect(globalThis.fetch).toHaveBeenCalledTimes(1);
   });
 
   it('linkDid sends POST request with DID data', async () => {
-    const { CoinPayClient } = await import('../../../packages/sdk/src/client.js');
+    const { tempesttouchClient } = await import('../../../packages/sdk/src/client.js');
     const { linkDid } = await import('../../../packages/sdk/src/reputation.js');
 
     setupFetchMock({ did: 'did:key:zLinked', public_key: 'pub123', verified: true, created_at: '2026-01-01' }, 201);
 
-    const client = new CoinPayClient({ apiKey: 'test-key' });
+    const client = new tempesttouchClient({ apiKey: 'test-key' });
     const result = await linkDid(client, { did: 'did:key:zLinked', publicKey: 'pub123', signature: 'sig456' });
     expect(result.did).toBe('did:key:zLinked');
     expect(globalThis.fetch).toHaveBeenCalledTimes(1);
@@ -785,3 +785,4 @@ describe('ActionReceipt Schema (Phase 2)', () => {
     }
   });
 });
+

@@ -1,25 +1,25 @@
-# CoinPay API Documentation
+# Tempest Touch API Documentation
 
 ## Overview
 
-CoinPay is a cryptocurrency payment gateway that allows merchants to accept crypto payments from their customers. The typical flow is:
+Tempest Touch is a cryptocurrency payment gateway that allows merchants to accept crypto payments from their customers. The typical flow is:
 
 1. **Merchant** creates a payment request via API when customer checks out
-2. **CoinPay** generates a unique payment address and QR code
+2. **Tempest Touch** generates a unique payment address and QR code
 3. **Customer** sends cryptocurrency to the payment address
-4. **CoinPay** monitors the blockchain and sends webhook notifications
+4. **Tempest Touch** monitors the blockchain and sends webhook notifications
 5. **Funds** are automatically forwarded to the merchant's wallet (minus fees)
 
 ## Base URL
 
 ```
-Production: https://coinpayportal.com/api
+Production: https://tempesttouch.com/api
 Development: http://localhost:3000/api
 ```
 
 ## Authentication
 
-CoinPay supports two authentication methods:
+Tempest Touch supports two authentication methods:
 
 ### API Key Authentication (Recommended for Merchants)
 
@@ -307,7 +307,7 @@ Delete a business (soft delete).
 
 ### Get Supported Coins
 
-Get the list of supported cryptocurrencies (wallets) configured for a business. This endpoint is useful for displaying available payment options to customers. Business-level wallets win; if a business does not have a wallet for a token, CoinPay falls back to the merchant's global wallet for that token.
+Get the list of supported cryptocurrencies (wallets) configured for a business. This endpoint is useful for displaying available payment options to customers. Business-level wallets win; if a business does not have a wallet for a token, Tempest Touch falls back to the merchant's global wallet for that token.
 
 **Endpoint:** `GET /api/supported-coins`
 
@@ -394,25 +394,25 @@ For checkout token pickers, use `GET /api/tokens`. It returns the same data plus
 
 **Example - cURL with API Key:**
 ```bash
-curl https://coinpayportal.com/api/supported-coins \
+curl https://tempesttouch.com/api/supported-coins \
   -H "Authorization: Bearer cp_live_your_api_key"
 ```
 
 **Example - cURL with JWT (requires business_id):**
 ```bash
-curl "https://coinpayportal.com/api/supported-coins?business_id=your-business-uuid" \
+curl "https://tempesttouch.com/api/supported-coins?business_id=your-business-uuid" \
   -H "Authorization: Bearer your_jwt_token"
 ```
 
 **Example - Get only active coins:**
 ```bash
-curl "https://coinpayportal.com/api/supported-coins?active_only=true" \
+curl "https://tempesttouch.com/api/supported-coins?active_only=true" \
   -H "Authorization: Bearer cp_live_your_api_key"
 ```
 
 **Example - JavaScript (fetch):**
 ```javascript
-const response = await fetch('https://coinpayportal.com/api/tokens?active_only=true', {
+const response = await fetch('https://tempesttouch.com/api/tokens?active_only=true', {
   headers: {
     'Authorization': 'Bearer cp_live_your_api_key',
   },
@@ -425,9 +425,9 @@ const data = await response.json();
 
 **Example - Node.js SDK:**
 ```javascript
-import { CoinPayClient } from '@profullstack/coinpay';
+import { Tempest TouchClient } from '@profullstack/tempesttouch';
 
-const client = new CoinPayClient({ apiKey: 'cp_live_your_api_key' });
+const client = new Tempest TouchClient({ apiKey: 'cp_live_your_api_key' });
 
 // Get all supported coins
 const coins = await client.getSupportedCoins();
@@ -469,7 +469,7 @@ const tokens = await client.getTokens({ businessId: 'your-business-uuid', active
 
 ### Create Payment
 
-Generate a new payment request. This is the primary endpoint merchants use to accept crypto payments. Business wallets are preferred for the requested chain; if missing, CoinPay uses the merchant-level global wallet for that chain.
+Generate a new payment request. This is the primary endpoint merchants use to accept crypto payments. Business wallets are preferred for the requested chain; if missing, Tempest Touch uses the merchant-level global wallet for that chain.
 
 **Endpoint:** `POST /api/payments/create`
 
@@ -546,7 +546,7 @@ Generate a new payment request. This is the primary endpoint merchants use to ac
 
 **Example - cURL:**
 ```bash
-curl -X POST https://coinpayportal.com/api/payments/create \
+curl -X POST https://tempesttouch.com/api/payments/create \
   -H "Authorization: Bearer cp_live_your_api_key" \
   -H "Content-Type: application/json" \
   -d '{
@@ -559,7 +559,7 @@ curl -X POST https://coinpayportal.com/api/payments/create \
 
 **Example - JavaScript (fetch):**
 ```javascript
-const response = await fetch('https://coinpayportal.com/api/payments/create', {
+const response = await fetch('https://tempesttouch.com/api/payments/create', {
   method: 'POST',
   headers: {
     'Authorization': 'Bearer cp_live_your_api_key',
@@ -580,9 +580,9 @@ const data = await response.json();
 
 **Example - Node.js SDK:**
 ```javascript
-import { CoinPayClient } from '@profullstack/coinpay';
+import { Tempest TouchClient } from '@profullstack/tempesttouch';
 
-const client = new CoinPayClient({ apiKey: 'cp_live_your_api_key' });
+const client = new Tempest TouchClient({ apiKey: 'cp_live_your_api_key' });
 
 const payment = await client.createPayment({
   businessId: 'your-business-id',
@@ -686,12 +686,12 @@ Get QR code image for a payment. Returns binary PNG image data.
 
 **HTML (direct use as image source):**
 ```html
-<img src="https://coinpayportal.com/api/payments/pay_abc123/qr" alt="Payment QR Code" />
+<img src="https://tempesttouch.com/api/payments/pay_abc123/qr" alt="Payment QR Code" />
 ```
 
 **JavaScript (fetch as blob):**
 ```javascript
-const response = await fetch('https://coinpayportal.com/api/payments/pay_abc123/qr', {
+const response = await fetch('https://tempesttouch.com/api/payments/pay_abc123/qr', {
   headers: {
     'Authorization': 'Bearer cp_live_your_api_key'
   }
@@ -705,14 +705,14 @@ document.getElementById('qr-image').src = imageUrl;
 ```bash
 curl -o payment-qr.png \
   -H "Authorization: Bearer cp_live_your_api_key" \
-  https://coinpayportal.com/api/payments/pay_abc123/qr
+  https://tempesttouch.com/api/payments/pay_abc123/qr
 ```
 
 **Node.js SDK:**
 ```javascript
 // Get QR code URL for use in HTML
 const qrUrl = client.getPaymentQRUrl('pay_abc123');
-// Returns: "https://coinpayportal.com/api/payments/pay_abc123/qr"
+// Returns: "https://tempesttouch.com/api/payments/pay_abc123/qr"
 
 // Get QR code as binary data
 const imageData = await client.getPaymentQR('pay_abc123');
@@ -1032,17 +1032,17 @@ View webhook delivery logs.
 
 ## Webhook Payload Format
 
-When a webhook event occurs, CoinPay sends a POST request to your configured URL with the following structure:
+When a webhook event occurs, Tempest Touch sends a POST request to your configured URL with the following structure:
 
 ### Headers
 
 ```
 Content-Type: application/json
-X-CoinPay-Signature: t=1702234567,v1=5d41402abc4b2a76b9719d911017c592
-User-Agent: CoinPay-Webhook/1.0
+X-Tempest Touch-Signature: t=1702234567,v1=5d41402abc4b2a76b9719d911017c592
+User-Agent: Tempest Touch-Webhook/1.0
 ```
 
-The `X-CoinPay-Signature` header contains:
+The `X-Tempest Touch-Signature` header contains:
 - `t` - Unix timestamp when the signature was generated
 - `v1` - HMAC-SHA256 signature of `{timestamp}.{payload}`
 
@@ -1235,11 +1235,11 @@ function verifyWebhookSignature(payload, signatureHeader, secret, tolerance = 30
 }
 
 // Usage in Express/Node.js
-app.post('/webhooks/coinpay', express.raw({ type: 'application/json' }), (req, res) => {
+app.post('/webhooks/tempesttouch', express.raw({ type: 'application/json' }), (req, res) => {
   const payload = req.body.toString();
-  const signature = req.headers['x-coinpay-signature'];
+  const signature = req.headers['x-tempesttouch-signature'];
   
-  if (!verifyWebhookSignature(payload, signature, process.env.COINPAY_WEBHOOK_SECRET)) {
+  if (!verifyWebhookSignature(payload, signature, process.env.TEMPESTTOUCH_WEBHOOK_SECRET)) {
     return res.status(401).json({ error: 'Invalid signature' });
   }
   
@@ -1252,16 +1252,16 @@ app.post('/webhooks/coinpay', express.raw({ type: 'application/json' }), (req, r
 
 **Using the SDK:**
 ```javascript
-import { verifyWebhookSignature, parseWebhookPayload } from '@profullstack/coinpay';
+import { verifyWebhookSignature, parseWebhookPayload } from '@profullstack/tempesttouch';
 
-app.post('/webhooks/coinpay', express.raw({ type: 'application/json' }), (req, res) => {
+app.post('/webhooks/tempesttouch', express.raw({ type: 'application/json' }), (req, res) => {
   const payload = req.body.toString();
-  const signature = req.headers['x-coinpay-signature'];
+  const signature = req.headers['x-tempesttouch-signature'];
   
   const isValid = verifyWebhookSignature({
     payload,
     signature,
-    secret: process.env.COINPAY_WEBHOOK_SECRET
+    secret: process.env.TEMPESTTOUCH_WEBHOOK_SECRET
   });
   
   if (!isValid) {
@@ -1455,15 +1455,15 @@ When a request is blocked due to entitlement limits, the API returns specific er
 
 ### E-commerce Checkout Flow
 
-Here's a complete example of integrating CoinPay into an e-commerce checkout:
+Here's a complete example of integrating Tempest Touch into an e-commerce checkout:
 
 **1. Backend: Create Payment Endpoint**
 ```javascript
 // routes/checkout.js
-import { CoinPayClient } from '@profullstack/coinpay';
+import { Tempest TouchClient } from '@profullstack/tempesttouch';
 
-const coinpay = new CoinPayClient({
-  apiKey: process.env.COINPAY_API_KEY,
+const tempesttouch = new Tempest TouchClient({
+  apiKey: process.env.TEMPESTTOUCH_API_KEY,
 });
 
 app.post('/api/checkout/crypto', async (req, res) => {
@@ -1472,9 +1472,9 @@ app.post('/api/checkout/crypto', async (req, res) => {
   // Get order from your database
   const order = await db.orders.findById(orderId);
   
-  // Create CoinPay payment
-  const payment = await coinpay.createPayment({
-    businessId: process.env.COINPAY_BUSINESS_ID,
+  // Create Tempest Touch payment
+  const payment = await tempesttouch.createPayment({
+    businessId: process.env.TEMPESTTOUCH_BUSINESS_ID,
     amount: order.total,
     currency: 'USD',
     blockchain,
@@ -1534,18 +1534,18 @@ function CryptoPayment({ orderId, blockchain }) {
 ```javascript
 // routes/webhooks.js
 import express from 'express';
-import { verifyWebhookSignature, parseWebhookPayload } from '@profullstack/coinpay';
+import { verifyWebhookSignature, parseWebhookPayload } from '@profullstack/tempesttouch';
 
 // Important: Use express.raw() to get the raw body for signature verification
-app.post('/webhooks/coinpay', express.raw({ type: 'application/json' }), async (req, res) => {
+app.post('/webhooks/tempesttouch', express.raw({ type: 'application/json' }), async (req, res) => {
   const payload = req.body.toString();
-  const signature = req.headers['x-coinpay-signature'];
+  const signature = req.headers['x-tempesttouch-signature'];
   
   // Verify signature
   const isValid = verifyWebhookSignature({
     payload,
     signature,
-    secret: process.env.COINPAY_WEBHOOK_SECRET
+    secret: process.env.TEMPESTTOUCH_WEBHOOK_SECRET
   });
   
   if (!isValid) {
@@ -1585,7 +1585,7 @@ app.post('/webhooks/coinpay', express.raw({ type: 'application/json' }), async (
 
 **Create a Bitcoin payment:**
 ```bash
-curl -X POST https://coinpayportal.com/api/payments/create \
+curl -X POST https://tempesttouch.com/api/payments/create \
   -H "Authorization: Bearer cp_live_your_api_key" \
   -H "Content-Type: application/json" \
   -d '{
@@ -1599,7 +1599,7 @@ curl -X POST https://coinpayportal.com/api/payments/create \
 
 **Create a USDC payment on Polygon:**
 ```bash
-curl -X POST https://coinpayportal.com/api/payments/create \
+curl -X POST https://tempesttouch.com/api/payments/create \
   -H "Authorization: Bearer cp_live_your_api_key" \
   -H "Content-Type: application/json" \
   -d '{
@@ -1612,7 +1612,7 @@ curl -X POST https://coinpayportal.com/api/payments/create \
 
 **Check payment status:**
 ```bash
-curl https://coinpayportal.com/api/payments/pay_abc123 \
+curl https://tempesttouch.com/api/payments/pay_abc123 \
   -H "Authorization: Bearer cp_live_your_api_key"
 ```
 
@@ -1620,20 +1620,20 @@ curl https://coinpayportal.com/api/payments/pay_abc123 \
 
 ```bash
 # Configure API key (one-time)
-coinpay config set-key cp_live_your_api_key
+tempesttouch config set-key cp_live_your_api_key
 
 # Create a payment
-coinpay payment create \
+tempesttouch payment create \
   --business-id your-business-id \
   --amount 100 \
   --blockchain ETH \
   --description "Test payment"
 
 # Check payment status
-coinpay payment get pay_abc123
+tempesttouch payment get pay_abc123
 
 # List recent payments
-coinpay payment list --business-id your-business-id --limit 10
+tempesttouch payment list --business-id your-business-id --limit 10
 ```
 
 ## Support
@@ -1721,7 +1721,7 @@ Only payouts with `status: "failed"` can be retried. The system creates a new tr
 
 ### Supported Cryptocurrencies
 
-All cryptocurrencies supported by CoinPayPortal can be used for payouts:
+All cryptocurrencies supported by Tempest Touch can be used for payouts:
 BTC, BCH, ETH, SOL, POL, BNB, DOGE, XRP, ADA, USDT, USDT_ETH, USDT_POL, USDT_SOL, USDC, USDC_ETH, USDC_POL, USDC_SOL
 
 ---
@@ -1908,6 +1908,6 @@ Response:
 ---
 
 For API support, contact:
-- Email: api-support@coinpayportal.com
-- Documentation: https://docs.coinpayportal.com
-- Status Page: https://status.coinpayportal.com
+- Email: api-support@tempesttouch.com
+- Documentation: https://docs.tempesttouch.com
+- Status Page: https://status.tempesttouch.com

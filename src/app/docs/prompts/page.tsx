@@ -2,8 +2,8 @@ import Link from 'next/link';
 import { listPrompts } from './prompts';
 
 export const metadata = {
-  title: 'Integration Prompts — CoinPay',
-  description: 'Copy-paste prompts for integrating CoinPay features with an AI coding assistant.',
+  title: 'Integration Prompts — Tempest Touch',
+  description: 'Copy-paste prompts for integrating Tempest Touch features with an AI coding assistant.',
 };
 
 export default function PromptsIndexPage() {
@@ -22,7 +22,7 @@ export default function PromptsIndexPage() {
         <h1 className="text-5xl font-bold text-white mb-4">Integration Prompts</h1>
         <p className="text-xl text-gray-300 mb-10">
           Pick a feature, copy the prompt, paste it into your AI coding assistant. Each prompt is a self-contained
-          spec for integrating one CoinPay capability.
+          spec for integrating one Tempest Touch capability.
         </p>
 
         <ul className="space-y-3">

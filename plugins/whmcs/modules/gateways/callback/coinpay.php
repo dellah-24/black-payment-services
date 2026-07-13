@@ -1,8 +1,8 @@
 <?php
 /**
- * CoinPay webhook callback for WHMCS.
+ * Tempest Touch webhook callback for WHMCS.
  *
- * Endpoint: https://<your-whmcs>/modules/gateways/callback/coinpay.php
+ * Endpoint: https://<your-whmcs>/modules/gateways/callback/tempesttouch.php
  *
  * Verifies the HMAC signature, resolves the invoice via metadata, and applies
  * the event using WHMCS's standard gateway helpers.
@@ -17,14 +17,14 @@ if (function_exists('App::load_function')) {
     App::load_function('invoice');
 }
 
-require_once __DIR__ . '/../coinpay/lib/CoinPay/ApiException.php';
-require_once __DIR__ . '/../coinpay/lib/CoinPay/Webhook.php';
-require_once __DIR__ . '/../coinpay/lib/CoinPay/StatusMap.php';
+require_once __DIR__ . '/../tempesttouch/lib/Tempest Touch/ApiException.php';
+require_once __DIR__ . '/../tempesttouch/lib/Tempest Touch/Webhook.php';
+require_once __DIR__ . '/../tempesttouch/lib/Tempest Touch/StatusMap.php';
 
-use CoinPay\Webhook;
-use CoinPay\StatusMap;
+use Tempest Touch\Webhook;
+use Tempest Touch\StatusMap;
 
-$moduleName = 'coinpay';
+$moduleName = 'tempesttouch';
 $gatewayParams = getGatewayVariables($moduleName);
 
 if (empty($gatewayParams['type'])) {
@@ -35,7 +35,7 @@ if (empty($gatewayParams['type'])) {
 
 $secret = (string) ($gatewayParams['webhookSecret'] ?? '');
 $raw    = file_get_contents('php://input') ?: '';
-$sig    = (string) ($_SERVER['HTTP_X_COINPAY_SIGNATURE'] ?? '');
+$sig    = (string) ($_SERVER['HTTP_X_TEMPESTTOUCH_SIGNATURE'] ?? '');
 
 if ($secret === '' || $raw === '' || $sig === '' || !Webhook::verify($raw, $sig, $secret)) {
     logModuleCall($moduleName, 'webhook.rejected', [
@@ -101,12 +101,12 @@ $currency = (string) ($payment['currency'] ?? $data['currency'] ?? '');
 
 switch ($class) {
     case StatusMap::CLASS_PAID:
-        // The CoinPay response carries no fee by default; fee = 0 unless the
+        // The Tempest Touch response carries no fee by default; fee = 0 unless the
         // merchant dashboard later exposes one. WHMCS addInvoicePayment is
         // idempotent by transid so this is safe on replays.
         addInvoicePayment(
             $resolvedId,
-            $eventId ?: ($paymentId ?: uniqid('coinpay_', true)),
+            $eventId ?: ($paymentId ?: uniqid('tempesttouch_', true)),
             $amount,
             0.0,
             $moduleName

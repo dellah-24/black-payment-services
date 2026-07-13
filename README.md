@@ -1,14 +1,14 @@
-# CoinPay ⚡
+# Tempest Touch ⚡
 
 The multi-chain payment infrastructure for humans and AI agents. Non-custodial crypto payments, escrow, web wallet, Lightning, x402 protocol, and Stripe — all in one platform.
 
-**[coinpayportal.com](https://coinpayportal.com)** · [Docs](https://coinpayportal.com/docs) · [SDK](https://coinpayportal.com/docs/sdk) · [Discord](https://discord.gg/U7dEXfBA3s)
+**[tempesttouch.com](https://tempesttouch.com)** · [Docs](https://tempesttouch.com/docs) · [SDK](https://tempesttouch.com/docs/sdk) · [Discord](https://discord.gg/U7dEXfBA3s)
 
 ---
 
-## What is CoinPay?
+## What is Tempest Touch?
 
-CoinPay is a non-custodial payment gateway that lets merchants accept crypto, Lightning, and card payments. It's designed for both traditional e-commerce and the agent economy — AI agents can create wallets, send payments, manage escrows, and pay for APIs autonomously.
+Tempest Touch is a non-custodial payment gateway that lets merchants accept crypto, Lightning, and card payments. It's designed for both traditional e-commerce and the agent economy — AI agents can create wallets, send payments, manage escrows, and pay for APIs autonomously.
 
 ## 🌟 Features
 
@@ -73,7 +73,7 @@ const response = await x402fetch('https://api.example.com/premium', {
 
 ### 🆔 DID Reputation Protocol (CPTL)
 
-  - **Decentralized identifiers**: `did:web:coinpayportal.com:merchant:<id>`
+  - **Decentralized identifiers**: `did:web:tempesttouch.com:merchant:<id>`
   - **7-dimension trust vectors**: Economic, Productivity, Behavioral, Delivery, Reliability, Accountability, Compliance
   - **ActionReceipt schema**: Cryptographically signed receipts from escrow settlements
   - **Cross-platform portability**: Reputation travels with your DID across platforms (e.g. [ugig.net](https://ugig.net))
@@ -83,8 +83,8 @@ const response = await x402fetch('https://api.example.com/premium', {
 
 ### 📦 SDK & CLI
 
-  - **NPM package**: `@profullstack/coinpay`
-  - **Full CLI**: `coinpay payment create`, `coinpay escrow create`, `coinpay wallet create`, `coinpay x402 test`
+  - **NPM package**: `@profullstack/tempesttouch`
+  - **Full CLI**: `tempesttouch payment create`, `tempesttouch escrow create`, `tempesttouch wallet create`, `tempesttouch x402 test`
   - **ESM module**: Import directly into Node.js applications
   - **AI agent skill**: Feed `/skill.md` to any AI agent for autonomous operation
 
@@ -99,8 +99,8 @@ const response = await x402fetch('https://api.example.com/premium', {
 ### Installation
 
 ```bash
-git clone https://github.com/profullstack/coinpayportal.git
-cd coinpayportal
+git clone https://github.com/profullstack/tempesttouch.git
+cd tempesttouch
 pnpm install
 cp .env.example .env.local
 ```
@@ -176,13 +176,13 @@ We include a production-ready `Dockerfile` optimized for `pnpm` natively via Nod
 ### Using the SDK
 
 ```bash
-npm install @profullstack/coinpay
+npm install @profullstack/tempesttouch
 ```
 
 ```javascript
-import { CoinPay } from '@profullstack/coinpay';
+import { Tempest Touch } from '@profullstack/tempesttouch';
 
-const client = new CoinPay({ apiKey: 'cp_live_xxxxx' });
+const client = new Tempest Touch({ apiKey: 'cp_live_xxxxx' });
 
 // Create a payment
 const payment = await client.payments.create({
@@ -210,29 +210,29 @@ const wallet = await client.wallet.create({ password: 'secure' });
 
 ```bash
 # Payments
-coinpay payment create --amount 100 --currency USD --blockchain eth
-coinpay payment status --id pay_xyz
+tempesttouch payment create --amount 100 --currency USD --blockchain eth
+tempesttouch payment status --id pay_xyz
 
 # Escrow
-coinpay escrow create --chain sol --amount 500 --depositor So1... --beneficiary So2...
-coinpay escrow release --id esc_123 --token rel_xxx
+tempesttouch escrow create --chain sol --amount 500 --depositor So1... --beneficiary So2...
+tempesttouch escrow release --id esc_123 --token rel_xxx
 
 # Web Wallet
-coinpay wallet create
-coinpay wallet send --chain eth --to 0x... --amount 0.1
+tempesttouch wallet create
+tempesttouch wallet send --chain eth --to 0x... --amount 0.1
 
 # x402
-coinpay x402 test --url http://localhost:3000/api/premium
-coinpay x402 status
+tempesttouch x402 test --url http://localhost:3000/api/premium
+tempesttouch x402 status
 
 # Reputation
-coinpay reputation profile did:web:coinpayportal.com:merchant:123
+tempesttouch reputation profile did:web:tempesttouch.com:merchant:123
 ```
 
 ## 📖 Documentation
 
-  - [API Reference](https://coinpayportal.com/docs) — Full REST API documentation
-  - [SDK & CLI](https://coinpayportal.com/docs/sdk) — Node.js SDK and CLI reference
+  - [API Reference](https://tempesttouch.com/docs) — Full REST API documentation
+  - [SDK & CLI](https://tempesttouch.com/docs/sdk) — Node.js SDK and CLI reference
   - [x402 Integration](./docs/X402_INTEGRATION.md) — x402 payment protocol guide
   - [Architecture](./docs/ARCHITECTURE.md) — System design overview
   - [Database Schema](./docs/DATABASE.md) — Supabase schema reference
@@ -253,7 +253,7 @@ coinpay reputation profile did:web:coinpayportal.com:merchant:123
 ## 📦 Project Structure
 
 ```
-coinpayportal/
+tempesttouch/
 ├── docs/                     # Documentation
 ├── scripts/                  # Operational & dev scripts
 │   ├── gen-mnemonic.mjs      # BIP39 mnemonic generator (no npm deps needed)
@@ -283,7 +283,7 @@ coinpayportal/
 │   │   └── crypto/          # Encryption
 │   └── types/
 ├── packages/
-│   └── sdk/                  # @profullstack/coinpay (SDK + CLI)
+│   └── sdk/                  # @profullstack/tempesttouch (SDK + CLI)
 └── supabase/
     └── migrations/           # Database migrations
 ```
@@ -335,10 +335,10 @@ MIT — see [LICENSE](./LICENSE)
 
 ## 🆘 Support
 
-  - **Docs**: [coinpayportal.com/docs](https://coinpayportal.com/docs)
+  - **Docs**: [tempesttouch.com/docs](https://tempesttouch.com/docs)
   - **Discord**: [discord.gg/U7dEXfBA3s](https://discord.gg/U7dEXfBA3s)
-  - **Email**: support@coinpayportal.com
-  - **Issues**: [GitHub Issues](https://github.com/profullstack/coinpayportal/issues)
+  - **Email**: support@tempesttouch.com
+  - **Issues**: [GitHub Issues](https://github.com/profullstack/tempesttouch/issues)
 
 -----
 

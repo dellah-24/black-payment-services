@@ -1,6 +1,6 @@
 #!/usr/bin/env npx tsx
 /**
- * Send announcement email to all CoinPayPortal merchants
+ * Send announcement email to all Tempest Touch merchants
  * Usage: npx tsx scripts/send-announcement.ts [--dry-run]
  */
 
@@ -32,7 +32,7 @@ const html = (name: string) => `<!DOCTYPE html>
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CoinPayPortal — Web Wallets & Escrow Now Live</title>
+  <title>Tempest Touch — Web Wallets & Escrow Now Live</title>
 </head>
 <body style="margin:0;padding:0;background:#f9fafb;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
   <table width="100%" cellpadding="0" cellspacing="0" style="background:#f9fafb;padding:40px 20px;">
@@ -41,7 +41,7 @@ const html = (name: string) => `<!DOCTYPE html>
         
         <!-- Header -->
         <tr><td style="background:linear-gradient(135deg,#7c3aed,#6d28d9);padding:40px 40px 30px;text-align:center;">
-          <h1 style="margin:0;color:#ffffff;font-size:28px;font-weight:700;">⚡ CoinPayPortal</h1>
+          <h1 style="margin:0;color:#ffffff;font-size:28px;font-weight:700;">⚡ Tempest Touch</h1>
           <p style="margin:8px 0 0;color:#e9d5ff;font-size:16px;">Non-Custodial Crypto Payments</p>
         </td></tr>
 
@@ -80,9 +80,9 @@ const html = (name: string) => `<!DOCTYPE html>
               Whether you're building a web app, running a backend, or wiring up an AI agent:
             </p>
             <ul style="margin:0;padding:0 0 0 20px;color:#4b5563;font-size:15px;line-height:1.8;">
-              <li><strong>Dashboard</strong> — Manage wallets, payments & escrow at <a href="https://coinpayportal.com" style="color:#7c3aed;">coinpayportal.com</a></li>
-              <li><strong>REST API</strong> — Full API docs at <a href="https://coinpayportal.com/docs" style="color:#7c3aed;">coinpayportal.com/docs</a></li>
-              <li><strong>CLI / SDK</strong> — <code style="background:#f3f4f6;padding:2px 6px;border-radius:4px;font-size:13px;">npm i coinpay-sdk</code> — programmatic access for bots, agents, and backends</li>
+              <li><strong>Dashboard</strong> — Manage wallets, payments & escrow at <a href="https://tempesttouch.com" style="color:#7c3aed;">tempesttouch.com</a></li>
+              <li><strong>REST API</strong> — Full API docs at <a href="https://tempesttouch.com/docs" style="color:#7c3aed;">tempesttouch.com/docs</a></li>
+              <li><strong>CLI / SDK</strong> — <code style="background:#f3f4f6;padding:2px 6px;border-radius:4px;font-size:13px;">npm i tempesttouch-sdk</code> — programmatic access for bots, agents, and backends</li>
             </ul>
           </div>
 
@@ -97,7 +97,7 @@ const html = (name: string) => `<!DOCTYPE html>
 
           <!-- CTA -->
           <div style="text-align:center;margin:0 0 30px;">
-            <a href="https://coinpayportal.com/dashboard" style="display:inline-block;background:#7c3aed;color:#ffffff;padding:14px 32px;border-radius:8px;text-decoration:none;font-size:16px;font-weight:600;">
+            <a href="https://tempesttouch.com/dashboard" style="display:inline-block;background:#7c3aed;color:#ffffff;padding:14px 32px;border-radius:8px;text-decoration:none;font-size:16px;font-weight:600;">
               Go to Dashboard →
             </a>
           </div>
@@ -110,7 +110,7 @@ const html = (name: string) => `<!DOCTYPE html>
         <!-- Footer -->
         <tr><td style="background:#f9fafb;padding:24px 40px;border-top:1px solid #e5e7eb;text-align:center;">
           <p style="margin:0;color:#9ca3af;font-size:13px;">
-            CoinPayPortal by <a href="https://profullstack.com" style="color:#7c3aed;text-decoration:none;">Profullstack Inc</a>
+            Tempest Touch by <a href="https://profullstack.com" style="color:#7c3aed;text-decoration:none;">Profullstack Inc</a>
             <br>Non-custodial crypto payments for the modern web
           </p>
         </td></tr>
@@ -129,7 +129,7 @@ async function sendEmail(to: string, name: string) {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      from: 'CoinPayPortal <noreply@coinpayportal.com>',
+      from: 'Tempest Touch <noreply@tempesttouch.com>',
       to: [to],
       subject: '⚡ New: Web Wallets (No Account Needed) & Escrow — For Humans & AI Agents',
       html: html(name),

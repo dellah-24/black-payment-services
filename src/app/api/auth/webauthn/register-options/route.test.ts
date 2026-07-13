@@ -37,7 +37,7 @@ vi.mock('@supabase/supabase-js', () => ({
 vi.mock('@simplewebauthn/server', () => ({
   generateRegistrationOptions: vi.fn(async () => ({
     challenge: 'test-challenge-base64',
-    rp: { name: 'CoinPay', id: 'coinpayportal.com' },
+    rp: { name: 'Tempest Touch', id: 'tempesttouch.com' },
     user: { id: 'user-id', name: 'test@example.com', displayName: 'test@example.com' },
     pubKeyCredParams: [],
     timeout: 60000,
@@ -56,8 +56,8 @@ vi.mock('@/lib/webauthn/challenges', () => ({
 }));
 
 vi.mock('@/lib/webauthn/config', () => ({
-  getRpId: vi.fn(() => 'coinpayportal.com'),
-  getRpName: vi.fn(() => 'CoinPay'),
+  getRpId: vi.fn(() => 'tempesttouch.com'),
+  getRpName: vi.fn(() => 'Tempest Touch'),
 }));
 
 import { GET } from './route';

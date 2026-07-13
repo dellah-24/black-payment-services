@@ -308,9 +308,9 @@ async function generateReputationReceipt(
   const { error } = await supabase.from('reputation_receipts').insert({
     receipt_id: receiptId,
     task_id: escrow.id,
-    agent_did: `did:coinpay:beneficiary:${escrow.beneficiary_address}`,
-    buyer_did: `did:coinpay:depositor:${escrow.business_id || 'unknown'}`,
-    platform_did: 'did:web:coinpayportal.com',
+    agent_did: `did:tempesttouch:beneficiary:${escrow.beneficiary_address}`,
+    buyer_did: `did:tempesttouch:depositor:${escrow.business_id || 'unknown'}`,
+    platform_did: 'did:web:tempesttouch.com',
     escrow_tx: escrow.id,
     amount: Number(escrow.amount) || 0,
     currency: escrow.chain as string,
@@ -326,3 +326,4 @@ async function generateReputationReceipt(
     console.log(`Reputation receipt ${receiptId} created for escrow ${escrow.id}`);
   }
 }
+

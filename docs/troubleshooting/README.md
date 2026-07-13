@@ -1,6 +1,6 @@
 # Troubleshooting Guide
 
-Common issues and their fixes when integrating with or operating CoinPay.
+Common issues and their fixes when integrating with or operating Tempest Touch.
 
 ---
 
@@ -16,7 +16,7 @@ Common issues and their fixes when integrating with or operating CoinPay.
    Have the customer verify the address they sent to matches `payment_address` in the payment record. Check the block explorer for the exact address.
 
 2. **Customer sent wrong amount**  
-   CoinPay has a 1% tolerance. If the customer sent significantly less, the payment won't confirm. Check `crypto_amount` (expected) vs actual blockchain balance.
+   Tempest Touch has a 1% tolerance. If the customer sent significantly less, the payment won't confirm. Check `crypto_amount` (expected) vs actual blockchain balance.
 
 3. **Blockchain congestion**  
    Bitcoin and Ethereum can have long confirmation times during high traffic. The cron monitor checks every minute — wait for at least 10-15 minutes before investigating.
@@ -30,7 +30,7 @@ Common issues and their fixes when integrating with or operating CoinPay.
    # Vercel — check cron logs in the dashboard
    # Railway — check the logs for "monitor-payments"
    curl -H "Authorization: Bearer $INTERNAL_API_KEY" \
-     https://coinpayportal.com/api/monitor/status
+     https://tempesttouch.com/api/monitor/status
    ```
 
 6. **RPC endpoint down**  
@@ -39,10 +39,10 @@ Common issues and their fixes when integrating with or operating CoinPay.
 **Debug steps:**
 ```bash
 # Manually check the payment's blockchain balance
-curl -X POST https://coinpayportal.com/api/payments/{payment_id}/check-balance
+curl -X POST https://tempesttouch.com/api/payments/{payment_id}/check-balance
 
 # Check payment details
-curl https://coinpayportal.com/api/payments/{payment_id}
+curl https://tempesttouch.com/api/payments/{payment_id}
 ```
 
 ---
@@ -68,7 +68,7 @@ curl https://coinpayportal.com/api/payments/{payment_id}
      -H "Authorization: Bearer $ADMIN_JWT" \
      -H "Content-Type: application/json" \
      -d '{"retry": true}' \
-     https://coinpayportal.com/api/payments/{payment_id}/forward
+     https://tempesttouch.com/api/payments/{payment_id}/forward
    ```
 
 ---
@@ -89,13 +89,13 @@ curl https://coinpayportal.com/api/payments/{payment_id}
 **Cause:** Exchange rates fluctuate. The crypto amount is calculated at payment creation time based on the current rate.
 
 **Details:**
-- CoinPay uses Tatum API for exchange rates
+- Tempest Touch uses Tatum API for exchange rates
 - Rates are cached briefly (seconds) to avoid excessive API calls
 - A 1% tolerance is applied when checking incoming funds
 
 **If the rate seems very wrong**, check if the Tatum API is returning valid data:
 ```bash
-curl https://coinpayportal.com/api/fees?blockchain=BTC
+curl https://tempesttouch.com/api/fees?blockchain=BTC
 ```
 
 ---
@@ -154,16 +154,16 @@ headers: { 'Authorization': `Token ${apiKey}` }
    Check Business Settings → Webhook URL is set and correct.
 
 2. **URL not reachable from the internet**  
-   CoinPay must be able to POST to your URL. Test:
+   Tempest Touch must be able to POST to your URL. Test:
    ```bash
    # From your server
-   curl -X POST https://your-webhook-url/webhooks/coinpay \
+   curl -X POST https://your-webhook-url/webhooks/tempesttouch \
      -d '{"test": true}'
    ```
    For local development, use [ngrok](https://ngrok.com) or a similar tunnel.
 
 3. **URL returns non-2xx status**  
-   Your webhook handler must return 200. If it returns 500 or times out, CoinPay will retry.
+   Your webhook handler must return 200. If it returns 500 or times out, Tempest Touch will retry.
 
 4. **Firewall blocking**  
    Ensure your server accepts POST requests from external IPs on the webhook path.
@@ -174,7 +174,7 @@ headers: { 'Authorization': `Token ${apiKey}` }
      -H "Authorization: Bearer $JWT_TOKEN" \
      -H "Content-Type: application/json" \
      -d '{"event_type": "payment.confirmed"}' \
-     https://coinpayportal.com/api/businesses/{id}/webhook-test
+     https://tempesttouch.com/api/businesses/{id}/webhook-test
    ```
 
 ### Webhook signature verification failing
@@ -266,7 +266,7 @@ Reduce your request frequency or implement backoff.
    - All `NEXT_PUBLIC_*` variables (they're embedded at build time)
 
 2. **Node version mismatch**  
-   CoinPay requires Node ≥ 24. Check your deployment config:
+   Tempest Touch requires Node ≥ 24. Check your deployment config:
    ```json
    // package.json
    { "engines": { "node": ">=24.0.0" } }
@@ -337,4 +337,4 @@ Check your deployment platform's environment variables panel.
    - SOL: [solscan.io](https://solscan.io)
    - POL: [polygonscan.com](https://polygonscan.com)
 4. **Test endpoints** — Use `POST /api/businesses/{id}/webhook-test` to test webhook delivery
-5. **CoinPay support** — Contact via the Help page at [coinpayportal.com/help](https://coinpayportal.com/help)
+5. **Tempest Touch support** — Contact via the Help page at [tempesttouch.com/help](https://tempesttouch.com/help)

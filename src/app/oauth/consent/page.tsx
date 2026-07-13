@@ -90,7 +90,7 @@ function ConsentContent() {
             Authorize Application
           </h1>
           <p className="text-gray-400">
-            {appName || 'An application'} wants to access your CoinPay account
+            {appName || 'An application'} wants to access your TempestTouch account
           </p>
         </div>
 

@@ -296,7 +296,7 @@ describe('Web Wallet Service', () => {
       const result = await importWallet(supabase, {
         public_key_secp256k1: keypair.publicKeyHex,
         proof_of_ownership: {
-          message: 'CoinPayPortal wallet import: 1234567890',
+          message: 'TempestTouch wallet import: 1234567890',
           signature: 'deadbeef',
         },
       });
@@ -307,7 +307,7 @@ describe('Web Wallet Service', () => {
 
     it('should import wallet with valid signature', async () => {
       const keypair = generateTestKeypair();
-      const message = `CoinPayPortal wallet import: ${Math.floor(Date.now() / 1000)}`;
+      const message = `TempestTouch wallet import: ${Math.floor(Date.now() / 1000)}`;
       const signature = signMessage(message, keypair.privateKey);
       const supabase = createSequentialMockSupabase();
 
@@ -332,7 +332,7 @@ describe('Web Wallet Service', () => {
 
     it('should return existing wallet if key already registered', async () => {
       const keypair = generateTestKeypair();
-      const message = `CoinPayPortal wallet import: ${Math.floor(Date.now() / 1000)}`;
+      const message = `TempestTouch wallet import: ${Math.floor(Date.now() / 1000)}`;
       const signature = signMessage(message, keypair.privateKey);
       const supabase = createSequentialMockSupabase();
 
@@ -353,7 +353,7 @@ describe('Web Wallet Service', () => {
 
     it('should allow existing wallet to register LN address during import', async () => {
       const keypair = generateTestKeypair();
-      const message = `CoinPayPortal wallet import: ${Math.floor(Date.now() / 1000)}`;
+      const message = `TempestTouch wallet import: ${Math.floor(Date.now() / 1000)}`;
       const signature = signMessage(message, keypair.privateKey);
       const supabase = createSequentialMockSupabase();
 
@@ -581,7 +581,7 @@ describe('Web Wallet Service', () => {
         {
           data: {
             id: 'challenge-1',
-            challenge: 'coinpayportal:auth:1234:abcd',
+            challenge: 'tempesttouch:auth:1234:abcd',
             expires_at: new Date(Date.now() + 300000).toISOString(),
           },
           error: null,
@@ -591,7 +591,7 @@ describe('Web Wallet Service', () => {
       const result = await createAuthChallenge(supabase, 'w1');
       expect(result.success).toBe(true);
       expect(result.data?.challenge_id).toBe('challenge-1');
-      expect(result.data?.challenge).toMatch(/coinpayportal:auth:/);
+      expect(result.data?.challenge).toMatch(/tempesttouch:auth:/);
     });
   });
 
@@ -618,7 +618,7 @@ describe('Web Wallet Service', () => {
           data: {
             id: 'c1',
             wallet_id: 'w1',
-            challenge: 'coinpayportal:auth:1234:abcd',
+            challenge: 'tempesttouch:auth:1234:abcd',
             expires_at: new Date(Date.now() - 60000).toISOString(), // expired
             used: false,
           },
@@ -642,7 +642,7 @@ describe('Web Wallet Service', () => {
           data: {
             id: 'c1',
             wallet_id: 'w1',
-            challenge: 'coinpayportal:auth:1234:abcd',
+            challenge: 'tempesttouch:auth:1234:abcd',
             expires_at: new Date(Date.now() + 300000).toISOString(),
             used: true,
           },
@@ -661,7 +661,7 @@ describe('Web Wallet Service', () => {
 
     it('should verify valid signature and return JWT', async () => {
       const keypair = generateTestKeypair();
-      const challenge = 'coinpayportal:auth:1234:abcdef1234567890';
+      const challenge = 'tempesttouch:auth:1234:abcdef1234567890';
       const signature = signMessage(challenge, keypair.privateKey);
 
       const supabase = createSequentialMockSupabase();
@@ -705,7 +705,7 @@ describe('Web Wallet Service', () => {
 
     it('should reject invalid signature', async () => {
       const keypair = generateTestKeypair();
-      const challenge = 'coinpayportal:auth:1234:abcdef1234567890';
+      const challenge = 'tempesttouch:auth:1234:abcdef1234567890';
       // Sign with wrong message
       const signature = signMessage('wrong-message', keypair.privateKey);
 

@@ -108,7 +108,7 @@ function LoginContent() {
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-white mb-2">Welcome back</h1>
-          <p className="text-gray-400">Log in to your CoinPay account</p>
+          <p className="text-gray-400">Log in to your Tempest Touch account</p>
         </div>
 
         <div className="bg-white rounded-lg shadow-lg p-8">

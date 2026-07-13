@@ -60,7 +60,7 @@ export async function POST(
 
     const isPaidTier = await isBusinessPaidTier(supabase, invoice.business_id);
 
-    // Create a normal CoinPay payment so invoices use the same intermediary
+    // Create a normal Tempest Touch payment so invoices use the same intermediary
     // payment address, tiered commission, and secure forwarding path as /payments.
     const paymentResult = await createPayment(supabase, {
       business_id: invoice.business_id,
@@ -83,8 +83,8 @@ export async function POST(
       );
     }
 
-    const coinpayPayment = paymentResult.payment;
-    const cryptoAmount = Number(coinpayPayment.crypto_amount || 0);
+    const tempesttouchPayment = paymentResult.payment;
+    const cryptoAmount = Number(tempesttouchPayment.crypto_amount || 0);
 
     // Calculate fee amount
     const feeAmount = parseFloat(invoice.amount) * parseFloat(invoice.fee_rate);
@@ -129,11 +129,11 @@ export async function POST(
       .update({
         status: 'sent',
         crypto_amount: cryptoAmount.toFixed(8),
-        payment_address: coinpayPayment.payment_address,
+        payment_address: tempesttouchPayment.payment_address,
         fee_amount: feeAmount,
         metadata: {
           ...(invoice.metadata && typeof invoice.metadata === 'object' ? invoice.metadata : {}),
-          coinpay_payment_id: coinpayPayment.id,
+          tempesttouch_payment_id: tempesttouchPayment.id,
         },
         ...(stripeCheckoutUrl && { stripe_checkout_url: stripeCheckoutUrl }),
         ...(stripeSessionId && { stripe_session_id: stripeSessionId }),
@@ -150,10 +150,10 @@ export async function POST(
     }
 
     // Send email to client
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://coinpayportal.com';
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://tempesttouch.com';
     const paymentLink = `${appUrl}/invoices/${invoice.id}/pay`;
 
-    const businessName = invoice.businesses?.name || 'CoinPay Merchant';
+    const businessName = invoice.businesses?.name || 'Tempest Touch Merchant';
     const template = invoiceSentTemplate({
       invoiceNumber: invoice.invoice_number,
       amount: parseFloat(invoice.amount),

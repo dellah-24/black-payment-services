@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 #
-# CoinPay Lightning Droplet Setup
+# Tempest Touch Lightning Droplet Setup
 # Idempotent — safe to run multiple times.
 #
 # Installs: Bitcoin Core (pruned) + Core Lightning (CLN) + LNbits + Nginx reverse proxy
 #
 # Usage:
-#   curl -sSL https://raw.githubusercontent.com/profullstack/coinpayportal/master/scripts/setup-droplet.sh | bash
+#   curl -sSL https://raw.githubusercontent.com/profullstack/tempesttouch/master/scripts/setup-droplet.sh | bash
 #   # or
 #   bash scripts/setup-droplet.sh
 #
@@ -18,7 +18,7 @@ BITCOIN_VERSION="27.1"
 LNBITS_VERSION="0.12.12"
 CLN_VERSION="25.05"
 LNBITS_PORT=5000
-LNBITS_DOMAIN="${LNBITS_DOMAIN:-ln.coinpayportal.com}"
+LNBITS_DOMAIN="${LNBITS_DOMAIN:-ln.tempesttouch.com}"
 CLN_NETWORK="${CLN_NETWORK:-bitcoin}"
 CLN_USER="ubuntu"
 CLN_DIR="/home/${CLN_USER}/.lightning"
@@ -29,7 +29,7 @@ BITCOIN_RPC_USER="clnrpc"
 BITCOIN_RPC_PASS="clnrpc2026secret"
 
 echo "═══════════════════════════════════════════"
-echo "  CoinPay Lightning Droplet Setup"
+echo "  Tempest Touch Lightning Droplet Setup"
 echo "  Bitcoin Core ${BITCOIN_VERSION} + CLN ${CLN_VERSION} + LNbits ${LNBITS_VERSION}"
 echo "═══════════════════════════════════════════"
 
@@ -71,7 +71,7 @@ fi
 mkdir -p "${BITCOIN_DIR}"
 if [ ! -f "${BITCOIN_DIR}/bitcoin.conf" ]; then
   cat > "${BITCOIN_DIR}/bitcoin.conf" <<EOF
-# CoinPay Bitcoin Core — pruned mode
+# Tempest Touch Bitcoin Core — pruned mode
 server=1
 prune=1000
 txindex=0
@@ -157,13 +157,13 @@ mkdir -p "${CLN_DIR}"
 
 if [ ! -f "${CLN_DIR}/config" ]; then
   cat > "${CLN_DIR}/config" <<EOF
-# CoinPay Lightning Node
+# Tempest Touch Lightning Node
 network=${CLN_NETWORK}
 log-level=info
 log-file=${CLN_DIR}/cln.log
 
 # Alias visible on the network
-alias=CoinPay Portal
+alias=Tempest Touch Portal
 rgb=8B5CF6
 
 # Fee policy
@@ -324,7 +324,7 @@ if [ ! -f "${LNBITS_ENV}" ]; then
   AUTH_SECRET=$(python3 -c "import secrets; print(secrets.token_hex(32))")
 
   cat > "${LNBITS_ENV}" <<EOF
-# LNbits Configuration — CoinPay Portal
+# LNbits Configuration — Tempest Touch Portal
 HOST=127.0.0.1
 PORT=${LNBITS_PORT}
 DEBUG=False

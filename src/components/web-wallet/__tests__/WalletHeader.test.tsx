@@ -39,12 +39,12 @@ beforeEach(() => {
 describe('WalletHeader', () => {
   it('should show brand name', () => {
     render(<WalletHeader />);
-    expect(screen.getByText('CoinPay Wallet')).toBeInTheDocument();
+    expect(screen.getByText('Tempest Touch Wallet')).toBeInTheDocument();
   });
 
   it('should link brand to /web-wallet', () => {
     render(<WalletHeader />);
-    const link = screen.getByText('CoinPay Wallet');
+    const link = screen.getByText('Tempest Touch Wallet');
     expect(link.closest('a')).toHaveAttribute('href', '/web-wallet');
   });
 

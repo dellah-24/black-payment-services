@@ -3,7 +3,7 @@
 **Version:** 1.0  
 **Date:** 2026-02-14  
 **Status:** Draft  
-**Author:** CoinPay Engineering  
+**Author:** Tempest Touch Engineering  
 
 ---
 
@@ -26,9 +26,9 @@
 
 ## 1. Executive Summary
 
-This PRD defines the integration of BOLT12 (Lightning Offers) into CoinPay Portal, enabling merchants to receive Lightning Network payments via static, reusable payment offers. Unlike BOLT11 invoices which are single-use and expire, BOLT12 offers are permanent payment endpoints — analogous to on-chain addresses but for Lightning.
+This PRD defines the integration of BOLT12 (Lightning Offers) into Tempest Touch Portal, enabling merchants to receive Lightning Network payments via static, reusable payment offers. Unlike BOLT11 invoices which are single-use and expire, BOLT12 offers are permanent payment endpoints — analogous to on-chain addresses but for Lightning.
 
-**Scope:** Receive-side only. Merchants create BOLT12 offers via CoinPay; customers pay using any BOLT12-compatible wallet. CoinPay operates a Core Lightning (CLN) node cluster that manages the offer lifecycle, settles payments, and fires webhooks to merchants.
+**Scope:** Receive-side only. Merchants create BOLT12 offers via Tempest Touch; customers pay using any BOLT12-compatible wallet. Tempest Touch operates a Core Lightning (CLN) node cluster that manages the offer lifecycle, settles payments, and fires webhooks to merchants.
 
 **Key value proposition:** A merchant deploys a single QR code (the offer) that works forever — no invoice expiration, no session management, no polling. Customers scan, their wallet negotiates an invoice via the BOLT12 `invoice_request`/`invoice` flow, and payment settles instantly.
 
@@ -36,9 +36,9 @@ This PRD defines the integration of BOLT12 (Lightning Offers) into CoinPay Porta
 
 ## 2. Problem Statement
 
-### 2.1 Why Lightning for CoinPay
+### 2.1 Why Lightning for Tempest Touch
 
-CoinPay currently supports on-chain payments across BTC, BCH, ETH, POL, SOL, and stablecoins. On-chain BTC payments have:
+Tempest Touch currently supports on-chain payments across BTC, BCH, ETH, POL, SOL, and stablecoins. On-chain BTC payments have:
 
 - **Slow confirmation** (10–60 min for 1–6 confirmations)
 - **High fees** during congestion ($2–$50+)
@@ -63,13 +63,13 @@ Lightning eliminates all three: sub-second settlement, sub-cent fees, native pay
 
 ### 2.3 Current Architecture Gap
 
-CoinPay's payment flow (`src/lib/payments/service.ts`) currently:
+Tempest Touch's payment flow (`src/lib/payments/service.ts`) currently:
 
 1. Creates a payment record with a unique on-chain `payment_address` via `generatePaymentAddress()`
 2. Monitors for incoming transactions
 3. Confirms and webhooks the merchant
 
-Lightning requires a fundamentally different model: there's no "address" to watch — instead, CLN manages the invoice negotiation and emits events when payment settles. CoinPay needs a new service layer that bridges CLN's event model to our existing payment/webhook infrastructure.
+Lightning requires a fundamentally different model: there's no "address" to watch — instead, CLN manages the invoice negotiation and emits events when payment settles. Tempest Touch needs a new service layer that bridges CLN's event model to our existing payment/webhook infrastructure.
 
 ---
 
@@ -79,7 +79,7 @@ Lightning requires a fundamentally different model: there's no "address" to watc
 
 ```
 ┌─────────────┐     ┌──────────────────┐     ┌─────────────┐
-│  Merchant    │────▶│  CoinPay Portal  │────▶│   CLN Node  │
+│  Merchant    │────▶│  Tempest Touch Portal  │────▶│   CLN Node  │
 │  Dashboard   │     │  (Next.js API)   │◀────│  (lightningd)│
 └─────────────┘     └──────────────────┘     └──────┬──────┘
                            │    ▲                    │
@@ -109,7 +109,7 @@ import { ClnClient } from './rpc';
 export interface OfferCreateParams {
   amount_msat?: string;       // e.g. "10000msat" or "any" for variable
   description: string;
-  label: string;              // CoinPay internal label (offer UUID)
+  label: string;              // Tempest Touch internal label (offer UUID)
   absolute_expiry?: number;   // Unix timestamp, optional
   quantity_max?: number;      // For limited-use offers
   blinded_paths?: boolean;    // Default true — use blinded reply paths
@@ -342,8 +342,8 @@ export class WebhookDeliveryService {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'X-CoinPay-Signature': signature,
-          'X-CoinPay-Event': payload.event,
+          'X-Tempest Touch-Signature': signature,
+          'X-Tempest Touch-Event': payload.event,
         },
         body: JSON.stringify(payload),
         signal: AbortSignal.timeout(10_000),
@@ -377,14 +377,14 @@ export class WebhookDeliveryService {
 | CLN over LND | CLN (Core Lightning) | Best BOLT12 support; offers are a first-class CLN feature since v23.08. LND has no BOLT12. |
 | RPC transport | Unix socket JSON-RPC | Lowest latency, no TLS overhead, CLN runs co-located. gRPC as fallback for remote nodes. |
 | Settlement model | `waitanyinvoice` long-poll | Event-driven, no polling interval. Missed events recovered via `lastpay_index`. |
-| Offer per merchant vs shared | One CLN offer per CoinPay offer | 1:1 mapping. Label = offer UUID. Clean separation. |
+| Offer per merchant vs shared | One CLN offer per Tempest Touch offer | 1:1 mapping. Label = offer UUID. Clean separation. |
 | Node topology | Single CLN node (MVP) → cluster (Phase 3) | Start simple. CLN supports `hsmd` remote signing for future HA. |
 
 ---
 
 ## 4. API Design
 
-All endpoints follow CoinPay's existing patterns: Bearer JWT or API key auth via `src/lib/auth/middleware.ts`, JSON responses with `{ success, data?, error? }` envelope.
+All endpoints follow Tempest Touch's existing patterns: Bearer JWT or API key auth via `src/lib/auth/middleware.ts`, JSON responses with `{ success, data?, error? }` envelope.
 
 ### 4.1 Offer Management
 
@@ -546,7 +546,7 @@ Internal/admin endpoint for monitoring.
   "success": true,
   "data": {
     "node_id": "02abc...",
-    "alias": "coinpay-ln-01",
+    "alias": "tempesttouch-ln-01",
     "num_peers": 15,
     "num_channels": 8,
     "total_capacity_sats": 50000000,
@@ -608,9 +608,9 @@ Events delivered to merchant webhook endpoints:
 **Headers:**
 
 ```
-X-CoinPay-Signature: sha256=<HMAC of body with endpoint secret>
-X-CoinPay-Event: lightning.payment.settled
-X-CoinPay-Delivery: <delivery-uuid>
+X-Tempest Touch-Signature: sha256=<HMAC of body with endpoint secret>
+X-Tempest Touch-Event: lightning.payment.settled
+X-Tempest Touch-Delivery: <delivery-uuid>
 ```
 
 ---
@@ -830,9 +830,9 @@ src/app/dashboard/lightning/payments/page.tsx
 **Embed snippet (for merchants to add to their sites):**
 
 ```html
-<!-- CoinPay Lightning Payment Button -->
-<a href="https://app.coinpay.com/pay/ln/{offer_id}">
-  <img src="https://app.coinpay.com/api/lightning/offers/{offer_id}/qr.png" 
+<!-- Tempest Touch Lightning Payment Button -->
+<a href="https://app.tempesttouch.com/pay/ln/{offer_id}">
+  <img src="https://app.tempesttouch.com/api/lightning/offers/{offer_id}/qr.png" 
        alt="Pay with Lightning" width="200" />
 </a>
 ```
@@ -869,7 +869,7 @@ Server-rendered QR code image (public, no auth):
 
 ```ini
 # ~/.lightning/config
-alias=coinpay-ln
+alias=tempesttouch-ln
 network=bitcoin
 log-level=info
 
@@ -893,7 +893,7 @@ rpc-file=/run/lightning/lightning-rpc
 
 ### 7.3 Liquidity / LSP Strategy
 
-Since CoinPay is **receive-only** (merchants receive payments), the critical requirement is **inbound liquidity** — channel capacity on the remote side pointing toward our node.
+Since Tempest Touch is **receive-only** (merchants receive payments), the critical requirement is **inbound liquidity** — channel capacity on the remote side pointing toward our node.
 
 **Phase 1 (MVP):**
 - Open 3–5 channels with well-connected nodes (ACINQ, Blockstream, LNBig)
@@ -949,7 +949,7 @@ The CLN `hsm_secret` is the master key. Compromise = total fund loss.
 
 BOLT12 offers support **blinded reply paths** — the payer's wallet routes the `invoice_request` through intermediate nodes without learning the recipient's node ID or network position.
 
-- **Default ON** for all CoinPay offers
+- **Default ON** for all Tempest Touch offers
 - Protects merchant node from targeted attacks (channel jamming, probing)
 - CLN generates blinded paths automatically when `experimental-offers` is enabled
 
@@ -1005,7 +1005,7 @@ BOLT12 offers support **blinded reply paths** — the payer's wallet routes the 
 
 ### Phase 2: Checkout Integration (4 weeks)
 
-**Goal:** Integrate LN payments into CoinPay's existing checkout flow alongside on-chain options.
+**Goal:** Integrate LN payments into Tempest Touch's existing checkout flow alongside on-chain options.
 
 **Deliverables:**
 - [ ] Unified payment creation: `POST /api/payments/create` accepts `blockchain: 'LN'`
@@ -1080,7 +1080,7 @@ BOLT12 offers support **blinded reply paths** — the payer's wallet routes the 
 | **CLN node failure** — Single point of failure in MVP | Medium | High | Automated backups (SCB + DB snapshots). Phase 3 adds multi-node HA. |
 | **Force-close channel losses** — Funds locked for days during force-close | Low | Medium | Maintain diversified channels (no single large channel). Monitor for force-close triggers. |
 | **Payment correlation on public offers** — Variable-amount offers can't easily correlate to specific orders | Medium | Medium | Use single-use fixed-amount offers for checkout sessions. Variable offers are for donation/tip use cases. |
-| **Regulatory uncertainty** — Lightning may face regulatory scrutiny | Low | High | CoinPay is non-custodial. Maintain audit trail. Offer KYC hooks for merchants who need them. |
+| **Regulatory uncertainty** — Lightning may face regulatory scrutiny | Low | High | Tempest Touch is non-custodial. Maintain audit trail. Offer KYC hooks for merchants who need them. |
 | **CLN breaking changes** — BOLT12 is still "experimental" in CLN | Low | Medium | Pin CLN version. Run regtest CI against target version. Monitor CLN release notes. |
 | **Webhook reliability** — Merchant endpoints may be down | Medium | Low | Exponential retry (5 attempts over ~30s). Dead letter queue for inspection. |
 
@@ -1105,7 +1105,7 @@ BOLT12 offers support **blinded reply paths** — the payer's wallet routes the 
 
 ### 12.3 Open Questions
 
-1. **Custodial vs non-custodial for LN:** CoinPay's on-chain flow is non-custodial (funds go directly to merchant addresses). LN payments settle on CoinPay's node first, then merchants withdraw. This is technically **custodial** during the settlement window. Do we need a compliance review?
+1. **Custodial vs non-custodial for LN:** Tempest Touch's on-chain flow is non-custodial (funds go directly to merchant addresses). LN payments settle on Tempest Touch's node first, then merchants withdraw. This is technically **custodial** during the settlement window. Do we need a compliance review?
 
 2. **On-chain sweep frequency:** How often should CLN's on-node balance be swept to merchant-controlled addresses? Options:
    - Manual (merchant-initiated)
@@ -1118,7 +1118,7 @@ BOLT12 offers support **blinded reply paths** — the payer's wallet routes the 
 
 5. **Testnet vs Signet:** Which test network for development? Signet is more stable but has fewer faucets. Regtest for CI, Signet for staging.
 
-6. **Fee model:** Does CoinPay charge a fee on LN payments? On-chain payments have network fees passed through. LN routing fees are negligible (<1 sat). Options:
+6. **Fee model:** Does Tempest Touch charge a fee on LN payments? On-chain payments have network fees passed through. LN routing fees are negligible (<1 sat). Options:
    - Flat fee per payment (e.g., 1 sat)
    - Percentage (e.g., 0.5%)
    - Free for LN (competitive advantage)
@@ -1203,4 +1203,4 @@ The customer's wallet:
 4. Receives back a signed `invoice`
 5. Pays the invoice via normal LN routing
 
-This entire negotiation is invisible to CoinPay's API — CLN handles it internally. CoinPay only sees the final settled payment via `waitanyinvoice`.
+This entire negotiation is invisible to Tempest Touch's API — CLN handles it internally. Tempest Touch only sees the final settled payment via `waitanyinvoice`.

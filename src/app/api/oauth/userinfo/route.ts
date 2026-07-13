@@ -63,7 +63,7 @@ export async function GET(request: NextRequest) {
 
   // wallet:read scope — return the merchant's configured payout/receive
   // wallet addresses from merchant_wallets (the table powering the
-  // /settings/wallets page on coinpayportal). The legacy `wallets` table is
+  // /settings/wallets page on tempesttouch). The legacy `wallets` table is
   // an HD-key store with no address column; reading from it always returned
   // empty, so OIDC clients silently got no wallets even when the merchant
   // had a full set configured.
@@ -87,7 +87,7 @@ export async function GET(request: NextRequest) {
   // (same source /api/reputation/did/me reads from). The legacy `reputation`
   // table doesn't carry the DID; reading from it returned empty for every
   // OIDC client, so downstream apps (d0rz, c0mpute, etc.) never learned the
-  // user's CoinPay-issued DID after a successful OAuth handshake.
+  // user's Tempest Touch-issued DID after a successful OAuth handshake.
   if (scopes.includes('did')) {
     const { data: didRow } = await supabase
       .from('merchant_dids')

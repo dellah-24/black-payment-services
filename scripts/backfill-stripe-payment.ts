@@ -1,5 +1,5 @@
 /**
- * Backfill a single stranded Stripe-paid CoinPay payment and re-fire its
+ * Backfill a single stranded Stripe-paid Tempest Touch payment and re-fire its
  * outbound merchant webhook.
  *
  * Use this when a Stripe webhook delivery was lost (e.g. the
@@ -7,7 +7,7 @@
  * failed) and the merchant's downstream system never got notified.
  *
  * Usage:
- *   pnpm tsx scripts/backfill-stripe-payment.ts <coinpay_payment_id> [--dry-run]
+ *   pnpm tsx scripts/backfill-stripe-payment.ts <tempesttouch_payment_id> [--dry-run]
  *
  * Example (the d0rz funding payment):
  *   pnpm tsx scripts/backfill-stripe-payment.ts 2a75c13a-51fc-4a2e-8693-545d6509a167
@@ -57,7 +57,7 @@ async function main() {
   console.log('Searching Stripe for matching checkout session…');
   const sessions = await stripe.checkout.sessions.list({ limit: 100 });
   const session = sessions.data.find(
-    (s) => s.metadata?.coinpay_payment_id === paymentId
+    (s) => s.metadata?.tempesttouch_payment_id === paymentId
   );
 
   if (!session) {

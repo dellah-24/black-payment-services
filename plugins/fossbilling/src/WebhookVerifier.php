@@ -4,7 +4,7 @@ declare(strict_types=1);
 class WebhookVerifier
 {
     /**
-     * Verify a CoinPayPortal webhook signature.
+     * Verify a Tempest TouchPortal webhook signature.
      *
      * Expected header format: sha256=<hmac-hex>
      *

@@ -1,6 +1,6 @@
 /**
  * GET /api/wallets/lookup?address=<addr>
- * Look up if a wallet address belongs to a registered CoinPay user.
+ * Look up if a wallet address belongs to a registered Tempest Touch user.
  * Checks merchant_wallets and business_wallets.
  * Returns { found: true } or { found: false }.
  *

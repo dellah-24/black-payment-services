@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * Sweep Balances Script for CoinPay
+ * Sweep Balances Script for Tempest Touch
  *
  * This script scans all payment addresses from the database and sweeps any
  * remaining balances to the platform fee wallets.

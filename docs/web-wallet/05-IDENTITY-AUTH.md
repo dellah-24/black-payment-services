@@ -1,4 +1,4 @@
-# CoinPayPortal Wallet Mode - Identity & Authentication
+# Tempest Touch Wallet Mode - Identity & Authentication
 
 ## 1. Overview
 
@@ -263,7 +263,7 @@ For convenience, clients can obtain a short-lived JWT token.
 const response = await fetch(`/api/web-wallet/auth/challenge?wallet_id=${walletId}`);
 const { challenge, challenge_id, expires_at } = await response.json();
 
-// challenge = "coinpayportal:auth:1705320000:randomstring"
+// challenge = "tempesttouch:auth:1705320000:randomstring"
 ```
 
 **Step 2: Sign Challenge**
@@ -306,7 +306,7 @@ fetch('/api/web-wallet/abc123/balances', {
   "sub": "wallet_id",
   "iat": 1705320000,
   "exp": 1705323600,
-  "iss": "coinpayportal.com",
+  "iss": "tempesttouch.com",
   "aud": "wallet-api",
   "type": "wallet"
 }
@@ -349,7 +349,7 @@ To prevent unauthorized wallet registration, import requires a proof of ownershi
 // Client-side
 function createProofOfOwnership(privateKey: Uint8Array): ProofOfOwnership {
   const timestamp = Date.now();
-  const message = `CoinPayPortal wallet import: ${timestamp}`;
+  const message = `Tempest Touch wallet import: ${timestamp}`;
   const messageHash = sha256(message);
   const signature = secp256k1.sign(messageHash, privateKey);
   
@@ -365,7 +365,7 @@ function verifyProofOfOwnership(
   publicKey: string
 ): boolean {
   // Check timestamp is recent (within 5 minutes)
-  const match = proof.message.match(/CoinPayPortal wallet import: (\d+)/);
+  const match = proof.message.match(/Tempest Touch wallet import: (\d+)/);
   if (!match) return false;
   
   const timestamp = parseInt(match[1], 10);
@@ -652,7 +652,7 @@ const seed = decrypt(encryptedSeed, process.env.WALLET_PASSWORD);
 ### 10.2 Bot SDK Authentication
 
 ```typescript
-import { Wallet } from '@coinpayportal/wallet-sdk';
+import { Wallet } from '@tempesttouch/wallet-sdk';
 
 // Initialize with seed
 const wallet = Wallet.fromSeed(process.env.WALLET_SEED);

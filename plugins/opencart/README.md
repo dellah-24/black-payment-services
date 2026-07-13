@@ -1,8 +1,8 @@
-# CoinPay for OpenCart (stub)
+# Tempest Touch for OpenCart (stub)
 
 > **Status:** stub. Not yet a working plugin.
 
-OpenCart 4.x payment extension. Adds CoinPayPortal as a payment method during checkout, builds a hosted checkout, and reconciles via signed webhooks.
+OpenCart 4.x payment extension. Adds Tempest Touch as a payment method during checkout, builds a hosted checkout, and reconciles via signed webhooks.
 
 ## Files (planned)
 
@@ -12,19 +12,19 @@ plugins/opencart/
   manifest.json
   upload/
     admin/
-      controller/payment/coinpayportal.php
-      language/en-gb/payment/coinpayportal.php
-      view/template/payment/coinpayportal.twig
+      controller/payment/tempesttouch.php
+      language/en-gb/payment/tempesttouch.php
+      view/template/payment/tempesttouch.twig
     catalog/
-      controller/payment/coinpayportal.php
-      controller/extension/payment/coinpayportal/webhook.php
-      language/en-gb/payment/coinpayportal.php
-      model/payment/coinpayportal.php
-      view/template/payment/coinpayportal.twig
+      controller/payment/tempesttouch.php
+      controller/extension/payment/tempesttouch/webhook.php
+      language/en-gb/payment/tempesttouch.php
+      model/payment/tempesttouch.php
+      view/template/payment/tempesttouch.twig
     system/
-      library/coinpayportal/Client.php
-      library/coinpayportal/StatusMapper.php
-      library/coinpayportal/WebhookVerifier.php
+      library/tempesttouch/Client.php
+      library/tempesttouch/StatusMapper.php
+      library/tempesttouch/WebhookVerifier.php
   install.json
   install.xml                       # OCMOD if needed
 ```

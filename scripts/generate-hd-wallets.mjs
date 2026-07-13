@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * HD Wallet Generator for CoinPay
+ * HD Wallet Generator for Tempest Touch
  *
  * Generates HD wallets for all supported cryptocurrencies:
  * - BTC (Bitcoin) - coin type 0
@@ -459,7 +459,7 @@ async function main() {
   const forceNew = process.argv.includes('--force-new');
 
   console.log('\n' + '='.repeat(70));
-  console.log('  🔐 CoinPay HD Wallet Generator');
+  console.log('  🔐 Tempest Touch HD Wallet Generator');
   console.log('='.repeat(70));
   console.log('\nGenerating HD wallets for all supported cryptocurrencies...\n');
   console.log('Supported: BTC, BCH, ETH, POL, BNB, SOL, DOGE, XRP, ADA');
@@ -656,7 +656,7 @@ async function main() {
       };
 
       const encrypted = encryptData(backupData, password);
-      const backupPath = join(backupDir, `coinpay-wallets-${timestamp}.json.enc`);
+      const backupPath = join(backupDir, `tempesttouch-wallets-${timestamp}.json.enc`);
       writeFileSync(backupPath, JSON.stringify(encrypted, null, 2));
 
       console.log(`\n✅ Encrypted backup saved to:`);

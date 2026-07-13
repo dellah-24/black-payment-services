@@ -122,7 +122,7 @@ export async function setMerchantMethodSetting(
 /**
  * Set up a "manual" 3rd-party method (Venmo / Cash App / Zelle) for a store in
  * one call: unlock it for the business (these carry no compliance gate because
- * CoinPay never touches the funds), then store the merchant's handle and
+ * Tempest Touch never touches the funds), then store the merchant's handle and
  * enable/disable it. Passing an empty handle or enabled=false turns it off.
  */
 export async function configureManualMethod(

@@ -7,7 +7,7 @@ export async function GET() {
     body: 'Health check called',
     attributes: {
       route: '/api/health',
-      service: 'coinpayportal',
+      service: 'tempesttouch',
     },
   });
 
