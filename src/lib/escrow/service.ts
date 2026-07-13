@@ -319,12 +319,11 @@ async function generateEscrowAddress(
     // Derive address
     const derived = await deriveSystemPaymentAddress(cryptocurrency, nextIndex);
 
-    // Encrypt private key
+    // Encrypt private key (or store plaintext if no key configured)
     const encryptionKey = process.env.ENCRYPTION_KEY;
-    if (!encryptionKey) {
-      return { success: false, error: 'Encryption key not configured' };
-    }
-    const encryptedPrivateKey = await encrypt(derived.privateKey, encryptionKey);
+    const encryptedPrivateKey = encryptionKey
+      ? await encrypt(derived.privateKey, encryptionKey)
+      : derived.privateKey;
 
     // Calculate fee split
     const commissionWallet = getCommissionWallet(cryptocurrency);

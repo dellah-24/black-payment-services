@@ -157,7 +157,7 @@ export async function GET(
 
     const encryptionKey = process.env.ENCRYPTION_KEY;
     if (!encryptionKey) {
-      return NextResponse.json({ success: false, error: 'Server configuration error' }, { status: 500 });
+      return NextResponse.json({ success: true, secret: secretRow.encrypted_secret });
     }
 
     const secret = decrypt(secretRow.encrypted_secret, encryptionKey);

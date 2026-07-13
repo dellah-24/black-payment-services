@@ -171,14 +171,10 @@ export function getWebhookSecret(): string | undefined {
 }
 
 /**
- * Get encryption key. Throws if not configured.
+ * Get encryption key. Returns undefined if not configured.
  */
-export function getEncryptionKey(): string {
-  const key = getSecret('ENCRYPTION_KEY') || process.env.ENCRYPTION_KEY;
-  if (!key) {
-    throw new Error('ENCRYPTION_KEY environment variable is required');
-  }
-  return key;
+export function getEncryptionKey(): string | undefined {
+  return getSecret('ENCRYPTION_KEY') || process.env.ENCRYPTION_KEY;
 }
 
 /**

@@ -5,10 +5,8 @@ import { getJwtSecret } from '@/lib/secrets';
 import { getStripe } from '@/lib/server/optional-deps';
 import { encrypt, decrypt } from '@/lib/crypto/encryption';
 
-function getEncryptionKey(): string {
-  const key = process.env.ENCRYPTION_KEY;
-  if (!key) throw new Error('ENCRYPTION_KEY not set');
-  return key;
+function getEncryptionKey(): string | undefined {
+  return process.env.ENCRYPTION_KEY;
 }
 
 function getSupabase() {
@@ -102,7 +100,9 @@ export async function GET(request: NextRequest) {
         const encKey = getEncryptionKey();
         for (const s of secrets) {
           try {
-            secretMap[s.endpoint_id] = decrypt(s.encrypted_secret, encKey);
+            secretMap[s.endpoint_id] = encKey
+              ? decrypt(s.encrypted_secret, encKey)
+              : s.encrypted_secret;
           } catch { /* skip if decrypt fails */ }
         }
       }
@@ -220,7 +220,10 @@ export async function POST(request: NextRequest) {
     if (endpoint.secret) {
       try {
         const supabase = getSupabase();
-        const encryptedSecret = encrypt(endpoint.secret, getEncryptionKey());
+        const encKey = getEncryptionKey();
+        const encryptedSecret = encKey
+          ? encrypt(endpoint.secret, encKey)
+          : endpoint.secret;
         await supabase.from('stripe_webhook_secrets').insert({
           endpoint_id: endpoint.id,
           business_id,

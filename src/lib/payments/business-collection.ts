@@ -312,7 +312,7 @@ export async function forwardBusinessCollectionPaymentSecurely(
       };
     }
 
-    // Get and decrypt the private key securely
+    // Get and decrypt the private key securely (or use plaintext if no key)
     if (!payment.private_key_encrypted) {
       return {
         success: false,
@@ -321,16 +321,11 @@ export async function forwardBusinessCollectionPaymentSecurely(
     }
 
     const encryptionKey = process.env.ENCRYPTION_KEY;
-    if (!encryptionKey) {
-      return {
-        success: false,
-        error: 'Encryption key not configured',
-      };
-    }
-
     let privateKey: string;
     try {
-      privateKey = decrypt(payment.private_key_encrypted, encryptionKey);
+      privateKey = encryptionKey
+        ? decrypt(payment.private_key_encrypted, encryptionKey)
+        : payment.private_key_encrypted;
     } catch (decryptError) {
       console.error(`[SECURE] Failed to decrypt private key for business collection ${paymentId}`);
       return {

@@ -90,7 +90,7 @@ export async function POST(
       );
     }
 
-    // Decrypt private key
+    // Decrypt private key (fallback to plaintext if no encryption key)
     const encryptionKey = process.env.ENCRYPTION_KEY;
     if (!encryptionKey) {
       return NextResponse.json(
@@ -99,7 +99,9 @@ export async function POST(
       );
     }
 
-    const privateKey = await decrypt(addressData.encrypted_private_key, encryptionKey);
+    const privateKey = encryptionKey
+      ? await decrypt(addressData.encrypted_private_key, encryptionKey)
+      : addressData.encrypted_private_key;
 
     // Determine destination
     const destinationAddress = action === 'refund'

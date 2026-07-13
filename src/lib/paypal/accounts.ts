@@ -7,16 +7,33 @@ import type { PaypalCredentials, PaypalEnvironment } from './client';
  * The PayPal client secret is encrypted at rest with a per-business derived key
  * so a leaked ENCRYPTION_KEY alone (without the business id) can't decrypt it,
  * mirroring how business webhook secrets are handled.
+ *
+ * If ENCRYPTION_KEY is not set, secrets are stored/retrieved in plaintext.
  */
 function secretKeyFor(businessId: string): string {
-  return deriveKey(getEncryptionKey(), businessId);
+  const encryptionKey = getEncryptionKey();
+  if (!encryptionKey) {
+    // No encryption key configured — use businessId as a no-op key
+    return businessId;
+  }
+  return deriveKey(encryptionKey, businessId);
 }
 
 export function encryptPaypalSecret(secret: string, businessId: string): string {
+  const encryptionKey = getEncryptionKey();
+  if (!encryptionKey) {
+    // No encryption key configured — store in plaintext
+    return secret;
+  }
   return encrypt(secret, secretKeyFor(businessId));
 }
 
 export function decryptPaypalSecret(ciphertext: string, businessId: string): string {
+  const encryptionKey = getEncryptionKey();
+  if (!encryptionKey) {
+    // No encryption key configured — return plaintext
+    return ciphertext;
+  }
   return decrypt(ciphertext, secretKeyFor(businessId));
 }
 

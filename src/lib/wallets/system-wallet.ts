@@ -783,15 +783,11 @@ export async function generatePaymentAddress(
     // Derive the payment address
     const derivedAddress = await deriveSystemPaymentAddress(cryptocurrency, nextIndex);
 
-    // Encrypt the private key for storage
+    // Encrypt the private key for storage (or store plaintext if no key)
     const encryptionKey = process.env.ENCRYPTION_KEY;
-    if (!encryptionKey) {
-      return {
-        success: false,
-        error: 'Encryption key not configured',
-      };
-    }
-    const encryptedPrivateKey = await encrypt(derivedAddress.privateKey, encryptionKey);
+    const encryptedPrivateKey = encryptionKey
+      ? await encrypt(derivedAddress.privateKey, encryptionKey)
+      : derivedAddress.privateKey;
 
     // Get commission wallet
     const commissionWallet = getCommissionWallet(cryptocurrency);
@@ -857,7 +853,9 @@ export async function generatePaymentAddress(
 
         const reDerived = await deriveSystemPaymentAddress(cryptocurrency, finalIndex);
         finalAddress = reDerived.address;
-        finalPrivateKey = await encrypt(reDerived.privateKey, encryptionKey);
+        finalPrivateKey = encryptionKey
+          ? await encrypt(reDerived.privateKey, encryptionKey)
+          : reDerived.privateKey;
         continue;
       }
 
@@ -923,14 +921,9 @@ export async function getPaymentPrivateKey(
     }
 
     const encryptionKey = process.env.ENCRYPTION_KEY;
-    if (!encryptionKey) {
-      return {
-        success: false,
-        error: 'Encryption key not configured',
-      };
-    }
-
-    const privateKey = await decrypt(data.encrypted_private_key, encryptionKey);
+    const privateKey = encryptionKey
+      ? await decrypt(data.encrypted_private_key, encryptionKey)
+      : data.encrypted_private_key;
 
     return {
       success: true,

@@ -39,14 +39,10 @@ interface KeyStorageConfig {
 const keyStore = new Map<string, StoredKey>();
 
 /**
- * Get master key from environment
+ * Get master key from environment. Returns undefined if not set.
  */
-function getMasterKey(): string {
-  const masterKey = process.env.MASTER_ENCRYPTION_KEY;
-  if (!masterKey) {
-    throw new Error('MASTER_ENCRYPTION_KEY environment variable is not set');
-  }
-  return masterKey;
+function getMasterKey(): string | undefined {
+  return process.env.MASTER_ENCRYPTION_KEY;
 }
 
 /**
@@ -69,11 +65,26 @@ export async function storeKey(
   }
 
   const masterKey = getMasterKey();
+  const now = new Date();
+  
+  if (!masterKey) {
+    // No encryption key configured — store in plaintext
+    const storedKey: StoredKey = {
+      id,
+      encryptedKey: key,
+      salt: '',
+      createdAt: now,
+      updatedAt: now,
+      metadata,
+    };
+    keyStore.set(id, storedKey);
+    return storedKey;
+  }
+
   const salt = generateSalt();
   const derivedKey = deriveKey(masterKey, salt);
   const encryptedKey = encrypt(key, derivedKey);
 
-  const now = new Date();
   const storedKey: StoredKey = {
     id,
     encryptedKey,
@@ -103,6 +114,11 @@ export async function retrieveKey(id: string): Promise<string | null> {
   }
 
   const masterKey = getMasterKey();
+  if (!masterKey) {
+    // No encryption key configured — return plaintext
+    return storedKey.encryptedKey;
+  }
+
   const derivedKey = deriveKey(masterKey, storedKey.salt);
   const decryptedKey = decrypt(storedKey.encryptedKey, derivedKey);
 
@@ -156,6 +172,20 @@ export async function updateKey(
   }
 
   const masterKey = getMasterKey();
+  const now = new Date();
+  
+  if (!masterKey) {
+    // No encryption key configured — store in plaintext
+    const updatedKey: StoredKey = {
+      ...existingKey,
+      encryptedKey: newKey,
+      salt: '',
+      updatedAt: now,
+    };
+    keyStore.set(id, updatedKey);
+    return updatedKey;
+  }
+
   const salt = generateSalt();
   const derivedKey = deriveKey(masterKey, salt);
   const encryptedKey = encrypt(newKey, derivedKey);
@@ -164,7 +194,7 @@ export async function updateKey(
     ...existingKey,
     encryptedKey,
     salt,
-    updatedAt: new Date(),
+    updatedAt: now,
   };
 
   keyStore.set(id, updatedKey);

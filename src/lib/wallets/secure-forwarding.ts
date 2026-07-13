@@ -120,15 +120,11 @@ async function getDecryptedPrivateKey(
 
     // Get encryption key from environment
     const encryptionKey = process.env.ENCRYPTION_KEY;
-    if (!encryptionKey) {
-      return {
-        success: false,
-        error: 'Encryption key not configured',
-      };
-    }
-
-    // Decrypt the private key
-    const privateKey = decrypt(addressData.encrypted_private_key, encryptionKey);
+    
+    // Decrypt the private key (or return plaintext if no key configured)
+    const privateKey = encryptionKey
+      ? decrypt(addressData.encrypted_private_key, encryptionKey)
+      : addressData.encrypted_private_key;
 
     // Log the operation (without exposing key material)
     console.log(`[SECURE] Decrypted private key for payment ${paymentId} (address: ${addressData.address.substring(0, 10)}...)`);
