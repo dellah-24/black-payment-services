@@ -1,5 +1,3 @@
-import QRCode from 'qrcode';
-
 /**
  * Supported blockchain types
  */
@@ -48,6 +46,25 @@ const DEFAULT_QR_OPTIONS: QROptions = {
 };
 
 /**
+ * Shared helper to dynamically import the qrcode module with centralized error handling.
+ *
+ * @returns The qrcode module default export
+ * @throws Error if the dynamic import fails, with a descriptive message for observability
+ */
+async function loadQRCodeModule() {
+  try {
+    const mod = await import('qrcode');
+    return mod.default;
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    console.error('[QRGenerator] Failed to dynamically import qrcode module:', message);
+    throw new Error(
+      `QR code generation failed: unable to load qrcode module (${message})`
+    );
+  }
+}
+
+/**
  * Generate a QR code as data URL
  * @param data - Data to encode in QR code
  * @param options - QR code generation options
@@ -68,6 +85,9 @@ export async function generateQRCode(
       ...DEFAULT_QR_OPTIONS,
       ...options,
     };
+
+    // Use shared helper for dynamic import
+    const QRCode = await loadQRCodeModule();
 
     // Generate QR code
     const dataURL = await QRCode.toDataURL(data, qrOptions);
@@ -341,7 +361,7 @@ export async function generatePaymentQR(
 
     // Generate QR code
     const dataURL = await generateQRCode(paymentURI, options);
-    
+
     return dataURL;
   } catch (error) {
     throw new Error(
@@ -372,11 +392,14 @@ export async function generateQRCodeSVG(
       ...options,
     };
 
+    // Use shared helper for dynamic import
+    const QRCode = await loadQRCodeModule();
+
     const svg = await QRCode.toString(data, {
       ...qrOptions,
       type: 'svg',
     });
-    
+
     return svg;
   } catch (error) {
     throw new Error(

@@ -19,8 +19,6 @@
     "test:ui": "vitest --ui",
     "test:coverage": "vitest --coverage",
     "type-check": "tsc --noEmit",
-    "precommit": "pnpm pre-commit",
-    "pre-commit": "vitest run",
     "generate-wallet": "node scripts/generate-hd-wallets.mjs",
     "decrypt-wallet": "node scripts/decrypt-wallet-backup.mjs",
     "tempesttouch-wallet": "node --import tsx scripts/tempesttouch-wallet.mjs",

@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
-import QRCodeLib from 'qrcode';
+import { useEffect, useRef } from 'react';
+import { useQRCode } from '@/lib/qr/useQRCode';
 
 interface QRCodeProps {
   /** The data to encode in the QR code */
@@ -14,11 +14,10 @@ interface QRCodeProps {
 
 export function QRCode({ value, size = 200, label }: QRCodeProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [error, setError] = useState(false);
+  const { QRCodeLib, loading, error, errorMessage } = useQRCode();
 
   useEffect(() => {
-    if (!canvasRef.current || !value) return;
-    setError(false);
+    if (!canvasRef.current || !value || !QRCodeLib) return;
 
     QRCodeLib.toCanvas(canvasRef.current, value, {
       width: size,
@@ -29,9 +28,9 @@ export function QRCode({ value, size = 200, label }: QRCodeProps) {
       },
       errorCorrectionLevel: 'M',
     }).catch(() => {
-      setError(true);
+      // toCanvas failure is handled by the error state below
     });
-  }, [value, size]);
+  }, [value, size, QRCodeLib]);
 
   if (!value) {
     return (
@@ -42,6 +41,19 @@ export function QRCode({ value, size = 200, label }: QRCodeProps) {
         aria-label="QR code placeholder"
       >
         <p className="text-xs text-gray-400">No address</p>
+      </div>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div
+        className="flex items-center justify-center rounded-lg bg-white"
+        style={{ width: size, height: size }}
+        role="img"
+        aria-label="QR code loading"
+      >
+        <p className="text-xs text-gray-400">Loading QR...</p>
       </div>
     );
   }

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import QRCode from 'qrcode';
+import { useQRCode } from '@/lib/qr/useQRCode';
 
 interface DemoPayment {
   id: string;
@@ -40,6 +40,7 @@ export function PaymentDemo() {
   const [copied, setCopied] = useState(false);
   const [confirmations, setConfirmations] = useState(0);
   const [requiredConfirmations, setRequiredConfirmations] = useState(12);
+  const { QRCodeLib, loading: qrLoading, error: qrError } = useQRCode();
 
   // Countdown timer
   useEffect(() => {
@@ -99,19 +100,20 @@ export function PaymentDemo() {
   const buildPaymentUri = useCallback((crypto: typeof DEMO_CRYPTOS[0], address: string, cryptoAmount: string) => {
     const scheme = crypto.scheme;
     let uri = `${scheme}:${address}`;
-    
+
     // Add amount parameter
     if (cryptoAmount) {
       uri += `?amount=${cryptoAmount}`;
     }
-    
+
     return uri;
   }, []);
 
   // Generate QR code
   const generateQRCode = useCallback(async (data: string): Promise<string> => {
     try {
-      const qrDataUrl = await QRCode.toDataURL(data, {
+      if (!QRCodeLib) return '';
+      const qrDataUrl = await QRCodeLib.toDataURL(data, {
         width: 200,
         margin: 2,
         color: {
@@ -125,14 +127,14 @@ export function PaymentDemo() {
       console.error('QR code generation failed:', error);
       return '';
     }
-  }, []);
+  }, [QRCodeLib]);
 
   const handleCreatePayment = async () => {
     const cryptoAmount = calculateCryptoAmount();
     const address = DEMO_ADDRESSES[selectedCrypto.symbol];
     const paymentUri = buildPaymentUri(selectedCrypto, address, cryptoAmount);
     const qrCode = await generateQRCode(paymentUri);
-    
+
     // Set required confirmations based on crypto
     const confirmationsMap: Record<string, number> = {
       BTC: 3,
@@ -142,7 +144,7 @@ export function PaymentDemo() {
     };
     setRequiredConfirmations(confirmationsMap[selectedCrypto.symbol] || 12);
     setConfirmations(0);
-    
+
     const newPayment: DemoPayment = {
       id: 'demo_' + Math.random().toString(36).substring(2, 9),
       amount: parseFloat(amount),
@@ -367,6 +369,14 @@ export function PaymentDemo() {
                       alt="Payment QR Code"
                       className="w-40 h-40"
                     />
+                  </div>
+                ) : qrLoading ? (
+                  <div className="w-40 h-40 bg-white rounded-xl flex items-center justify-center">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
+                  </div>
+                ) : qrError ? (
+                  <div className="w-40 h-40 bg-white rounded-xl flex items-center justify-center">
+                    <p className="text-xs text-red-500 text-center px-2">QR unavailable</p>
                   </div>
                 ) : (
                   <div className="w-40 h-40 bg-white rounded-xl flex items-center justify-center">

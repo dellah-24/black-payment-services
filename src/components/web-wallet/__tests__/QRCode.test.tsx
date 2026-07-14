@@ -6,7 +6,19 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { QRCode } from '../QRCode';
 
-// Mock qrcode library
+// Mock the useQRCode hook to simulate immediate successful load
+vi.mock('@/lib/qr/useQRCode', () => ({
+  useQRCode: () => ({
+    QRCodeLib: {
+      toCanvas: vi.fn().mockResolvedValue(undefined),
+    },
+    loading: false,
+    error: false,
+    errorMessage: null,
+  }),
+}));
+
+// Mock qrcode library (kept for type safety / any other imports)
 vi.mock('qrcode', () => ({
   default: {
     toCanvas: vi.fn().mockResolvedValue(undefined),
