@@ -14,6 +14,9 @@
 
 import { secp256k1 } from '@noble/curves/secp256k1';
 import { keccak_256 } from '@noble/hashes/sha3.js';
+import { sha256 } from '@noble/hashes/sha2.js';
+import { ripemd160 } from '@noble/hashes/legacy.js';
+import nacl from 'tweetnacl';
 import type {
   UnsignedTransactionData,
   EVMUnsignedTx,
@@ -183,7 +186,6 @@ function signEVMTransaction(tx: EVMUnsignedTx, privateKey: Buffer): SignTransact
  * Output: raw transaction hex ready for broadcast.
  */
 function signBTCTransaction(tx: BTCUnsignedTx, privateKey: Buffer): SignTransactionResult {
-  const { createHash } = require('crypto');
   const publicKey = Buffer.from(secp256k1.getPublicKey(new Uint8Array(privateKey), true));
 
   // Build the raw transaction
@@ -240,8 +242,8 @@ function signBTCTransaction(tx: BTCUnsignedTx, privateKey: Buffer): SignTransact
     }
 
     // Double SHA256 for sighash
-    const hash1 = createHash('sha256').update(preimage).digest();
-    const sighash = createHash('sha256').update(hash1).digest();
+    const hash1 = Buffer.from(sha256(preimage));
+    const sighash = Buffer.from(sha256(hash1));
 
     // Sign with secp256k1 (v2.0 API: prehash: false since we already double-SHA256'd)
     // 'der' format returns DER-encoded signature directly
@@ -327,8 +329,6 @@ function buildBIP143Preimage(
   scriptCode: Buffer,
   value: number
 ): Buffer {
-  const { createHash } = require('crypto');
-
   // hashPrevouts
   const prevouts = Buffer.concat(
     tx.inputs.map((inp) => {
@@ -393,9 +393,8 @@ function buildBIP143Preimage(
 }
 
 function doubleSha256(data: Buffer): Buffer {
-  const { createHash } = require('crypto');
-  const h1 = createHash('sha256').update(data).digest();
-  return createHash('sha256').update(h1).digest();
+  const h1 = sha256(data);
+  return Buffer.from(sha256(h1));
 }
 
 // ──────────────────────────────────────────────
@@ -407,8 +406,6 @@ function doubleSha256(data: Buffer): Buffer {
  * Output: base64-encoded signed transaction.
  */
 async function signSOLTransaction(tx: SOLUnsignedTx, privateKey: Buffer): Promise<SignTransactionResult> {
-  const nacl = require('tweetnacl');
-
   // Derive Ed25519 keypair from seed (32 bytes)
   const keyPair = nacl.sign.keyPair.fromSeed(new Uint8Array(privateKey));
 
@@ -613,9 +610,8 @@ function hexToArray(hex: string): number[] {
 
 /** Hash160 (SHA256 + RIPEMD160) for BTC address derivation. */
 function hash160(data: Buffer): Buffer {
-  const { createHash } = require('crypto');
-  const sha256 = createHash('sha256').update(data).digest();
-  return createHash('ripemd160').update(sha256).digest();
+  const sha = sha256(data);
+  return Buffer.from(ripemd160(sha));
 }
 
 /** Convert a BTC/BCH address to a scriptPubKey (P2PKH). */
