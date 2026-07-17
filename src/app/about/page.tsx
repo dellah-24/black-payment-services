@@ -24,11 +24,7 @@ export default function AboutPage() {
 
         <h2 className="text-2xl font-bold mt-8 mb-4 text-white">Built By</h2>
         <p className="text-gray-300">
-          Tempest Touch is developed by{' '}
-          <a href="https://profullstack.com" target="_blank" rel="noopener noreferrer" className="text-purple-600 hover:text-purple-700 font-medium">
-            Profullstack, Inc.
-          </a>
-          {' '}— a team dedicated to building practical blockchain solutions for real businesses.
+          Tempest Touch is developed by the TempestTouch team — dedicated to building practical blockchain solutions for real businesses.
         </p>
       </div>
     </div>

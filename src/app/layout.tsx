@@ -1,5 +1,4 @@
 import type { Metadata, Viewport } from 'next';
-import { ReferralProvider } from '@profullstack/referrals/react';
 import Script from 'next/script';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
@@ -35,7 +34,7 @@ export const metadata: Metadata = {
     siteName: 'TempestTouch',
     images: [
       {
-        url: '/logo.svg',
+        url: '/logo.png',
         width: 1200,
         height: 630,
         alt: 'TempestTouch - Non-Custodial Crypto Payment Gateway',
@@ -46,7 +45,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'TempestTouch - Non-Custodial Crypto Payment Gateway',
     description: 'Accept cryptocurrency payments with automatic fee handling and real-time processing',
-    images: ['/logo.svg'],
+    images: ['/logo.png'],
   },
   icons: {
     icon: [
@@ -68,12 +67,12 @@ const organizationJsonLd = {
   '@type': 'Organization',
   name: 'TempestTouch',
   url: SITE_URL,
-  logo: `${SITE_URL}/logo.svg`,
+  logo: `${SITE_URL}/logo.png`,
   description:
     'Non-custodial cryptocurrency payment gateway with multi-chain support, Lightning, and built-in escrow. Accept BTC, ETH, stablecoins; funds settle directly to merchant wallets.',
   email: 'hello@tempesttouch.com',
   sameAs: [
-    'https://github.com/profullstack/tempesttouch',
+    'https://github.com/tempesttouch/tempesttouch',
   ],
 };
 
@@ -111,7 +110,7 @@ export default function RootLayout({
           </a>
           <Header />
           <main id="main-content" className="flex-grow">
-            <ReferralProvider>{children}</ReferralProvider>
+            {children}
           </main>
           <Footer />
         </Providers>
@@ -127,12 +126,7 @@ export default function RootLayout({
             f.parentNode.insertBefore(a,f)})(window,document,'script', 'https://invitejs.trustpilot.com/tp.min.js', 'tp');
             tp('register', 'or0OSCi4s53Y7syG');`}
         </Script>
-        <Script
-          data-site="69420039-675a-4c3e-95ec-c8287fc21cc5"
-          src="https://crawlproof.com/stats.js"
-          strategy="afterInteractive"
-        />
-      <script async src="https://feedback.profullstack.com/embed/profullstack-feedback.js" data-property="tempesttouch.com"></script></body>
+      </body>
     </html>
   );
 }

@@ -26,6 +26,8 @@ const EXPLORER_URLS: Record<string, string> = {
   ETH: 'https://etherscan.io/tx/',
   POL: 'https://polygonscan.com/tx/',
   SOL: 'https://explorer.solana.com/tx/',
+  BNB: 'https://bscscan.com/tx/',
+  TRON: 'https://tronscan.org/#/transaction/',
   USDC_ETH: 'https://etherscan.io/tx/',
   USDC_POL: 'https://polygonscan.com/tx/',
   USDC_SOL: 'https://explorer.solana.com/tx/',
@@ -178,6 +180,7 @@ function getChainSymbol(chain: string): string {
     XRP: 'XRP',
     ADA: 'ADA',
     BNB: 'BNB',
+    TRON: 'TRX',
   };
 
   return map[chain] || chain;

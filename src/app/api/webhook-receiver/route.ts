@@ -1,7 +1,7 @@
 /**
  * Example Webhook Receiver Endpoint
  *
- * Receives and verifies Tempest Touch webhooks using the @profullstack/tempesttouch SDK.
+ * Receives and verifies Tempest Touch webhooks using the TempestTouch SDK.
  */
 
 import { NextRequest, NextResponse } from 'next/server';

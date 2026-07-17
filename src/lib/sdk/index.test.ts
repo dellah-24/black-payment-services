@@ -1,7 +1,7 @@
 /**
  * SDK Integration Tests
  *
- * Tests for the @profullstack/tempesttouch SDK integration module.
+ * Tests for the TempestTouch SDK integration module.
  * Uses Vitest as the testing framework.
  *
  * These tests verify that the SDK is properly integrated and

@@ -27,6 +27,7 @@ const EXPLORER_TX_URLS: Record<string, string> = {
   POL: 'https://polygonscan.com/tx/',
   SOL: 'https://explorer.solana.com/tx/',
   BNB: 'https://bscscan.com/tx/',
+  TRON: 'https://tronscan.org/#/transaction/',
   DOGE: 'https://dogechain.info/tx/',
   XRP: 'https://xrpscan.com/tx/',
   ADA: 'https://cardanoscan.io/transaction/',

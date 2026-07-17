@@ -7,11 +7,6 @@ import { NextResponse, type NextRequest } from "next/server";
 // the `setInterval` cleanup (not available on the Edge runtime) was removed —
 // stale rate-limit entries are still discarded via the `resetAt` check.
 
-// ── Referral tracking (inlined from @profullstack/referrals/next) ──
-const REF_PARAM = "ref";
-const REFERRAL_COOKIE = "referral_code";
-const REFERRAL_MAX_AGE = 60 * 60 * 24 * 30;
-
 // ── CORS Configuration ──
 const PRODUCTION_ORIGINS = new Set([
   "https://tempesttouch.com",
@@ -115,18 +110,6 @@ function addSecurityHeaders(
   }
 }
 
-function setReferralCookie(response: NextResponse, request: NextRequest) {
-  const code = request.nextUrl.searchParams.get(REF_PARAM);
-  if (code) {
-    response.cookies.set(REFERRAL_COOKIE, code, {
-      httpOnly: false, // readable by client JS for prefill
-      sameSite: "lax",
-      maxAge: REFERRAL_MAX_AGE,
-      path: "/",
-    });
-  }
-}
-
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const isApiRoute = pathname.startsWith("/api/");
@@ -152,7 +135,6 @@ export function middleware(request: NextRequest) {
     if (!clientIp) {
       const response = NextResponse.next();
       addSecurityHeaders(response, isApiRoute, requestOrigin);
-      setReferralCookie(response, request);
       return response;
     }
 
@@ -185,13 +167,11 @@ export function middleware(request: NextRequest) {
       "X-RateLimit-Reset",
       String(Math.ceil(rl.resetAt / 1000))
     );
-    setReferralCookie(response, request);
     return response;
   }
 
   const response = NextResponse.next();
   addSecurityHeaders(response, isApiRoute, requestOrigin);
-  setReferralCookie(response, request);
   return response;
 }
 

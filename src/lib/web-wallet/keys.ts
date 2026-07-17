@@ -70,6 +70,7 @@ export const DERIVABLE_CHAINS = [
   'XRP',
   'ADA',
   'BNB',
+  'TRON',
   'LN',
   // USDC tokens (same address as parent chain)
   'USDC_ETH',
@@ -97,6 +98,7 @@ export const DERIVABLE_CHAIN_INFO: Record<DerivableChain, { name: string; symbol
   XRP: { name: 'XRP', symbol: 'XRP' },
   ADA: { name: 'Cardano', symbol: 'ADA' },
   BNB: { name: 'BNB Smart Chain', symbol: 'BNB' },
+  TRON: { name: 'TRON', symbol: 'TRX' },
   LN: { name: 'Lightning Network', symbol: 'LN' },
   USDC_ETH: { name: 'USDC (Ethereum)', symbol: 'USDC' },
   USDC_POL: { name: 'USDC (Polygon)', symbol: 'USDC' },
@@ -242,6 +244,8 @@ export async function deriveKeyForChain(
       return deriveXRP(seed, index);
     case 'ADA':
       return deriveADA(seed, index);
+    case 'TRON':
+      return deriveTRON(seed, index);
     case 'LN':
       return deriveLN(seed, index);
     default:
@@ -392,6 +396,32 @@ function deriveADA(seed: Uint8Array, index: number): DerivedKey {
     address,
     publicKey: Buffer.from(rawPubKey).toString('hex'),
     privateKey: key.toString('hex'),
+    derivationPath: path,
+    index,
+  };
+}
+
+/**
+ * Derive TRON address.
+ * Uses BIP44 coin type 195, secp256k1, base58check encoding.
+ * TRON address starts with 'T'.
+ */
+function deriveTRON(seed: Uint8Array, index: number): DerivedKey {
+  const hdKey = HDKey.fromMasterSeed(seed);
+  const path = `m/44'/195'/0'/0/${index}`;
+  const child = hdKey.derive(path);
+
+  if (!child.privateKey) throw new Error('Failed to derive TRON key');
+
+  const publicKey = secp256k1.getPublicKey(child.privateKey, true);
+  const pubKeyHash = hash160(Buffer.from(publicKey));
+  const address = base58CheckEncode(pubKeyHash, 0x41); // 0x41 = TRON mainnet version byte
+
+  return {
+    chain: 'TRON',
+    address,
+    publicKey: Buffer.from(publicKey).toString('hex'),
+    privateKey: Buffer.from(child.privateKey).toString('hex'),
     derivationPath: path,
     index,
   };
@@ -560,6 +590,45 @@ function deriveLN(seed: Uint8Array, index: number): DerivedKey {
  */
 function hash160(data: Buffer): Buffer {
   return Buffer.from(ripemd160(sha256(data)));
+}
+
+// ──────────────────────────────────────────────
+// Base58Check decode (Bitcoin/TRON style)
+// ──────────────────────────────────────────────
+
+export function base58CheckDecode(str: string): Buffer {
+  const bytes = base58Decode(str);
+  if (bytes.length < 4) throw new Error('Invalid base58check string');
+  const payload = bytes.slice(0, -4);
+  const checksum = bytes.slice(-4);
+  const hash = Buffer.from(sha256(sha256(payload)).slice(0, 4));
+  if (!checksum.equals(hash)) throw new Error('Invalid base58check checksum');
+  return payload;
+}
+
+function base58Decode(str: string): Buffer {
+  const digits = [0];
+  for (let i = 0; i < str.length; i++) {
+    const char = str[i];
+    const value = BASE58_ALPHABET.indexOf(char);
+    if (value < 0) throw new Error('Invalid base58 character');
+    let carry = value;
+    for (let j = 0; j < digits.length; j++) {
+      carry += digits[j] * 58;
+      digits[j] = carry & 0xff;
+      carry = (carry / 256) | 0;
+    }
+    while (carry > 0) {
+      digits.push(carry & 0xff);
+      carry = (carry / 256) | 0;
+    }
+  }
+  // Convert digits to bytes
+  const result = Buffer.alloc(digits.length);
+  for (let i = 0; i < digits.length; i++) {
+    result[i] = digits[digits.length - 1 - i];
+  }
+  return result;
 }
 
 // ──────────────────────────────────────────────

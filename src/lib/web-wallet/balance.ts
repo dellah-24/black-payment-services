@@ -47,11 +47,12 @@ function getRpcEndpoints(): Record<string, string> {
     ETH: process.env.ETHEREUM_RPC_URL || 'https://eth.llamarpc.com',
     POL: process.env.POLYGON_RPC_URL || 'https://polygon-rpc.com',
     SOL: process.env.NEXT_PUBLIC_SOLANA_RPC_URL || process.env.SOLANA_RPC_URL || 'https://api.mainnet-beta.solana.com',
-    BNB: process.env.BNB_RPC_URL || 'https://bsc-dataseed.binance.org',
+    BNB: process.env.BNB_RPC_URL || 'https://go.getblock.io/your-bnb-access-token/bsc/mainnet',
     BASE: process.env.BASE_RPC_URL || 'https://mainnet.base.org',
     DOGE: process.env.DOGE_RPC_URL || 'https://dogechain.info/api/v1',
     XRP: process.env.XRP_RPC_URL || 'https://s1.ripple.com:51234',
     ADA: process.env.ADA_RPC_URL || 'https://cardano-mainnet.blockfrost.io/api/v0',
+    TRON: process.env.TRON_RPC_URL || 'https://api.trongrid.io',
   };
 }
 
@@ -411,6 +412,39 @@ async function fetchADABalance(address: string): Promise<string> {
   return formatBigIntDecimal(lovelace, 6);
 }
 
+/**
+ * Fetch TRON balance via TRON JSON-RPC API.
+ * TRX has 6 decimal places (1 TRX = 1,000,000 sun).
+ */
+async function fetchTRONBalance(address: string, rpcUrl: string): Promise<string> {
+  const response = await fetch(rpcUrl, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      jsonrpc: '2.0',
+      method: 'getaccount',
+      params: [address],
+      id: 1,
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`TRON balance fetch failed: ${response.status}`);
+  }
+
+  const data = await response.json();
+  if (data.error) {
+    throw new Error(`TRON RPC error: ${data.error.message}`);
+  }
+
+  const account = data.result;
+  if (!account) return '0';
+
+  // TRON balance is in sun (1 TRX = 1,000,000 sun)
+  const balanceSun = BigInt(account.balance || 0);
+  return formatBigIntDecimal(balanceSun, 6);
+}
+
 // ──────────────────────────────────────────────
 // Unified Balance Fetcher
 // ──────────────────────────────────────────────
@@ -443,6 +477,8 @@ export async function fetchBalance(address: string, chain: WalletChain): Promise
       return fetchXRPBalance(address, rpc.XRP);
     case 'ADA':
       return fetchADABalance(address);
+    case 'TRON':
+      return fetchTRONBalance(address, rpc.TRON);
 
     // USDC variants
     case 'USDC_ETH':

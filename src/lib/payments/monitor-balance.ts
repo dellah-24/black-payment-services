@@ -13,9 +13,10 @@ const RPC_ENDPOINTS: Record<string, string> = {
   ETH: process.env.ETHEREUM_RPC_URL || 'https://eth.llamarpc.com',
   POL: process.env.POLYGON_RPC_URL || 'https://polygon-rpc.com',
   SOL: process.env.NEXT_PUBLIC_SOLANA_RPC_URL || process.env.SOLANA_RPC_URL || 'https://api.mainnet-beta.solana.com',
-  BNB: process.env.BNB_RPC_URL || 'https://bsc-dataseed.binance.org',
+  BNB: process.env.BNB_RPC_URL || 'https://go.getblock.io/your-bnb-access-token/bsc/mainnet',
   XRP: process.env.XRP_RPC_URL || 'https://s1.ripple.com:51234',
   BASE: process.env.BASE_RPC_URL || 'https://mainnet.base.org',
+  TRON: process.env.TRON_RPC_URL || 'https://go.getblock.io/7e0d51e2a72b49d189d7f3e45008411f/tron/mainnet',
 };
 
 const CRYPTO_APIS_KEY = process.env.CRYPTO_APIS_KEY || '';

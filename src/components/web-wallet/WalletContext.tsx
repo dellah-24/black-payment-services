@@ -115,7 +115,7 @@ const WalletContext = createContext<WalletContextType | null>(null);
 
 const DEFAULT_CHAINS = [
   'BTC', 'BCH', 'ETH', 'POL', 'SOL',
-  'DOGE', 'XRP', 'ADA', 'BNB', 'LN',
+  'DOGE', 'XRP', 'ADA', 'BNB', 'TRON', 'LN',
   'USDC_ETH', 'USDC_POL', 'USDC_SOL',
   'USDT_ETH', 'USDT_POL', 'USDT_SOL',
 ];

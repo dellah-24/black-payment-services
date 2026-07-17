@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createCode, validateCode, applyReferral } from "@profullstack/referrals";
-import { referralStore } from "@/lib/referrals";
+import { referralStore, createCode, validateCode, applyReferral } from "@/lib/referrals";
 import { verifyToken } from "@/lib/auth/jwt";
 import { getJwtSecret } from "@/lib/secrets";
 

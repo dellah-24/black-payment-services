@@ -34,7 +34,7 @@ export default function ContactPage() {
             
             <div>
               <h3 className="font-semibold mb-2 text-white">GitHub</h3>
-              <a href="https://github.com/profullstack/tempesttouch" target="_blank" rel="noopener noreferrer" className="text-purple-600 hover:text-purple-700">
+              <a href="https://github.com/tempesttouch/tempesttouch" target="_blank" rel="noopener noreferrer" className="text-purple-600 hover:text-purple-700">
                 Report issues or contribute
               </a>
             </div>

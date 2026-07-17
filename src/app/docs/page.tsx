@@ -139,9 +139,9 @@ export default function DocsPage() {
               <h2 className="text-xl font-bold text-white mb-2">🔌 Platform Plugins</h2>
               <p className="text-gray-300 text-sm">
                 Ready-made payment gateway plugins for{' '}
-                <a href="https://github.com/profullstack/tempesttouch/tree/master/plugins/whmcs" target="_blank" rel="noopener noreferrer" className="text-orange-400 hover:text-orange-300 font-medium">WHMCS</a>,{' '}
-                <a href="https://github.com/profullstack/tempesttouch/tree/master/plugins/woocommerce" target="_blank" rel="noopener noreferrer" className="text-purple-400 hover:text-purple-300 font-medium">WooCommerce</a>, and{' '}
-                <a href="https://github.com/profullstack/tempesttouch/tree/master/plugins/fossbilling" target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:text-cyan-300 font-medium">FOSSBilling</a>.
+                <a href="https://github.com/tempesttouch/tempesttouch/tree/master/plugins/whmcs" target="_blank" rel="noopener noreferrer" className="text-orange-400 hover:text-orange-300 font-medium">WHMCS</a>,{' '}
+                <a href="https://github.com/tempesttouch/tempesttouch/tree/master/plugins/woocommerce" target="_blank" rel="noopener noreferrer" className="text-purple-400 hover:text-purple-300 font-medium">WooCommerce</a>, and{' '}
+                <a href="https://github.com/tempesttouch/tempesttouch/tree/master/plugins/fossbilling" target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:text-cyan-300 font-medium">FOSSBilling</a>.
                 Install in minutes — no custom code required.
               </p>
             </div>
@@ -333,10 +333,10 @@ export default function DocsPage() {
               Install the SDK and add x402 middleware to any Express or Next.js route. Set a USD price — the middleware handles multi-chain pricing and 402 responses automatically.
             </p>
 
-            <CodeBlock language="bash">{`npm install @profullstack/tempesttouch`}</CodeBlock>
+            <CodeBlock language="bash">{`npm install tempesttouch`}</CodeBlock>
 
             <h4 className="text-md font-semibold text-white mt-6 mb-3">Express</h4>
-            <CodeBlock language="javascript">{`import { createX402Middleware } from '@profullstack/tempesttouch';
+            <CodeBlock language="javascript">{`import { createX402Middleware } from 'tempesttouch';
 
 const x402 = createX402Middleware({
   apiKey: 'cp_live_xxxxx',                // from /businesses
@@ -359,7 +359,7 @@ app.get('/api/premium', x402({ amountUsd: 5.00 }), (req, res) => {
 });`}</CodeBlock>
 
             <h4 className="text-md font-semibold text-white mt-6 mb-3">Next.js (App Router)</h4>
-            <CodeBlock language="typescript">{`import { buildPaymentRequired, verifyX402Payment } from '@profullstack/tempesttouch';
+            <CodeBlock language="typescript">{`import { buildPaymentRequired, verifyX402Payment } from 'tempesttouch';
 
 export async function GET(request: Request) {
   const paymentHeader = request.headers.get('x-payment');
@@ -509,7 +509,7 @@ X-Payment: eyJzY2hlbWUiOiJleGFjdCIsIm5ldHdvcmsiOiJiYXNlIi4uLn0=`}</CodeBlock>
               If the customer has a <a href="/web-wallet" className="text-purple-400 hover:text-purple-300 underline">Tempest Touch Web Wallet</a>, the flow is seamless — the wallet can read the 402 response, display the payment options, and sign the proof automatically:
             </p>
             <CodeBlock language="javascript">{`// Using Tempest Touch Wallet SDK (browser)
-import { tempesttouchWallet } from '@profullstack/tempesttouch/wallet';
+import { tempesttouchWallet } from 'tempesttouch/wallet';
 
 const wallet = new tempesttouchWallet();
 
@@ -524,7 +524,7 @@ const data = await response.json();`}</CodeBlock>
             <p className="text-gray-300 text-sm mb-3">
               AI agents, bots, or any programmatic client can use <code className="text-purple-300">x402fetch()</code> — it wraps <code className="text-purple-300">fetch()</code> and handles the entire 402 → pay → retry loop:
             </p>
-            <CodeBlock language="javascript">{`import { x402fetch } from '@profullstack/tempesttouch';
+            <CodeBlock language="javascript">{`import { x402fetch } from 'tempesttouch';
 
 const response = await x402fetch('https://api.example.com/premium', {
   paymentMethods: {
@@ -919,7 +919,7 @@ offset       — Pagination offset`}
 
             <h3 className="text-xl font-semibold text-white mt-8 mb-4">SDK &amp; CLI</h3>
             <CodeBlock title="Node.js SDK" language="javascript">
-{`import { tempesttouchClient } from '@profullstack/tempesttouch';
+{`import { tempesttouchClient } from 'tempesttouch';
 
 const client = new tempesttouchClient({ apiKey: 'YOUR_API_KEY' });
 

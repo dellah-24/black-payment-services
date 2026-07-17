@@ -20,11 +20,11 @@ export default function SDKDocsPage() {
             SDK Documentation
           </h1>
           <p className="text-xl text-gray-300">
-            @profullstack/tempesttouch - Node.js SDK &amp; CLI for cryptocurrency payments
+            TempestTouch - Node.js SDK &amp; CLI for cryptocurrency payments
           </p>
           <div className="mt-4 flex gap-4">
             <a
-              href="https://www.npmjs.com/package/@profullstack/tempesttouch"
+              href="https://www.npmjs.com/package/tempesttouch"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium transition-colors"
@@ -35,7 +35,7 @@ export default function SDKDocsPage() {
               npm
             </a>
             <a
-              href="https://github.com/profullstack/tempesttouch"
+              href="https://github.com/tempesttouch/tempesttouch"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg text-sm font-medium transition-colors"
@@ -89,19 +89,19 @@ export default function SDKDocsPage() {
             </p>
 
             <CodeBlock title="Using pnpm (recommended)" language="bash">
-{`pnpm add @profullstack/tempesttouch`}
+{`pnpm add tempesttouch`}
             </CodeBlock>
 
             <CodeBlock title="Using npm" language="bash">
-{`npm install @profullstack/tempesttouch`}
+{`npm install tempesttouch`}
             </CodeBlock>
 
             <CodeBlock title="Global CLI Installation" language="bash">
 {`# Install globally for CLI access
-pnpm add -g @profullstack/tempesttouch
+pnpm add -g tempesttouch
 
 # Or with npm
-npm install -g @profullstack/tempesttouch`}
+npm install -g tempesttouch`}
             </CodeBlock>
 
             <div className="mt-6 p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg">
@@ -128,10 +128,10 @@ npm install -g @profullstack/tempesttouch`}
 
             <h3 className="text-xl font-semibold text-white mb-4">SDK Usage</h3>
             <CodeBlock title="Basic SDK Example" language="javascript">
-{`import { TempestTouchClient, Blockchain } from '@profullstack/tempesttouch';
+{`import { TempestTouchClient, Blockchain } from 'tempesttouch';
 
 // Initialize with your API key (get it from your dashboard)
-const tempesttouch = new tempesttouchClient({
+const tempesttouch = new TempestTouchClient({
   apiKey: 'cp_live_your_api_key_here',
 });
 
@@ -207,7 +207,7 @@ tempesttouch rates get SOL --fiat EUR`}
             </p>
 
             <CodeBlock title="Client Initialization" language="javascript">
-{`import { TempestTouchClient } from '@profullstack/tempesttouch';
+{`import { TempestTouchClient } from 'tempesttouch';
 
 const client = new TempestTouchClient({
   // Required: Your API key (starts with cp_live_)
@@ -379,7 +379,7 @@ fs.writeFileSync('payment-qr.png', Buffer.from(imageData));`}
 
             <h3 className="text-xl font-semibold text-white mb-4">Customer Payment Choice Example</h3>
             <CodeBlock title="Let customers choose: Crypto OR Card" language="javascript">
-{`import { TempestTouchClient } from '@profullstack/tempesttouch';
+{`import { TempestTouchClient } from 'tempesttouch';
 
 const client = new TempestTouchClient({ apiKey: 'your-api-key' });
 
@@ -475,11 +475,11 @@ console.log(\`Released \$\${release.amount_transferred / 100} to merchant\`);`}
 
             <h3 className="text-xl font-semibold text-white mb-4">Card Payment Convenience Functions</h3>
             <CodeBlock title="Using card-payments convenience module" language="javascript">
-{`import { 
-  createQuickCardPayment, 
+{`import {
+  createQuickCardPayment,
   formatCardAmount,
   calculateCardPaymentFees
-} from '@profullstack/tempesttouch/card-payments';
+} from 'tempesttouch/card-payments';
 
 // Quick payment with USD amount (auto-converts to cents)
 const payment = await createQuickCardPayment(client, 'biz_123', 50.0, 'Order #123', {
@@ -992,7 +992,7 @@ console.log(\`€50 EUR = \${eurConversion.cryptoAmount.toFixed(6)} SOL\`);`}
 
             <h3 className="text-xl font-semibold text-white mb-4">Manual Verification</h3>
             <CodeBlock title="Verify webhook signature" language="javascript">
-{`import { verifyWebhookSignature } from '@profullstack/tempesttouch';
+{`import { verifyWebhookSignature } from 'tempesttouch';
 
 // In your webhook handler
 const isValid = verifyWebhookSignature({
@@ -1011,7 +1011,7 @@ if (!isValid) {
             <h3 className="text-xl font-semibold text-white mb-4 mt-8">Express Middleware</h3>
             <CodeBlock title="Use the webhook handler middleware" language="javascript">
 {`import express from 'express';
-import { createWebhookHandler } from '@profullstack/tempesttouch';
+import { createWebhookHandler } from 'tempesttouch';
 
 const app = express();
 
@@ -1395,7 +1395,7 @@ tempesttouch ln balance --wallet-id <uuid>`}
             </p>
 
             <CodeBlock title="Error handling example" language="javascript">
-{`import { TempestTouchClient } from '@profullstack/tempesttouch';
+{`import { TempestTouchClient } from 'tempesttouch';
 
 const client = new TempestTouchClient({ apiKey: 'cp_live_your_api_key' });
 
@@ -1470,7 +1470,7 @@ tempesttouch auth me`}
             <h3 className="text-xl font-semibold text-white mb-4 mt-8">SDK Methods</h3>
 
             <CodeBlock title="Authentication" language="javascript">
-{`import { TempestTouchClient, registerMerchant, loginMerchant, getMe } from '@profullstack/tempesttouch';
+{`import { TempestTouchClient, registerMerchant, loginMerchant, getMe } from 'tempesttouch';
 
 // Create a client (no API key needed for registration)
 const client = new tempesttouchClient({ apiKey: 'unused', baseUrl: 'https://tempesttouch.com' });
@@ -1527,7 +1527,7 @@ tempesttouch reputation did`}
             <h3 className="text-xl font-semibold text-white mb-4">SDK Methods</h3>
 
             <CodeBlock title="DID Management" language="javascript">
-{`import { TempestTouchClient } from '@profullstack/tempesttouch';
+{`import { TempestTouchClient } from 'tempesttouch';
 
 const client = new TempestTouchClient({ apiKey: 'cp_live_your_api_key' });
 
@@ -1580,7 +1580,7 @@ const receipts = await client.getReceipts('did:key:z6Mk...');
 console.log('Receipts:', receipts.receipts.length);
 
 // Get embeddable reputation badge URL
-import { getBadgeUrl } from '@profullstack/tempesttouch';
+import { getBadgeUrl } from 'tempesttouch';
 const badgeUrl = getBadgeUrl('https://tempesttouch.com', 'did:key:z6Mk...');
 // Use in markdown: ![Reputation](badgeUrl)`}
             </CodeBlock>
@@ -1642,7 +1642,7 @@ tempesttouch reputation revocations`}
           </p>
 
           <CodeBlock title="Type hints in VS Code" language="javascript">
-{`import { tempesttouchClient, Blockchain, PaymentStatus } from '@profullstack/tempesttouch';
+{`import { tempesttouchClient, Blockchain, PaymentStatus } from 'tempesttouch';
 
 // Use Blockchain constants for type safety
 const result = await client.createPayment({
@@ -1663,7 +1663,7 @@ const result = await client.createPayment({
             Phase 2 adds multi-dimensional trust scoring with categorized action receipts.
           </p>
           <CodeBlock title="Submit Action Receipt">
-{`import { submitActionReceipt } from '@profullstack/tempesttouch/reputation';
+{`import { submitActionReceipt } from 'tempesttouch/reputation';
 
 const result = await submitActionReceipt(client, {
   receipt_id: '550e8400-...',
@@ -1679,7 +1679,7 @@ const result = await submitActionReceipt(client, {
 });`}
           </CodeBlock>
           <CodeBlock title="Get Trust Profile">
-{`import { getTrustProfile } from '@profullstack/tempesttouch/reputation';
+{`import { getTrustProfile } from 'tempesttouch/reputation';
 
 const profile = await getTrustProfile(client, 'did:key:z6Mk...');
 // profile.trust_vector = { E: 42.5, P: 12.3, B: 9.1, D: 2.08, R: 0.87, A: 0, C: 0 }
@@ -1788,7 +1788,7 @@ console.log('Card checkout:', payData.stripeCheckoutUrl);`}
               Back to API Documentation
             </Link>
             <a
-              href="https://github.com/profullstack/tempesttouch/issues"
+              href="https://github.com/tempesttouch/tempesttouch/issues"
               target="_blank"
               rel="noopener noreferrer"
               className="text-gray-400 hover:text-white flex items-center"

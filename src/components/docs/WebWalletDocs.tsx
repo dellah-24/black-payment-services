@@ -48,7 +48,7 @@ export function WebWalletDocs() {
           <h4 className="text-lg font-semibold text-white mb-3">SDK (npm)</h4>
           <CodeBlock title="Install" language="bash">
 {`# Payment gateway SDK + CLI
-npm install -g @profullstack/tempesttouch
+npm install -g tempesttouch
 
 # Configure
 tempesttouch config set apiKey YOUR_API_KEY
@@ -58,7 +58,7 @@ tempesttouch config set apiUrl https://tempesttouch.com`}
         <div>
           <h4 className="text-lg font-semibold text-white mb-3">Wallet CLI (from source)</h4>
           <CodeBlock title="Install" language="bash">
-{`git clone https://github.com/profullstack/tempesttouch
+{`git clone https://github.com/tempesttouch/tempesttouch
 cd tempesttouch && pnpm install
 
 # Create a wallet

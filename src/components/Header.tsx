@@ -101,9 +101,9 @@ export default function Header() {
           {/* Logo */}
           <Link href="/" className="block">
             <img
-              src="/logo.svg"
+              src="/logo.png"
               alt="TempestTouch"
-              className="h-14 w-auto"
+              className="h-16 w-auto drop-shadow-lg"
             />
           </Link>
 

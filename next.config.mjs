@@ -30,6 +30,22 @@ const nextConfig = {
   ],
   // Security headers
   async headers() {
+    // React's development build uses eval() for various debugging features
+    // (e.g. reconstructing component stack traces). In production React never
+    // uses eval(), so we only relax the policy in development to keep the
+    // production CSP strict and free of 'unsafe-eval'.
+    const isDev = process.env.NODE_ENV !== 'production';
+    const scriptSrc = [
+      "'self'",
+      "'unsafe-inline'",
+      // Analytics / third-party widgets loaded by the app shell.
+      'https://datafa.st',
+      'https://invitejs.trustpilot.com',
+    ];
+    if (isDev) {
+      scriptSrc.push("'unsafe-eval'");
+    }
+
     return [
       // Serve /install.sh as text/plain so `curl | sh` works cleanly
       // and browsers display the script inline (users can audit before
@@ -48,14 +64,16 @@ const nextConfig = {
             key: 'Content-Security-Policy',
             // Note: 'unsafe-inline' for style-src is required by Next.js for its
             // built-in style injection mechanism (styled-jsx and CSS modules).
-            // 'unsafe-eval' has been removed to prevent script injection attacks.
+            // 'unsafe-eval' is only allowed in development (see scriptSrc above)
+            // to support React's dev-mode debugging, and is omitted in
+            // production to prevent script injection attacks.
             value: [
               "default-src 'self'",
-              "script-src 'self' 'unsafe-inline' https://datafa.st https://crawlproof.com https://invitejs.trustpilot.com",
+              `script-src ${scriptSrc.join(' ')}`,
               "style-src 'self' 'unsafe-inline'",
               "img-src 'self' data: https:",
               "font-src 'self' data:",
-              "connect-src 'self' https: wss: https://crawlproof.com",
+              "connect-src 'self' https: wss:",
               "object-src 'none'",
               "frame-ancestors 'none'",
               "base-uri 'self'",

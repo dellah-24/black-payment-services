@@ -20,6 +20,7 @@ const CHAINS = [
   { value: 'POL', label: 'Polygon (POL)' },
   { value: 'SOL', label: 'Solana (SOL)' },
   { value: 'BNB', label: 'BNB Chain' },
+  { value: 'TRON', label: 'TRON' },
   { value: 'DOGE', label: 'Dogecoin (DOGE)' },
   { value: 'XRP', label: 'XRP' },
   { value: 'ADA', label: 'Cardano (ADA)' },

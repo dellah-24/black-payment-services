@@ -9,7 +9,7 @@ import { isBusinessPaidTier } from '../entitlements/service';
  */
 const SUPPORTED_BLOCKCHAINS = [
   'BTC', 'BCH', 'ETH', 'POL', 'SOL',
-  'DOGE', 'XRP', 'ADA', 'BNB',
+  'DOGE', 'XRP', 'ADA', 'BNB', 'TRON',
   'USDT', 'USDT_ETH', 'USDT_POL', 'USDT_SOL',
   'USDC', 'USDC_ETH', 'USDC_POL', 'USDC_SOL', 'USDC_BASE',
 ] as const;
@@ -125,6 +125,7 @@ function getPlatformWalletAddress(blockchain: BlockchainType): string {
     XRP: 'PLATFORM_FEE_WALLET_XRP',
     ADA: 'PLATFORM_FEE_WALLET_ADA',
     BNB: 'PLATFORM_FEE_WALLET_BNB',
+    TRON: 'PLATFORM_FEE_WALLET_TRON',
     USDT: 'PLATFORM_FEE_WALLET_USDT',
     USDT_ETH: 'PLATFORM_FEE_WALLET_USDT_ETH',
     USDT_POL: 'PLATFORM_FEE_WALLET_USDT_POL',

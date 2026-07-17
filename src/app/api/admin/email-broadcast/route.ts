@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/auth/admin-guard';
 import { getSupabaseAdmin } from '@/lib/supabase/server';
-import { createEmailer } from '@profullstack/emailer';
 
 export async function GET(req: NextRequest) {
   const guard = await requireAdmin(req);
@@ -60,15 +59,28 @@ export async function POST(req: NextRequest) {
   }
 
   const from = process.env.EMAIL_FROM ?? 'noreply@tempesttouch.com';
-  const emailer = createEmailer({ resendApiKey });
 
-  const result = await emailer.sendBulk({
-    from,
-    to: emails,
-    subject,
-    html,
-    text,
-  });
+  // Send emails via Resend API directly
+  const results = await Promise.allSettled(
+    emails.map(async (to: string) => {
+      const res = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${resendApiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ from, to, subject, html, text }),
+      });
+      if (!res.ok) {
+        const err = await res.text();
+        throw new Error(`Resend error for ${to}: ${err}`);
+      }
+      return { to, success: true };
+    })
+  );
 
-  return NextResponse.json({ sent: result.sent, failed: result.failed });
+  const sent = results.filter((r) => r.status === 'fulfilled').length;
+  const failed = results.filter((r) => r.status === 'rejected').length;
+
+  return NextResponse.json({ sent, failed });
 }

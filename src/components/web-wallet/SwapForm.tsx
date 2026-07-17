@@ -13,7 +13,7 @@ import type { WalletChain } from '@/lib/web-wallet/identity';
 
 // All coins supported for swaps (must match changenow.ts SWAP_SUPPORTED_COINS)
 const SWAP_COINS = [
-  'BTC', 'BCH', 'ETH', 'POL', 'SOL', 'BNB', 'DOGE', 'XRP', 'ADA',
+  'BTC', 'BCH', 'ETH', 'POL', 'SOL', 'BNB', 'TRON', 'DOGE', 'XRP', 'ADA',
   'USDT', 'USDT_ETH', 'USDT_POL', 'USDT_SOL',
   'USDC', 'USDC_ETH', 'USDC_POL', 'USDC_SOL',
 ];
@@ -26,6 +26,7 @@ const EXPLORER_TX_URLS: Record<string, string> = {
   POL: 'https://polygonscan.com/tx/',
   SOL: 'https://explorer.solana.com/tx/',
   BNB: 'https://bscscan.com/tx/',
+  TRON: 'https://tronscan.org/#/transaction/',
   DOGE: 'https://dogechain.info/tx/',
   XRP: 'https://xrpscan.com/tx/',
   ADA: 'https://cardanoscan.io/transaction/',

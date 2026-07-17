@@ -50,8 +50,9 @@ function getRpcEndpoints(): Record<string, string> {
       process.env.NEXT_PUBLIC_SOLANA_RPC_URL ||
       process.env.SOLANA_RPC_URL ||
       'https://api.mainnet-beta.solana.com',
-    BNB: process.env.BSC_RPC_URL || 'https://bsc-dataseed.binance.org',
+    BNB: process.env.BSC_RPC_URL || 'https://go.getblock.io/your-bnb-access-token/bsc/mainnet',
     BASE: process.env.BASE_RPC_URL || 'https://mainnet.base.org',
+    TRON: process.env.TRON_RPC_URL || 'https://api.trongrid.io',
   };
 }
 
@@ -1315,6 +1316,77 @@ async function fetchADAHistory(address: string): Promise<IndexedTransaction[]> {
 }
 
 // ──────────────────────────────────────────────
+// TRON Indexer (TRON JSON-RPC API)
+// ──────────────────────────────────────────────
+
+async function fetchTRONHistory(address: string, rpcUrl: string): Promise<IndexedTransaction[]> {
+  try {
+    // Get account transactions using TRON JSON-RPC
+    const response = await fetch(rpcUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        jsonrpc: '2.0',
+        method: 'gettransactions',
+        params: [address, 0, MAX_TXS],
+        id: 1,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`TRON history fetch failed: ${response.status}`);
+    }
+
+    const data = await response.json();
+    if (data.error) {
+      throw new Error(`TRON RPC error: ${data.error.message}`);
+    }
+
+    const transactions = data.result?.data || [];
+    const results: IndexedTransaction[] = [];
+
+    for (const tx of transactions.slice(0, MAX_TXS)) {
+      // Skip failed transactions
+      if (tx.ret?.[0]?.contractRet !== 'SUCCESS') continue;
+
+      const isOutgoing = tx.raw_data?.contract?.[0]?.parameter?.value?.owner_address === address;
+      
+      let amount = '0';
+      let fromAddress = '';
+      let toAddress = '';
+      
+      if (tx.raw_data?.contract?.[0]?.parameter?.value) {
+        const contract = tx.raw_data.contract[0].parameter.value;
+        fromAddress = contract.owner_address || '';
+        toAddress = contract.to_address || '';
+        amount = contract.amount ? (Number(contract.amount) / 1_000_000).toString() : '0';
+      }
+
+      results.push({
+        txHash: tx.txID || '',
+        chain: 'TRON',
+        direction: isOutgoing ? 'outgoing' : 'incoming',
+        amount,
+        fromAddress,
+        toAddress,
+        status: 'confirmed',
+        confirmations: 1,
+        timestamp: tx.blockTimeStamp
+          ? new Date(Number(tx.blockTimeStamp) / 1000).toISOString()
+          : new Date().toISOString(),
+        blockNumber: tx.blockNumber || 0,
+      });
+    }
+
+    return results;
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err);
+    console.error(`[TxIndexer] TRON fetch failed: ${msg}`);
+    return [];
+  }
+}
+
+// ──────────────────────────────────────────────
 // BNB (BSC) Indexer - Same pattern as ETH/POL
 // Uses Etherscan V2 API with chainid=56
 // ──────────────────────────────────────────────
@@ -1712,6 +1784,8 @@ export async function fetchOnChainHistory(
       return fetchXRPHistory(address);
     case 'ADA':
       return fetchADAHistory(address);
+    case 'TRON':
+      return fetchTRONHistory(address, rpc.TRON);
     case 'BNB':
       return fetchBNBHistory(address, rpc.BNB);
     case 'USDC_ETH':

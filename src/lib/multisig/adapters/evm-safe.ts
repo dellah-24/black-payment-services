@@ -77,7 +77,7 @@ const EVM_CHAIN_CONFIGS: Record<EvmChain, EvmChainConfig> = {
   },
   BNB: {
     chainId: 56,
-    rpcUrl: process.env.BNB_RPC_URL || 'https://bsc-dataseed.binance.org',
+    rpcUrl: process.env.BNB_RPC_URL || 'https://go.getblock.io/your-bnb-access-token/bsc/mainnet',
     safeFactoryAddress: '0xa6B71E26C5e0845f74c812102Ca7114b6a896AB2',
     safeSingletonAddress: '0xd9Db270c1B5E3Bd161E8c8503c55cEABeE709552',
     name: 'BSC',

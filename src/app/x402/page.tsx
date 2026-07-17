@@ -10,7 +10,7 @@ import { useState } from 'react';
  */
 
 const CODE_SNIPPETS = {
-  express: `import { createX402Middleware } from '@profullstack/tempesttouch';
+  express: `import { createX402Middleware } from 'tempesttouch';
 
 const x402 = createX402Middleware({
   apiKey: 'YOUR_API_KEY',
@@ -31,7 +31,7 @@ const x402 = createX402Middleware({
 app.get('/api/premium', x402({ amountUsd: 5.00 }), (req, res) => {
   res.json({ data: 'premium content', paidWith: req.x402Payment });
 });`,
-  nextjs: `import { buildPaymentRequired, verifyX402Payment } from '@profullstack/tempesttouch';
+  nextjs: `import { buildPaymentRequired, verifyX402Payment } from 'tempesttouch';
 
 export async function GET(request: Request) {
   const paymentHeader = request.headers.get('x-payment');
@@ -296,7 +296,7 @@ X-PAYMENT: eyJzY2hlbWUiOiJleGFjdCIsIm5ldHdvcmsiOiJiYXNlIiwiYXNzZXQiOiIweEEwYjg2O
           <p className="text-sm text-blue-600 dark:text-blue-400 mb-3">
             For automated clients (AI agents, bots), use a library that handles the 402 → pay → retry loop:
           </p>
-          <pre className="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto text-xs">{`import { x402fetch } from '@profullstack/tempesttouch';
+          <pre className="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto text-xs">{`import { x402fetch } from 'tempesttouch';
 
 // Wraps fetch() — automatically handles 402 responses
 const response = await x402fetch('https://api.example.com/premium', {
@@ -320,7 +320,7 @@ const data = await response.json();`}</pre>
           <li>
             Install the SDK:{' '}
             <code className="bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded text-sm">
-              npm install @profullstack/tempesttouch
+              npm install tempesttouch
             </code>
           </li>
           <li>

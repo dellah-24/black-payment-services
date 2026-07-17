@@ -14,7 +14,10 @@ import * as bitcoin from 'bitcoinjs-lib';
 import { HDKey } from '@scure/bip32';
 import * as ecc from 'tiny-secp256k1';
 import ECPairFactory from 'ecpair';
+import { secp256k1 } from '@noble/curves/secp256k1';
+import { sha256 } from '@noble/hashes/sha2.js';
 import { getCardanoSerializationLib, getXrpl } from '@/lib/server/optional-deps';
+import { base58CheckDecode } from '@/lib/web-wallet/keys';
 
 // Initialize ECPair with secp256k1
 const ECPair = ECPairFactory(ecc);
@@ -24,7 +27,7 @@ const ECPair = ECPairFactory(ecc);
  */
 export type BlockchainType =
   | 'BTC' | 'BCH' | 'ETH' | 'POL' | 'SOL'
-  | 'DOGE' | 'XRP' | 'ADA' | 'BNB'
+  | 'DOGE' | 'XRP' | 'ADA' | 'BNB' | 'TRON'
   | 'USDT' | 'USDT_ETH' | 'USDT_POL' | 'USDT_SOL'
   | 'USDC'
   | 'USDC_ETH' | 'USDC_POL' | 'USDC_SOL' | 'USDC_BASE';
@@ -1560,6 +1563,293 @@ export class BnbProvider extends EthereumProvider {
 }
 
 /**
+ * TRON provider - uses TRON JSON-RPC API
+ * TRX has 6 decimal places (1 TRX = 1,000,000 sun)
+ */
+export class TronProvider implements BlockchainProvider {
+  chain: BlockchainType = 'TRON';
+  rpcUrl: string;
+
+  constructor(rpcUrl: string) {
+    this.rpcUrl = rpcUrl;
+  }
+
+  async getBalance(address: string): Promise<string> {
+    try {
+      const response = await axios.post(this.rpcUrl, {
+        method: 'getaccount',
+        params: [address],
+        jsonrpc: '2.0',
+        id: 1,
+      });
+      const account = response.data.result;
+      if (!account) return '0';
+      // TRON balance is in sun (1 TRX = 1,000,000 sun)
+      const balanceSun = Number(account.balance || 0);
+      return (balanceSun / 1_000_000).toString();
+    } catch (error: any) {
+      if (error?.response?.data?.result?.message === 'Account not found') return '0';
+      console.error('[TRON] Error fetching balance:', error);
+      return '0';
+    }
+  }
+
+  async getTransaction(txHash: string): Promise<TransactionDetails> {
+    try {
+      const response = await axios.post(this.rpcUrl, {
+        method: 'gettransactionbyid',
+        params: [txHash],
+        jsonrpc: '2.0',
+        id: 1,
+      });
+      const tx = response.data.result;
+      if (!tx) throw new Error('Transaction not found');
+
+      const blockNumber = tx.blockNumber || 0;
+      const timestamp = tx.blockTimeStamp
+        ? Number(tx.blockTimeStamp) / 1000
+        : undefined;
+
+      // Extract from/to from contract data
+      let from = '';
+      let to = '';
+      let value = '0';
+      if (tx.raw_data?.contract?.[0]?.parameter?.value) {
+        const contract = tx.raw_data.contract[0].parameter.value;
+        from = contract.owner_address || '';
+        to = contract.to_address || '';
+        value = contract.amount ? (Number(contract.amount) / 1_000_000).toString() : '0';
+      }
+
+      return {
+        hash: tx.txID || txHash,
+        from,
+        to,
+        value,
+        confirmations: blockNumber > 0 ? 1 : 0,
+        blockNumber,
+        timestamp,
+        status: tx.ret?.[0]?.contractRet === 'SUCCESS' ? 'confirmed' : 'failed',
+      };
+    } catch (error) {
+      throw new Error(`Failed to fetch TRON transaction: ${error}`);
+    }
+  }
+
+  async sendTransaction(
+    from: string,
+    to: string,
+    amount: string,
+    privateKey: string
+  ): Promise<string> {
+    try {
+      // Convert addresses to hex format (TRON RPC uses hex without 0x prefix)
+      const fromHex = this.addressToHex(from);
+      const toHex = this.addressToHex(to);
+
+      // Get account info for ref block
+      const accountInfo = await this.rpc('getaccount', { address: fromHex });
+      if (!accountInfo) {
+        throw new Error('Sender account not found');
+      }
+
+      // Get latest block for ref_block_hash
+      const block = await this.rpc('getblock', { num: 'latest' });
+      const blockHeader = block?.block_header?.raw_data;
+      if (!blockHeader) {
+        throw new Error('Failed to get latest block');
+      }
+
+      // Build transaction
+      const amountSun = Math.floor(parseFloat(amount) * 1_000_000);
+      const now = Date.now();
+      const expiration = now + 10 * 60 * 1000; // 10 minutes from now
+
+      const rawData = this.buildRawData(fromHex, toHex, amountSun, blockHeader, expiration);
+      const txID = this.hash256(rawData);
+
+      // Sign transaction
+      const signature = this.signTransaction(txID, privateKey);
+
+      // Build final transaction
+      const signedTx = this.buildSignedTransaction(txID, rawData, signature);
+
+      // Broadcast
+      const result = await this.rpc('broadcasttransaction', [signedTx]);
+      
+      if (result?.result === true || result?.txid) {
+        return result.txid || txID;
+      }
+      
+      throw new Error(result?.message || 'Transaction broadcast failed');
+    } catch (error: any) {
+      console.error('[TRON] Error sending transaction:', error);
+      throw new Error(`TRON transaction failed: ${error?.message || error}`);
+    }
+  }
+
+  private addressToHex(address: string): string {
+    // TRON addresses are base58check encoded starting with 'T'
+    // Remove '0x' prefix if present
+    const clean = address.replace(/^0x/, '');
+    if (clean.startsWith('T')) {
+      // Decode base58check to get the 21-byte address
+      const decoded = base58CheckDecode(clean);
+      return decoded.toString('hex');
+    }
+    // Already hex
+    return clean;
+  }
+
+  private buildRawData(
+    fromHex: string,
+    toHex: string,
+    amount: number,
+    blockHeader: any,
+    expiration: number
+  ): Buffer {
+    // Minimal protobuf encoding for TRON TransactionRaw
+    const parts: Buffer[] = [];
+
+    // ref_block_num (field 1, varint) - lower 16 bits of block number
+    const refBlockNum = (blockHeader.number || 0) & 0xffff;
+    parts.push(this.encodeVarint(1 << 3 | 0)); // field 1, wire type 0
+    parts.push(this.encodeVarint(refBlockNum));
+
+    // ref_block_hash (field 2, length-delimited) - last 8 bytes of block hash
+    const parentHash = blockHeader.parentHash || '';
+    const refBlockHash = parentHash.slice(-16); // last 8 bytes = 16 hex chars
+    const refBlockHashBytes = Buffer.from(refBlockHash, 'hex');
+    parts.push(this.encodeVarint(2 << 3 | 2)); // field 2, wire type 2
+    parts.push(this.encodeVarint(refBlockHashBytes.length));
+    parts.push(refBlockHashBytes);
+
+    // expiration (field 3, varint)
+    parts.push(this.encodeVarint(3 << 3 | 0)); // field 3, wire type 0
+    parts.push(this.encodeVarint(expiration));
+
+    // contract (field 4, repeated length-delimited)
+    const contract = this.buildTransferContract(fromHex, toHex, amount);
+    parts.push(this.encodeVarint(4 << 3 | 2)); // field 4, wire type 2
+    parts.push(this.encodeVarint(contract.length));
+    parts.push(contract);
+
+    return Buffer.concat(parts);
+  }
+
+  private buildTransferContract(fromHex: string, toHex: string, amount: number): Buffer {
+    const parts: Buffer[] = [];
+
+    // type (field 1, varint) - 1 = TransferContract
+    parts.push(this.encodeVarint(1 << 3 | 0));
+    parts.push(this.encodeVarint(1));
+
+    // parameter (field 2, length-delimited) - TransferContract
+    const transferContract = this.buildTransferContractMessage(fromHex, toHex, amount);
+    parts.push(this.encodeVarint(2 << 3 | 2));
+    parts.push(this.encodeVarint(transferContract.length));
+    parts.push(transferContract);
+
+    return Buffer.concat(parts);
+  }
+
+  private buildTransferContractMessage(fromHex: string, toHex: string, amount: number): Buffer {
+    const parts: Buffer[] = [];
+
+    // owner_address (field 1, length-delimited)
+    const ownerBytes = Buffer.from(fromHex, 'hex');
+    parts.push(this.encodeVarint(1 << 3 | 2));
+    parts.push(this.encodeVarint(ownerBytes.length));
+    parts.push(ownerBytes);
+
+    // to_address (field 2, length-delimited)
+    const toBytes = Buffer.from(toHex, 'hex');
+    parts.push(this.encodeVarint(2 << 3 | 2));
+    parts.push(this.encodeVarint(toBytes.length));
+    parts.push(toBytes);
+
+    // amount (field 3, varint)
+    parts.push(this.encodeVarint(3 << 3 | 0));
+    parts.push(this.encodeVarint(amount));
+
+    return Buffer.concat(parts);
+  }
+
+  private signTransaction(txID: string, privateKey: string): Buffer {
+    // TRON signs the txID (SHA3-256 hash of raw_data)
+    const txIDBytes = Buffer.from(txID, 'hex');
+    const privateKeyBytes = Buffer.from(privateKey, 'hex');
+    
+    // Sign with secp256k1 - returns { r, s, recovery }
+    const sig = secp256k1.sign(txIDBytes, privateKeyBytes) as any;
+    
+    // TRON uses 65-byte signature (r + s + v)
+    const recoveryId = sig.recovery || 0;
+    const r = sig.r;
+    const s = sig.s;
+    
+    // Pad r and s to 32 bytes each
+    const rBytes = r.length === 32 ? Buffer.from(r) : Buffer.concat([Buffer.alloc(32 - r.length, 0), Buffer.from(r)]);
+    const sBytes = s.length === 32 ? Buffer.from(s) : Buffer.concat([Buffer.alloc(32 - s.length, 0), Buffer.from(s)]);
+    
+    return Buffer.concat([rBytes, sBytes, Buffer.from([recoveryId])]);
+  }
+
+  private buildSignedTransaction(txID: string, rawData: Buffer, signature: Buffer): Buffer {
+    const parts: Buffer[] = [];
+
+    // txID (field 1, length-delimited)
+    const txIDBytes = Buffer.from(txID, 'hex');
+    parts.push(this.encodeVarint(1 << 3 | 2));
+    parts.push(this.encodeVarint(txIDBytes.length));
+    parts.push(txIDBytes);
+
+    // raw_data (field 2, length-delimited)
+    parts.push(this.encodeVarint(2 << 3 | 2));
+    parts.push(this.encodeVarint(rawData.length));
+    parts.push(rawData);
+
+    // signature (field 3, repeated length-delimited)
+    parts.push(this.encodeVarint(3 << 3 | 2));
+    parts.push(this.encodeVarint(signature.length));
+    parts.push(signature);
+
+    return Buffer.concat(parts);
+  }
+
+  private encodeVarint(value: number): Buffer {
+    const bytes: number[] = [];
+    let v = value;
+    while (v > 0x7f) {
+      bytes.push((v & 0x7f) | 0x80);
+      v >>>= 7;
+    }
+    bytes.push(v & 0x7f);
+    return Buffer.from(bytes);
+  }
+
+  private hash256(data: Buffer): string {
+    const hash1 = sha256(data);
+    const hash2 = sha256(hash1);
+    return Buffer.from(hash2).toString('hex');
+  }
+
+  private async rpc(method: string, params: any): Promise<any> {
+    const response = await axios.post(this.rpcUrl, {
+      method,
+      params,
+      jsonrpc: '2.0',
+      id: 1,
+    });
+    return response.data.result;
+  }
+
+  getRequiredConfirmations(): number {
+    return 19; // TRON typically needs 19 confirmations
+  }
+}
+
+/**
  * Dogecoin provider - similar to Bitcoin but with different network params
  * Note: Full transaction sending not yet implemented, address generation works
  */
@@ -1953,6 +2243,8 @@ export function getProvider(
       return new SolanaProvider(rpcUrl);
     case 'BNB':
       return new BnbProvider(rpcUrl);
+    case 'TRON':
+      return new TronProvider(rpcUrl);
     case 'DOGE':
       return new DogecoinProvider(rpcUrl);
     case 'XRP':
@@ -1977,7 +2269,8 @@ export function getRpcUrl(chain: BlockchainType): string {
     DOGE: process.env.DOGE_RPC_URL || 'https://api.blockcypher.com/v1/doge/main',
     XRP: process.env.XRP_RPC_URL || 'https://xrplcluster.com',
     ADA: process.env.ADA_RPC_URL || 'https://cardano-mainnet.blockfrost.io/api/v0',
-    BNB: process.env.BNB_RPC_URL || 'https://bsc-dataseed.binance.org',
+    BNB: process.env.BNB_RPC_URL || 'https://go.getblock.io/your-bnb-access-token/bsc/mainnet',
+    TRON: process.env.TRON_RPC_URL || 'https://api.trongrid.io',
     USDT: process.env.ETHEREUM_RPC_URL || 'https://eth.llamarpc.com',
     USDT_ETH: process.env.ETHEREUM_RPC_URL || 'https://eth.llamarpc.com',
     USDT_POL: process.env.POLYGON_RPC_URL || 'https://polygon-rpc.com',

@@ -5,7 +5,7 @@
  * to avoid external dependency resolution issues in production builds.
  *
  * For production use, install the full SDK:
- * pnpm add @profullstack/tempesttouch
+ * pnpm add tempesttouch
  *
  * @module @/lib/sdk
  */

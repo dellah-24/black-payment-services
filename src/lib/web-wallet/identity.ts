@@ -10,14 +10,14 @@ import { secp256k1 } from '@noble/curves/secp256k1';
 /** Supported chains for web wallet */
 export type WalletChain =
   | 'BTC' | 'BCH' | 'ETH' | 'POL' | 'SOL'
-  | 'DOGE' | 'XRP' | 'ADA' | 'BNB' | 'LN'
+  | 'DOGE' | 'XRP' | 'ADA' | 'BNB' | 'TRON' | 'LN'
   | 'USDC_ETH' | 'USDC_POL' | 'USDC_SOL' | 'USDC_BASE'
   | 'USDT_ETH' | 'USDT_POL' | 'USDT_SOL';
 
 /** All valid chain values */
 export const VALID_CHAINS: WalletChain[] = [
   'BTC', 'BCH', 'ETH', 'POL', 'SOL',
-  'DOGE', 'XRP', 'ADA', 'BNB', 'LN',
+  'DOGE', 'XRP', 'ADA', 'BNB', 'TRON', 'LN',
   'USDC_ETH', 'USDC_POL', 'USDC_SOL', 'USDC_BASE',
   'USDT_ETH', 'USDT_POL', 'USDT_SOL',
 ];
@@ -33,6 +33,7 @@ export const DERIVATION_PATHS: Record<string, string> = {
   XRP: "m/44'/144'/0'/0",
   ADA: "m/1852'/1815'/0'/0'",
   BNB: "m/44'/60'/0'/0",
+  TRON: "m/44'/195'/0'/0",
   LN: "m/535'/0'",
   USDC_ETH: "m/44'/60'/0'/0",
   USDC_POL: "m/44'/60'/0'/0",
@@ -123,6 +124,9 @@ export function validateAddress(address: string, chain: WalletChain): boolean {
     case 'ADA':
       // Cardano Shelley address: starts with addr1
       return /^addr1[a-z0-9]{50,100}$/.test(address);
+    case 'TRON':
+      // TRON base58 address: starts with T, 33-34 chars
+      return /^T[a-km-zA-HJ-NP-Z1-9]{33}$/.test(address);
     case 'LN':
       // Lightning wallet identity is a compressed secp256k1 node pubkey
       return validateSecp256k1PublicKey(address);
@@ -196,6 +200,8 @@ export function buildDerivationPath(chain: WalletChain, index: number): string {
       return `m/44'/144'/0'/0/${index}`;
     case 'ADA':
       return `m/1852'/1815'/0'/0'/${index}'`;
+    case 'TRON':
+      return `m/44'/195'/0'/0/${index}`;
     case 'LN':
       return `m/535'/${index}'`;
     default:

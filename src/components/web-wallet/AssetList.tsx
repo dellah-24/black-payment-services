@@ -161,6 +161,7 @@ function getSymbol(chain: string): string {
     USDC_ETH: 'USDC',
     USDC_POL: 'USDC',
     USDC_SOL: 'USDC',
+    TRON: 'TRX',
   };
   return map[chain] || chain;
 }
