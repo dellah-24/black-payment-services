@@ -1015,7 +1015,7 @@ async function fetchUSDCSOLHistory(
 }
 
 // ──────────────────────────────────────────────
-// DOGE Indexer (Blockcypher API - free, no key needed)
+// DOGE Indexer (GetBlock JSON-RPC recommended for production)
 // ──────────────────────────────────────────────
 
 async function fetchDOGEHistory(address: string): Promise<IndexedTransaction[]> {
@@ -1228,6 +1228,11 @@ async function fetchADAHistory(address: string): Promise<IndexedTransaction[]> {
     return [];
   }
 
+  // TODO: Migrate to GetBlock Cardano JSON-RPC endpoint
+  // GetBlock supports Cardano mainnet via JSON-RPC:
+  // https://go.getblock.io/your-cardano-access-token/ada/mainnet
+  // Replace Blockfrost REST calls with getblockcount, listtransactions, etc.
+
   try {
     // Get address transactions
     const resp = await fetch(
@@ -1397,7 +1402,7 @@ async function fetchBNBHistory(
 ): Promise<IndexedTransaction[]> {
   const results: IndexedTransaction[] = [];
 
-  // 1. Fetch native BNB transfers via Etherscan V2 API (chainid=56 for BSC)
+  // 1. Fetch native BNB transfers via GetBlock JSON-RPC or Etherscan V2 API
   const apiKey = process.env.BSCSCAN_API_KEY;
   if (apiKey) {
     const url = `https://api.etherscan.io/v2/api?chainid=56&module=account&action=txlist&address=${address}&startblock=0&endblock=99999999&page=1&offset=${MAX_TXS}&sort=desc&apikey=${apiKey}`;

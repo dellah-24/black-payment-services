@@ -363,23 +363,23 @@ async function checkSolanaTokenBalance(
  */
 async function checkDOGEBalance(address: string): Promise<BalanceResult> {
   try {
-    // Try Blockcypher first
-    const response = await fetch(`https://api.blockcypher.com/v1/doge/main/addrs/${address}/balance`);
-    if (response.ok) {
-      const data = await response.json();
-      const balance = (data.balance || 0) / 1e8;
-      return { balance };
+    const rpcUrl = process.env.DOGE_RPC_URL || 'https://go.getblock.io/your-dogecoin-access-token/doge/mainnet';
+    const response = await fetch(rpcUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        jsonrpc: '2.0',
+        method: 'getbalance',
+        params: [address],
+        id: 1,
+      }),
+    });
+    if (!response.ok) {
+      return { balance: 0 };
     }
-    // Fallback to dogechain
-    const fallbackResponse = await fetch(`https://dogechain.info/api/v1/address/balance/${address}`);
-    if (fallbackResponse.ok) {
-      const data = await fallbackResponse.json();
-      if (data.success === 1) {
-        const balance = parseFloat(data.balance || '0');
-        return { balance };
-      }
-    }
-    return { balance: 0 };
+    const data = await response.json();
+    const balance = parseFloat(data.result || '0');
+    return { balance };
   } catch (error) {
     console.error(`[Monitor] Error checking DOGE balance for ${address}:`, error);
     return { balance: 0 };
@@ -449,25 +449,23 @@ async function checkXRPBalance(address: string): Promise<BalanceResult> {
  */
 async function checkADABalance(address: string): Promise<BalanceResult> {
   try {
-    const blockfrostKey = process.env.BLOCKFROST_API_KEY;
-    if (!blockfrostKey) {
-      console.error('[Monitor] BLOCKFROST_API_KEY not configured for ADA');
-      return { balance: 0 };
-    }
-    const response = await fetch(`https://cardano-mainnet.blockfrost.io/api/v0/addresses/${address}`, {
-      headers: { 'project_id': blockfrostKey },
+    const rpcUrl = process.env.ADA_RPC_URL || 'https://go.getblock.io/your-cardano-access-token/ada/mainnet';
+    const response = await fetch(rpcUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        jsonrpc: '2.0',
+        method: 'getBalance',
+        params: [address],
+        id: 1,
+      }),
     });
-    if (response.status === 404) {
-      return { balance: 0 }; // Address not used yet
-    }
     if (!response.ok) {
       return { balance: 0 };
     }
     const data = await response.json();
-    // ADA is in lovelace (1 ADA = 1,000,000 lovelace)
-    // Find lovelace entry specifically (not native tokens)
-    const lovelaceEntry = data.amount?.find((a: { unit: string }) => a.unit === 'lovelace');
-    const lovelace = BigInt(lovelaceEntry?.quantity || '0');
+    // ADA balance in lovelace (1 ADA = 1,000,000 lovelace)
+    const lovelace = BigInt(data.result?.lovelace || data.result || '0');
     const balance = Number(lovelace) / 1e6;
     return { balance };
   } catch (error) {

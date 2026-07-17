@@ -117,14 +117,14 @@ export function toBCHLegacyAddress(address: string): string {
 export const RPC_ENDPOINTS: Record<string, string> = {
   BTC: process.env.BITCOIN_RPC_URL || 'https://blockstream.info/api',
   BCH: process.env.BCH_RPC_URL || 'https://rest.cryptoapis.io/blockchain-data/bitcoin-cash/mainnet',
-  ETH: process.env.ETHEREUM_RPC_URL || 'https://eth.llamarpc.com',
-  POL: process.env.POLYGON_RPC_URL || 'https://polygon-rpc.com',
-  SOL: process.env.NEXT_PUBLIC_SOLANA_RPC_URL || process.env.SOLANA_RPC_URL || 'https://api.mainnet-beta.solana.com',
-  BNB: process.env.BSC_RPC_URL || 'https://go.getblock.io/your-bnb-access-token/bsc/mainnet',
-  DOGE: process.env.DOGE_RPC_URL || 'https://rest.cryptoapis.io/blockchain-data/dogecoin/mainnet',
-  XRP: process.env.XRP_RPC_URL || 'https://xrplcluster.com',
-  ADA: process.env.ADA_RPC_URL || 'https://cardano-mainnet.blockfrost.io/api/v0',
-  BASE: process.env.BASE_RPC_URL || 'https://mainnet.base.org',
+  ETH: process.env.ETHEREUM_RPC_URL || 'https://go.getblock.io/your-ethereum-access-token/eth/mainnet',
+  POL: process.env.POLYGON_RPC_URL || 'https://go.getblock.io/your-polygon-access-token/polygon/mainnet',
+  SOL: process.env.NEXT_PUBLIC_SOLANA_RPC_URL || process.env.SOLANA_RPC_URL || 'https://go.getblock.io/your-solana-access-token/sol/mainnet',
+  BNB: process.env.BSC_RPC_URL || 'https://go.getblock.io/73e24c4873904777a5188ebb3abcb1a0/bsc/mainnet',
+  DOGE: process.env.DOGE_RPC_URL || 'https://go.getblock.io/your-dogecoin-access-token/doge/mainnet',
+  XRP: process.env.XRP_RPC_URL || 'https://go.getblock.io/your-xrp-access-token/xrp/mainnet',
+  ADA: process.env.ADA_RPC_URL || 'https://go.getblock.io/your-cardano-access-token/ada/mainnet',
+  BASE: process.env.BASE_RPC_URL || 'https://go.getblock.io/your-base-access-token/base/mainnet',
 };
 
 const EVM_TOKENS = {

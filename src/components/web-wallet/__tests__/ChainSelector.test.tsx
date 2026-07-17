@@ -13,9 +13,9 @@ describe('ChainSelector', () => {
     const select = screen.getByRole('combobox');
     expect(select).toBeInTheDocument();
 
-    // Should have "Select chain" + 17 chain options (including LN, USDC_BASE)
+    // Should have "Select chain" + 18 chain options (including LN, USDC_BASE, TRON)
     const options = screen.getAllByRole('option');
-    expect(options.length).toBe(18); // 1 placeholder + 17 derivable chains
+    expect(options.length).toBe(19); // 1 placeholder + 18 derivable chains
   });
 
   it('should render with label', () => {

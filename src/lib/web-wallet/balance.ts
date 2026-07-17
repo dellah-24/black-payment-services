@@ -42,17 +42,17 @@ export interface WalletBalanceSummary {
 
 function getRpcEndpoints(): Record<string, string> {
   return {
-    BTC: process.env.BITCOIN_RPC_URL || 'https://blockstream.info/api',
-    BCH: process.env.BCH_RPC_URL || 'https://rest.cryptoapis.io/blockchain-data/bitcoin-cash/mainnet',
-    ETH: process.env.ETHEREUM_RPC_URL || 'https://eth.llamarpc.com',
-    POL: process.env.POLYGON_RPC_URL || 'https://polygon-rpc.com',
-    SOL: process.env.NEXT_PUBLIC_SOLANA_RPC_URL || process.env.SOLANA_RPC_URL || 'https://api.mainnet-beta.solana.com',
-    BNB: process.env.BNB_RPC_URL || 'https://go.getblock.io/your-bnb-access-token/bsc/mainnet',
-    BASE: process.env.BASE_RPC_URL || 'https://mainnet.base.org',
-    DOGE: process.env.DOGE_RPC_URL || 'https://dogechain.info/api/v1',
-    XRP: process.env.XRP_RPC_URL || 'https://s1.ripple.com:51234',
-    ADA: process.env.ADA_RPC_URL || 'https://cardano-mainnet.blockfrost.io/api/v0',
-    TRON: process.env.TRON_RPC_URL || 'https://api.trongrid.io',
+    BTC: process.env.BITCOIN_RPC_URL || 'https://go.getblock.io/your-bitcoin-access-token/btc/mainnet',
+    BCH: process.env.BCH_RPC_URL || 'https://go.getblock.io/your-bitcoin-cash-access-token/bch/mainnet',
+    ETH: process.env.ETHEREUM_RPC_URL || 'https://go.getblock.io/your-ethereum-access-token/eth/mainnet',
+    POL: process.env.POLYGON_RPC_URL || 'https://go.getblock.io/your-polygon-access-token/polygon/mainnet',
+    SOL: process.env.NEXT_PUBLIC_SOLANA_RPC_URL || process.env.SOLANA_RPC_URL || 'https://go.getblock.io/your-solana-access-token/sol/mainnet',
+    BNB: process.env.BNB_RPC_URL || 'https://go.getblock.io/73e24c4873904777a5188ebb3abcb1a0/bsc/mainnet',
+    BASE: process.env.BASE_RPC_URL || 'https://go.getblock.io/your-base-access-token/base/mainnet',
+    DOGE: process.env.DOGE_RPC_URL || 'https://go.getblock.io/your-dogecoin-access-token/doge/mainnet',
+    XRP: process.env.XRP_RPC_URL || 'https://go.getblock.io/your-xrp-access-token/xrp/mainnet',
+    ADA: process.env.ADA_RPC_URL || 'https://go.getblock.io/your-cardano-access-token/ada/mainnet',
+    TRON: process.env.TRON_RPC_URL || 'https://go.getblock.io/7e0d51e2a72b49d189d7f3e45008411f/tron/mainnet',
   };
 }
 
