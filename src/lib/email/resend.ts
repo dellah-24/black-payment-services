@@ -81,7 +81,7 @@ export async function sendEmail(input: SendEmailInput): Promise<SendEmailResult>
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: input.from || 'TempestTouch <noreply@tempesttouch.com>',
+        from: input.from || 'Tempest Touch <noreply@tempesttouch.com>',
         to: [input.to],
         subject: input.subject,
         html: input.html,
