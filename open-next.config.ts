@@ -2,9 +2,10 @@ import { defineCloudflareConfig } from "@opennextjs/cloudflare";
 
 export default defineCloudflareConfig({
   // The app uses Node.js built-ins (crypto, stream, async_hooks, fs, path, ...)
-  // so we rely on the Node.js runtime via `nodejs_compat`, which is set in
-  // wrangler.toml and applied when deploying as a Cloudflare Worker (the
-  // OpenNext for Cloudflare default). Do NOT deploy as a Pages Functions
-  // `_worker.js` — the Pages build pipeline ignores `compatibility_flags`
-  // from wrangler.toml, causing "Could not resolve 'async_hooks'/'fs'/...".
+  // so we rely on the Node.js runtime via `nodejs_compat`. For the live
+  // Cloudflare **Pages** project, `nodejs_compat` is applied via the Pages
+  // project's compatibility settings (Dashboard → Settings → Functions →
+  // Compatibility flags), NOT wrangler.toml. Keep that flag enabled on the
+  // project. `scripts/prepare-pages.mjs` (run by `pnpm run build:pages`) copies
+  // the OpenNext worker runtime into `.open-next/assets/_worker.js` for Pages.
 });

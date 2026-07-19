@@ -5,7 +5,7 @@
 > **Package Manager**: pnpm 10.32.1
 > **Node Version**: >= 20.9.0
 > **Analysis Date**: 2026-07-13
-> **Deployment Target**: Cloudflare Workers (OpenNext for Cloudflare)
+> **Deployment Target**: Cloudflare Pages (OpenNext for Cloudflare)
 
 ---
 
@@ -17,13 +17,12 @@ The `GET https://blackpayments.co.zw/ 500 (Internal Server Error)` and favicon 5
 
 | Setting | Value | Source |
 |---------|-------|--------|
-| Platform | Cloudflare Workers (OpenNext for Cloudflare) | [`wrangler.toml`](wrangler.toml:1) |
-| Worker Entry | `.open-next/worker.js` | [`wrangler.toml`](wrangler.toml:2) |
-| Static Assets | `.open-next/assets` (ASSETS binding) | [`wrangler.toml`](wrangler.toml:30) |
-| Compatibility | `nodejs_compat` | [`wrangler.toml`](wrangler.toml:4) |
+| Platform | Cloudflare Pages (OpenNext for Cloudflare) | [`wrangler.toml`](wrangler.toml:1) |
+| Build Output | `.open-next/assets` (`pages_build_output_dir`) | [`wrangler.toml`](wrangler.toml:36) |
+| Pages Functions | `.open-next/assets/_worker.js` (from `prepare-pages.mjs`) | [`scripts/prepare-pages.mjs`](scripts/prepare-pages.mjs:1) |
+| Compatibility | `nodejs_compat` (set on Pages project, not wrangler.toml) | [`wrangler.toml`](wrangler.toml:4) |
 | Adapter | `@opennextjs/cloudflare` | [`open-next.config.ts`](open-next.config.ts:1) |
-| Build Script | `opennextjs-cloudflare build` | [`package.json`](package.json:33) |
-| Deploy Script | `opennextjs-cloudflare deploy` (→ `wrangler deploy`) | [`package.json`](package.json:34) |
+| Build Script | `opennextjs-cloudflare build && node scripts/prepare-pages.mjs` | [`package.json`](package.json:33) |
 
 ### Primary Suspects (Worker Crash on Every Request)
 
