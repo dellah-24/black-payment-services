@@ -27,7 +27,13 @@ compatibility_flags = ["nodejs_compat"]
 # (3 MiB) will fail at "Failed to publish your Worker".
 
 # Static assets are served through the auto-provided `ASSETS` binding.
-assets = { directory = ".open-next/assets", binding = "ASSETS" }
+#
+# `run_worker_first = true` is REQUIRED for OpenNext: it makes the Worker
+# (Next.js routing) handle every request and serve static assets via the
+# OpenNext asset-resolver. Without it, Cloudflare serves static assets
+# directly and bypasses the Worker, so SSR routes like `/` have no static
+# `index.html` and return 404 ("page can't be found").
+assets = { directory = ".open-next/assets", binding = "ASSETS", run_worker_first = true }
 
 # Uncomment and set if you need environment variables / secrets at build/runtime.
 # [vars]
