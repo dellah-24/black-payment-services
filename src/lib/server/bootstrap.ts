@@ -15,8 +15,9 @@ function validateProductionConfig() {
   const missing: string[] = [];
 
   // Minimal critical secrets for production
+  // RESEND_API_KEY is intentionally omitted: the email module falls back
+  // to Mailgun when Resend is not configured, so it is not a hard requirement.
   if (!hasSecret('JWT_SECRET')) missing.push('JWT_SECRET');
-  if (!hasSecret('RESEND_API_KEY')) missing.push('RESEND_API_KEY');
 
   if (missing.length > 0) {
     const message = `Missing required secrets in production: ${missing.join(', ')}`;
@@ -33,4 +34,8 @@ export function bootstrapServer(): void {
 }
 
 // Run on import for convenience in API routes and server-only modules
-bootstrapServer();
+// Avoid running during Next.js build phase to prevent build-time secret checks
+const __IS_NEXT_BUILD__ = process.env.NEXT_PHASE === 'phase-production-build';
+if (!__IS_NEXT_BUILD__) {
+  bootstrapServer();
+}
