@@ -1,20 +1,37 @@
 name = "black-payment-services"
+main = ".open-next/worker.js"
 compatibility_date = "2025-06-01"
 compatibility_flags = ["nodejs_compat"]
 
-# Cloudflare Pages deployment.
-# OpenNext Cloudflare builds a Worker (`.open-next/worker.js`) plus static
-# assets (`.open-next/assets`). Cloudflare Pages deploys the contents of
-# `pages_build_output_dir` and uses a `_worker.js` inside it as the
-# Pages Functions worker that handles every request (API routes + SSR),
-# serving static files through the auto-provided `ASSETS` binding.
-# See scripts/prepare-pages.mjs which copies the ENTIRE OpenNext worker
-# runtime (worker.js + its sibling modules: cloudflare/, .build/, middleware/,
-# server-functions/) into `.open-next/assets/_worker.js` after
-# `opennextjs-cloudflare build`, so every relative import resolves next to it.
+# Cloudflare Workers deployment (OpenNext for Cloudflare).
+#
+# OpenNext for Cloudflare produces a Cloudflare Worker (`.open-next/worker.js`)
+# plus static assets (`.open-next/assets`). We deploy it as a **Worker** (not a
+# Pages Functions `_worker.js`) so that `compatibility_flags = ["nodejs_compat"]`
+# is reliably applied by `wrangler deploy`.
+#
+# IMPORTANT: The previous Pages Functions deployment failed at upload time with
+# "Could not resolve 'async_hooks' / 'fs' / 'path' / 'crypto' ..." because the
+# Cloudflare Pages build pipeline (bundled wrangler 3.114.17) does NOT apply the
+# `nodejs_compat` compatibility flag from wrangler.toml to Pages Functions. The
+# app relies on Node.js built-ins (crypto, stream, async_hooks, fs, path, ...)
+# via the Node.js runtime, so `nodejs_compat` is required. Deploying as a Worker
+# makes the flag take effect.
+#
+# Deploy with: `pnpm build:worker && pnpm deploy`
+# (or `pnpm opennextjs-cloudflare build && pnpm opennextjs-cloudflare deploy`)
 #
 # NOTE: The bundled OpenNext worker (worker.js + Next.js server handler) is
 # larger than 3 MiB, so deploying requires the Cloudflare **Workers Paid** plan
 # ($5/mo) which raises the Worker script size limit to 10 MiB. The Free plan
-# (3 MiB) will fail at "Failed to publish your Function".
-pages_build_output_dir = ".open-next/assets"
+# (3 MiB) will fail at "Failed to publish your Worker".
+
+# Static assets are served through the auto-provided `ASSETS` binding.
+assets = { directory = ".open-next/assets", binding = "ASSETS" }
+
+# Uncomment and set if you need environment variables / secrets at build/runtime.
+# [vars]
+# EXAMPLE = "value"
+
+# [observability]
+# enabled = true

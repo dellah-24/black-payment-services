@@ -28,9 +28,11 @@
     "version:major": "node scripts/version-bump.js major",
     "plugins:sync-sdk": "./scripts/sync-plugin-sdk.sh",
     "plugins:build-zips": "./scripts/build-plugin-zips.sh",
-    "opennext": "opennextjs-cloudflare build && node scripts/prepare-pages.mjs",
-    "cf:build": "opennextjs-cloudflare build && node scripts/prepare-pages.mjs",
-    "build:pages": "opennextjs-cloudflare build && node scripts/prepare-pages.mjs"
+    "opennext": "opennextjs-cloudflare build",
+    "cf:build": "opennextjs-cloudflare build",
+    "build:pages": "opennextjs-cloudflare build",
+    "deploy": "opennextjs-cloudflare deploy",
+    "preview": "opennextjs-cloudflare preview"
   },
   "dependencies": {
     "@coinbase/wallet-sdk": "^4.3.7",
