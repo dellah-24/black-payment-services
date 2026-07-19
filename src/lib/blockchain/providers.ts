@@ -1044,8 +1044,7 @@ export function hexToWIF(hexPrivateKey: string, compressed: boolean = true): str
  */
 export function cashAddrToLegacy(cashAddr: string): string {
   // Delegate to shared utility to avoid duplication and ensure consistency
-  const { cashAddrToLegacy: toLegacy } = require('@/lib/bitcoin/bch-address');
-  return toLegacy(cashAddr);
+  return bchCashAddrToLegacy(cashAddr);
 }
 
 /**

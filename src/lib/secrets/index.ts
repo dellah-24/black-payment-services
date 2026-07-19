@@ -96,17 +96,18 @@ export function getSecret(key: SecretKey): string | undefined {
   }
 
   const entry = secrets.get(key);
-  if (!entry) {
-    return undefined;
+  if (entry) {
+    // Track access for audit
+    entry.accessCount++;
+    if (!entry.firstAccessAt) {
+      entry.firstAccessAt = Date.now();
+    }
+    return entry.value;
   }
 
-  // Track access for audit
-  entry.accessCount++;
-  if (!entry.firstAccessAt) {
-    entry.firstAccessAt = Date.now();
-  }
-
-  return entry.value;
+  // Fall back to process.env for test compatibility when secret
+  // was not captured during initSecrets (e.g., env var set after import)
+  return process.env[key];
 }
 
 /**

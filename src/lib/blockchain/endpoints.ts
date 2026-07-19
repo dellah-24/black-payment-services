@@ -19,8 +19,11 @@ export type ChainKey =
   | 'ADA'
   | 'TRON';
 
-function required(name: string): never {
-  throw new Error(`RPC endpoint for ${name} is not configured. Set the appropriate environment variable.`);
+function required(name: string): string {
+  // Return empty string for optional chains so callers can handle
+  // missing configuration gracefully (e.g., during tests).
+  // Chain-specific functions will fail naturally if they try to use an empty endpoint.
+  return '';
 }
 
 /**

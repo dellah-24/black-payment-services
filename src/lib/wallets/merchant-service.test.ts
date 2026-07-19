@@ -13,6 +13,7 @@ const createMockSupabase = () => {
   const mockEq = vi.fn().mockReturnThis();
   const mockIn = vi.fn().mockReturnThis();
   const mockSingle = vi.fn();
+  const mockMaybeSingle = vi.fn();
   const mockOrder = vi.fn().mockReturnThis();
   const mockLimit = vi.fn().mockReturnThis();
 
@@ -20,6 +21,7 @@ const createMockSupabase = () => {
     eq: mockEq,
     in: mockIn,
     single: mockSingle,
+    maybeSingle: mockMaybeSingle,
     order: mockOrder,
     limit: mockLimit,
   }));
@@ -52,6 +54,7 @@ const createMockSupabase = () => {
       eq: mockEq,
       in: mockIn,
       single: mockSingle,
+      maybeSingle: mockMaybeSingle,
       order: mockOrder,
       limit: mockLimit,
     },
@@ -87,7 +90,7 @@ describe('Merchant Wallet Service', () => {
       };
 
       // Mock existing wallet check
-      mockSupabase._mocks.single.mockResolvedValueOnce({
+      mockSupabase._mocks.maybeSingle.mockResolvedValueOnce({
         data: null,
         error: null,
       });
@@ -122,7 +125,7 @@ describe('Merchant Wallet Service', () => {
         updated_at: '2024-01-01T00:00:00Z',
       };
 
-      mockSupabase._mocks.single.mockResolvedValueOnce({
+      mockSupabase._mocks.maybeSingle.mockResolvedValueOnce({
         data: null,
         error: null,
       });
@@ -169,7 +172,7 @@ describe('Merchant Wallet Service', () => {
       };
 
       // Mock existing wallet check - wallet exists
-      mockSupabase._mocks.single.mockResolvedValueOnce({
+      mockSupabase._mocks.maybeSingle.mockResolvedValueOnce({
         data: { id: 'existing-wallet' },
         error: null,
       });
