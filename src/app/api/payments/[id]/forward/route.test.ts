@@ -454,6 +454,17 @@ describe('Payment Forward API', () => {
           forwardedAt: '2024-01-01T00:00:00Z',
         });
 
+        vi.mocked(supabaseAdmin.from).mockReturnValue({
+          select: vi.fn().mockReturnValue({
+            eq: vi.fn().mockReturnValue({
+              single: vi.fn().mockResolvedValue({
+                data: { business_id: 'biz-1', businesses: { merchant_id: 'user-123' } },
+                error: null,
+              }),
+            }),
+          }),
+        } as any);
+
         const request = new NextRequest('http://localhost/api/payments/123/forward', {
           method: 'GET',
           headers: {
@@ -496,6 +507,17 @@ describe('Payment Forward API', () => {
       it('should return 500 on unexpected error', async () => {
         vi.mocked(verifyToken).mockReturnValue({ sub: 'user-123' });
         vi.mocked(getForwardingStatus).mockRejectedValue(new Error('Database error'));
+
+        vi.mocked(supabaseAdmin.from).mockReturnValue({
+          select: vi.fn().mockReturnValue({
+            eq: vi.fn().mockReturnValue({
+              single: vi.fn().mockResolvedValue({
+                data: { business_id: 'biz-1', businesses: { merchant_id: 'user-123' } },
+                error: null,
+              }),
+            }),
+          }),
+        } as any);
 
         const request = new NextRequest('http://localhost/api/payments/123/forward', {
           method: 'GET',

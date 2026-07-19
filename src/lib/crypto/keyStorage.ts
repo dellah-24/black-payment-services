@@ -66,19 +66,9 @@ export async function storeKey(
 
   const masterKey = getMasterKey();
   const now = new Date();
-  
+
   if (!masterKey) {
-    // No encryption key configured — store in plaintext
-    const storedKey: StoredKey = {
-      id,
-      encryptedKey: key,
-      salt: '',
-      createdAt: now,
-      updatedAt: now,
-      metadata,
-    };
-    keyStore.set(id, storedKey);
-    return storedKey;
+    throw new Error('MASTER_ENCRYPTION_KEY environment variable is not set');
   }
 
   const salt = generateSalt();
@@ -115,8 +105,7 @@ export async function retrieveKey(id: string): Promise<string | null> {
 
   const masterKey = getMasterKey();
   if (!masterKey) {
-    // No encryption key configured — return plaintext
-    return storedKey.encryptedKey;
+    throw new Error('MASTER_ENCRYPTION_KEY is required to retrieve stored keys');
   }
 
   const derivedKey = deriveKey(masterKey, storedKey.salt);

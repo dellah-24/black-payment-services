@@ -582,7 +582,7 @@ describe('PublicPaymentPage', () => {
 
       await waitFor(() => {
         // There are multiple Tempest Touch elements (header and footer)
-        const tempesttouchElements = screen.getAllByText(/tempesttouch/i);
+        const tempesttouchElements = screen.getAllByText(/tempest touch/i);
         expect(tempesttouchElements.length).toBeGreaterThan(0);
       });
     });

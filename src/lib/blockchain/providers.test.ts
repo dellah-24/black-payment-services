@@ -812,22 +812,22 @@ describe('Blockchain Providers', () => {
   describe('getRpcUrl', () => {
     it('should return default RPC URL for BTC', () => {
       const url = getRpcUrl('BTC');
-      expect(url).toBe('https://blockchain.info');
+      expect(url).toBe('https://go.getblock.io/your-bitcoin-access-token/btc/mainnet');
     });
 
     it('should return default RPC URL for ETH', () => {
       const url = getRpcUrl('ETH');
-      expect(url).toBe('https://eth.llamarpc.com');
+      expect(url).toBe('https://go.getblock.io/your-ethereum-access-token/eth/mainnet');
     });
 
     it('should return default RPC URL for POL', () => {
       const url = getRpcUrl('POL');
-      expect(url).toBe('https://polygon-rpc.com');
+      expect(url).toBe('https://go.getblock.io/your-polygon-access-token/polygon/mainnet');
     });
 
     it('should return default RPC URL for SOL', () => {
       const url = getRpcUrl('SOL');
-      expect(url).toBe('https://api.mainnet-beta.solana.com');
+      expect(url).toBe('https://go.getblock.io/your-solana-access-token/sol/mainnet');
     });
 
     it('should use environment variable if set', () => {

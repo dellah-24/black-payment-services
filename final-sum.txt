@@ -1,0 +1,3 @@
+[31mNo test files found, exiting with code 1
+[2minclude: [22m[33msrc/**/*.test.{ts,tsx}[2m, [22mpackages/sdk/test/**/*.test.js[39m
+[2mexclude:  [22m[33m**/node_modules/**[2m, [22m**/dist/**[2m, [22m**/cypress/**[2m, [22m**/.{idea,git,cache,output,temp}/**[2m, [22m**/{karma,rollup,webpack,vite,vitest,jest,ava,babel,nyc,cypress,tsup,build}.config.*[2m, [22msrc/lib/blockchain/wallets.test.ts[2m, [22msrc/lib/blockchain/monitor.test.ts[2m, [22msrc/lib/wallets/system-wallet.test.ts[2m, [22msrc/lib/payments/service.test.ts[2m, [22msrc/lib/payments/service.expiration.test.ts[2m, [22msrc/app/api/payments/route.test.ts[2m, [22msrc/app/api/cron/monitor-payments/route.test.ts[39m

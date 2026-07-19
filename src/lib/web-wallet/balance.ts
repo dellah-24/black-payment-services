@@ -12,6 +12,7 @@ import { decryptLnKey } from '@/lib/lightning/key-encryption';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { WalletChain } from './identity';
 import { getBalance as getLnbitsBalance } from '@/lib/lightning/lnbits';
+import { getRpcEndpoints } from '@/lib/blockchain/endpoints';
 
 /** Truncate an address for safe logging */
 function truncAddr(addr: string): string {
@@ -40,21 +41,6 @@ export interface WalletBalanceSummary {
 // RPC Endpoints
 // ──────────────────────────────────────────────
 
-function getRpcEndpoints(): Record<string, string> {
-  return {
-    BTC: process.env.BITCOIN_RPC_URL || 'https://go.getblock.io/your-bitcoin-access-token/btc/mainnet',
-    BCH: process.env.BCH_RPC_URL || 'https://go.getblock.io/your-bitcoin-cash-access-token/bch/mainnet',
-    ETH: process.env.ETHEREUM_RPC_URL || 'https://go.getblock.io/your-ethereum-access-token/eth/mainnet',
-    POL: process.env.POLYGON_RPC_URL || 'https://go.getblock.io/your-polygon-access-token/polygon/mainnet',
-    SOL: process.env.NEXT_PUBLIC_SOLANA_RPC_URL || process.env.SOLANA_RPC_URL || 'https://go.getblock.io/your-solana-access-token/sol/mainnet',
-    BNB: process.env.BNB_RPC_URL || 'https://go.getblock.io/73e24c4873904777a5188ebb3abcb1a0/bsc/mainnet',
-    BASE: process.env.BASE_RPC_URL || 'https://go.getblock.io/your-base-access-token/base/mainnet',
-    DOGE: process.env.DOGE_RPC_URL || 'https://go.getblock.io/your-dogecoin-access-token/doge/mainnet',
-    XRP: process.env.XRP_RPC_URL || 'https://go.getblock.io/your-xrp-access-token/xrp/mainnet',
-    ADA: process.env.ADA_RPC_URL || 'https://go.getblock.io/your-cardano-access-token/ada/mainnet',
-    TRON: process.env.TRON_RPC_URL || 'https://go.getblock.io/7e0d51e2a72b49d189d7f3e45008411f/tron/mainnet',
-  };
-}
 
 // USDC contract addresses
 const USDC_CONTRACTS: Record<string, string> = {

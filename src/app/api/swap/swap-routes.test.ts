@@ -26,6 +26,11 @@ vi.mock('@supabase/supabase-js', () => ({
   })),
 }));
 
+// Mock JWT auth
+vi.mock('@/lib/auth/jwt', () => ({
+  verifyToken: vi.fn(() => ({ sub: 'test-user' })),
+}));
+
 // Mock the changenow module
 vi.mock('@/lib/swap/changenow', () => ({
   getSwapQuote: vi.fn(),
@@ -51,6 +56,7 @@ import * as changenow from '@/lib/swap/changenow';
 describe('Swap API Routes', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    process.env.JWT_SECRET = 'test-secret';
   });
 
   afterEach(() => {
@@ -153,6 +159,7 @@ describe('Swap API Routes', () => {
     it('should return 400 if missing parameters', async () => {
       const request = new NextRequest('http://localhost/api/swap/create', {
         method: 'POST',
+        headers: { authorization: 'Bearer test-token' },
         body: JSON.stringify({ from: 'BTC' }),
       });
       const response = await createSwap(request);
@@ -165,6 +172,7 @@ describe('Swap API Routes', () => {
     it('should return 400 for unsupported coin', async () => {
       const request = new NextRequest('http://localhost/api/swap/create', {
         method: 'POST',
+        headers: { authorization: 'Bearer test-token' },
         body: JSON.stringify({
           from: 'SHIB',
           to: 'ETH',
@@ -183,6 +191,7 @@ describe('Swap API Routes', () => {
     it('should return 400 for invalid settle address', async () => {
       const request = new NextRequest('http://localhost/api/swap/create', {
         method: 'POST',
+        headers: { authorization: 'Bearer test-token' },
         body: JSON.stringify({
           from: 'BTC',
           to: 'ETH',
@@ -215,6 +224,7 @@ describe('Swap API Routes', () => {
 
       const request = new NextRequest('http://localhost/api/swap/create', {
         method: 'POST',
+        headers: { authorization: 'Bearer test-token' },
         body: JSON.stringify({
           from: 'BTC',
           to: 'ETH',

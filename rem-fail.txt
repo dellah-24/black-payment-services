@@ -1,0 +1,38 @@
+[90mstderr[2m | src/app/pay/[id]/page.test.tsx[2m > [22m[2mPublicPaymentPage[2m > [22m[2mBusiness Display[2m > [22m[2mshould not fail if business fetch fails
+[90mstdout[2m | src/app/pay/[id]/page.test.tsx[2m > [22m[2mPublicPaymentPage[2m > [22m[2mBusiness Display[2m > [22m[2mshould not fail if business fetch fails
+[90mstdout[2m | src/app/pay/[id]/page.test.tsx[2m > [22m[2mPublicPaymentPage[2m > [22m[2mBusiness Display[2m > [22m[2mshould not fail if business fetch fails
+       [32m✓[39m should not fail if business fetch fails[32m 62[2mms[22m[39m
+[41m[1m FAIL [22m[49m src/lib/crypto/keyStorage.test.ts[2m > [22mKey Storage Service[2m > [22mstoreKey[2m > [22mshould throw error when master key is not set
+[41m[1m FAIL [22m[49m src/lib/blockchain/providers.test.ts[2m > [22mBlockchain Providers[2m > [22mgetRpcUrl[2m > [22mshould return default RPC URL for BTC
+[41m[1m FAIL [22m[49m src/lib/blockchain/providers.test.ts[2m > [22mBlockchain Providers[2m > [22mgetRpcUrl[2m > [22mshould return default RPC URL for ETH
+[41m[1m FAIL [22m[49m src/lib/blockchain/providers.test.ts[2m > [22mBlockchain Providers[2m > [22mgetRpcUrl[2m > [22mshould return default RPC URL for POL
+[41m[1m FAIL [22m[49m src/lib/blockchain/providers.test.ts[2m > [22mBlockchain Providers[2m > [22mgetRpcUrl[2m > [22mshould return default RPC URL for SOL
+[41m[1m FAIL [22m[49m src/lib/email/resend.test.ts[2m > [22mResend Email Service[2m > [22msendEmail[2m > [22mshould send correct JSON body
+[41m[1m FAIL [22m[49m src/lib/reputation/reputation.test.ts[2m > [22mSDK reputation.js methods[2m > [22msubmitReceipt sends POST request
+[41m[1m FAIL [22m[49m src/lib/reputation/reputation.test.ts[2m > [22mSDK reputation.js methods[2m > [22mgetReputation sends GET request with encoded DID
+[41m[1m FAIL [22m[49m src/lib/reputation/reputation.test.ts[2m > [22mSDK reputation.js methods[2m > [22mgetCredential sends GET request
+[41m[1m FAIL [22m[49m src/lib/reputation/reputation.test.ts[2m > [22mSDK reputation.js methods[2m > [22mverifyCredential sends POST request
+[41m[1m FAIL [22m[49m src/lib/reputation/reputation.test.ts[2m > [22mSDK reputation.js methods[2m > [22mgetRevocationList sends GET request
+[41m[1m FAIL [22m[49m src/lib/reputation/reputation.test.ts[2m > [22mSDK reputation.js methods[2m > [22mshould handle API errors gracefully
+[41m[1m FAIL [22m[49m src/lib/reputation/reputation.test.ts[2m > [22mSDK reputation.js methods[2m > [22mgetMyDid sends GET request to /reputation/did/me
+[41m[1m FAIL [22m[49m src/lib/reputation/reputation.test.ts[2m > [22mSDK reputation.js methods[2m > [22mclaimDid sends POST request to /reputation/did/claim
+[41m[1m FAIL [22m[49m src/lib/reputation/reputation.test.ts[2m > [22mSDK reputation.js methods[2m > [22mlinkDid sends POST request with DID data
+[41m[1m FAIL [22m[49m src/lib/secrets/index.test.ts[2m > [22mSecrets Module[2m > [22mconvenience helpers[2m > [22mgetEncryptionKey[2m > [22mshould throw when encryption key is not set
+[41m[1m FAIL [22m[49m src/lib/secrets/index.test.ts[2m > [22mSecrets Module[2m > [22mconvenience helpers[2m > [22mgetMnemonic[2m > [22mshould return mnemonic when set
+[41m[1m FAIL [22m[49m src/lib/wallets/merchant-service.test.ts[2m > [22mMerchant Wallet Service[2m > [22mcreateMerchantWallet[2m > [22mshould create a merchant wallet successfully
+[41m[1m FAIL [22m[49m src/lib/wallets/merchant-service.test.ts[2m > [22mMerchant Wallet Service[2m > [22mcreateMerchantWallet[2m > [22mshould create wallet without label
+[41m[1m FAIL [22m[49m src/lib/wallets/merchant-service.test.ts[2m > [22mMerchant Wallet Service[2m > [22mcreateMerchantWallet[2m > [22mshould reject if wallet already exists
+[41m[1m FAIL [22m[49m src/lib/wallets/service.test.ts[2m > [22mWallet Service[2m > [22mcreateWallet[2m > [22mshould create a wallet successfully
+[41m[1m FAIL [22m[49m src/lib/wallets/service.test.ts[2m > [22mWallet Service[2m > [22mcreateWallet[2m > [22mshould reject if wallet already exists
+[41m[1m FAIL [22m[49m src/app/api/swap/swap-routes.test.ts[2m > [22mSwap API Routes[2m > [22mPOST /api/swap/create[2m > [22mshould return 400 if missing parameters
+[41m[1m FAIL [22m[49m src/app/api/swap/swap-routes.test.ts[2m > [22mSwap API Routes[2m > [22mPOST /api/swap/create[2m > [22mshould return 400 for unsupported coin
+[41m[1m FAIL [22m[49m src/app/api/swap/swap-routes.test.ts[2m > [22mSwap API Routes[2m > [22mPOST /api/swap/create[2m > [22mshould return 400 for invalid settle address
+[41m[1m FAIL [22m[49m src/app/api/swap/swap-routes.test.ts[2m > [22mSwap API Routes[2m > [22mPOST /api/swap/create[2m > [22mshould create swap on success
+[41m[1m FAIL [22m[49m src/app/pay/[id]/page.test.tsx[2m > [22mPublicPaymentPage[2m > [22mBranding[2m > [22mshould show Tempest Touch branding
+[41m[1m FAIL [22m[49m src/app/api/payments/[id]/forward/route.test.ts[2m > [22mPayment Forward API[2m > [22mGET /api/payments/[id]/forward[2m > [22mGet Forwarding Status[2m > [22mshould return forwarding status for valid request
+[41m[1m FAIL [22m[49m src/app/api/payments/[id]/forward/route.test.ts[2m > [22mPayment Forward API[2m > [22mGET /api/payments/[id]/forward[2m > [22mGet Forwarding Status[2m > [22mshould return 500 on unexpected error
+Warning: A vi.unmock("crypto") call in "D:/Pycharm projects/blackpayments wallet/src/lib/blockchain/providers.test.ts" is not at the top level of the module. Although it appears nested, it will be hoisted and executed before any tests run. Move it to the top level to reflect its actual execution order. This will become an error in a future version.
+[31m⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 29 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+[2m Test Files [22m [1m[31m10 failed[39m[22m[2m | [22m[1m[32m8 passed[39m[22m[90m (18)[39m
+[2m      Tests [22m [1m[31m29 failed[39m[22m[2m | [22m[1m[32m404 passed[39m[22m[90m (433)[39m
+[2m   Duration [22m 27.03s[2m (transform 8.08s, setup 34.20s, import 18.35s, tests 61.26s, environment 40.66s)[22m

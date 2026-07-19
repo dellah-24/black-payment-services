@@ -63,3 +63,11 @@ certs/
  
 # IDE files 
 .idea/ 
+ failfiles.txt
+final-sum.txt
+rem-err.txt
+rem-fail.txt
+cli-out.txt
+build*.log
+*.log
+

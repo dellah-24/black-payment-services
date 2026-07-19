@@ -37,6 +37,8 @@ const SECRET_KEYS = [
   'TATUM_API_KEY',
   'RESEND_API_KEY',
   'MAILGUN_API_KEY',
+  'DEFAULT_FROM_EMAIL',
+  'REPLY_TO_EMAIL',
 ] as const;
 
 type SecretKey = typeof SECRET_KEYS[number];
@@ -173,8 +175,12 @@ export function getWebhookSecret(): string | undefined {
 /**
  * Get encryption key. Returns undefined if not configured.
  */
-export function getEncryptionKey(): string | undefined {
-  return getSecret('ENCRYPTION_KEY') || process.env.ENCRYPTION_KEY;
+export function getEncryptionKey(): string {
+  const secret = getSecret('ENCRYPTION_KEY') || process.env.ENCRYPTION_KEY;
+  if (!secret) {
+    throw new Error('ENCRYPTION_KEY environment variable is required');
+  }
+  return secret;
 }
 
 /**
@@ -182,4 +188,18 @@ export function getEncryptionKey(): string | undefined {
  */
 export function getMnemonic(): string | undefined {
   return getSecret('TEMPESTTOUCH_MNEMONIC') || process.env.TEMPESTTOUCH_MNEMONIC;
+}
+
+/**
+ * Get default From email for outgoing messages. Returns undefined if not set.
+ */
+export function getDefaultFromEmail(): string | undefined {
+  return getSecret('DEFAULT_FROM_EMAIL') || process.env.DEFAULT_FROM_EMAIL;
+}
+
+/**
+ * Get default Reply-To email for outgoing messages. Returns undefined if not set.
+ */
+export function getReplyToEmail(): string | undefined {
+  return getSecret('REPLY_TO_EMAIL') || process.env.REPLY_TO_EMAIL;
 }

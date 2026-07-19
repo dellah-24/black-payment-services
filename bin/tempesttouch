@@ -35,7 +35,7 @@ import {
   getCardEscrowStatus,
   formatCardAmount 
 } from '../packages/sdk/src/card-payments.js';
-import { Tempest TouchClient } from '../packages/sdk/src/client.js';
+import { TempestTouchClient } from '../packages/sdk/src/client.js';
 import { execSync, spawn } from 'child_process';
 import { existsSync, unlinkSync, readFileSync } from 'fs';
 import { homedir } from 'os';

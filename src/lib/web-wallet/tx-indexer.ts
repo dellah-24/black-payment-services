@@ -41,20 +41,8 @@ export interface SyncResult {
 // RPC / API Endpoints (reuse from balance.ts)
 // ──────────────────────────────────────────────
 
-function getRpcEndpoints(): Record<string, string> {
-  return {
-    BTC: process.env.BITCOIN_RPC_URL || 'https://blockstream.info/api',
-    ETH: process.env.ETHEREUM_RPC_URL || 'https://eth.llamarpc.com',
-    POL: process.env.POLYGON_RPC_URL || 'https://polygon-rpc.com',
-    SOL:
-      process.env.NEXT_PUBLIC_SOLANA_RPC_URL ||
-      process.env.SOLANA_RPC_URL ||
-      'https://api.mainnet-beta.solana.com',
-    BNB: process.env.BSC_RPC_URL || 'https://go.getblock.io/your-bnb-access-token/bsc/mainnet',
-    BASE: process.env.BASE_RPC_URL || 'https://mainnet.base.org',
-    TRON: process.env.TRON_RPC_URL || 'https://api.trongrid.io',
-  };
-}
+// RPC Endpoints are centralized in '@/lib/blockchain/endpoints'
+import { getRpcEndpoints } from '@/lib/blockchain/endpoints';
 
 // USDC contract addresses (same as balance.ts)
 const USDC_CONTRACTS: Record<string, string> = {

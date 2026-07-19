@@ -14,11 +14,13 @@ const createMockSupabase = () => {
   const mockEq = vi.fn().mockReturnThis();
   const mockSingle = vi.fn();
   const mockOrder = vi.fn().mockReturnThis();
-  
+  const mockLimit = vi.fn().mockReturnThis();
+
   const mockSelect = vi.fn(() => ({
     eq: mockEq,
     single: mockSingle,
     order: mockOrder,
+    limit: mockLimit,
   }));
   
   const mockInsert = vi.fn(() => ({
@@ -49,6 +51,7 @@ const createMockSupabase = () => {
       eq: mockEq,
       single: mockSingle,
       order: mockOrder,
+      limit: mockLimit,
     },
   };
 };
