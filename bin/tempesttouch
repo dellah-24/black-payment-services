@@ -867,7 +867,7 @@ async function handleReputation(subCommand, args) {
     }
     case 'claim': {
       // Import and use the reputation claim functionality
-      const { Tempest TouchClient } = await import('../packages/sdk/src/client.js');
+      const { TempestTouchClient } = await import('../packages/sdk/src/client.js');
       const { claimDid, getMyDid } = await import('../packages/sdk/src/reputation.js');
       
       const apiKey = opts['api-key'] || process.env.TEMPESTTOUCH_API_KEY;
@@ -880,7 +880,7 @@ async function handleReputation(subCommand, args) {
       }
 
       try {
-        const client = new Tempest TouchClient({
+        const client = new TempestTouchClient({
           apiKey: apiKey || undefined,
           bearerToken: jwt || undefined,
           baseUrl: `${API_BASE}/api`,
@@ -957,12 +957,12 @@ Reputation Commands:
 
 // ── Card commands ───────────────────────────────────────────────────
 
-function getTempest TouchClient() {
+function getTempestTouchClient() {
   const apiKey = process.env.TEMPESTTOUCH_API_KEY;
   if (!apiKey) {
     throw new Error('TEMPESTTOUCH_API_KEY environment variable required');
   }
-  return new Tempest TouchClient({ 
+  return new TempestTouchClient({ 
     apiKey,
     baseUrl: API_BASE + '/api'
   });
@@ -1000,7 +1000,7 @@ async function cardPay(opts) {
   }
 
   try {
-    const client = getTempest TouchClient();
+    const client = getTempestTouchClient();
     const payment = await createQuickCardPayment(client, business, parseFloat(amount), description);
     
     console.log('\n╔══════════════════════════════════════════╗');
@@ -1027,7 +1027,7 @@ async function cardEscrow(opts) {
   }
 
   try {
-    const client = getTempest TouchClient();
+    const client = getTempestTouchClient();
     const escrow = await createCardEscrow(client, business, parseFloat(amount), description);
     
     console.log('\n╔══════════════════════════════════════════╗');
@@ -1050,7 +1050,7 @@ async function cardEscrows(opts) {
   const { business, status, limit } = opts;
   
   try {
-    const client = getTempest TouchClient();
+    const client = getTempestTouchClient();
     const options = {};
     if (business) options.businessId = business;
     if (status) options.status = status;
@@ -1104,7 +1104,7 @@ async function cardRelease(opts) {
   }
 
   try {
-    const client = getTempest TouchClient();
+    const client = getTempestTouchClient();
     const result = await releaseCardEscrow(client, escrowId);
     
     console.log('\n╔══════════════════════════════════════════╗');
@@ -1131,7 +1131,7 @@ async function cardRefund(opts) {
   }
 
   try {
-    const client = getTempest TouchClient();
+    const client = getTempestTouchClient();
     const options = {};
     if (partial) {
       options.amount = Math.round(parseFloat(partial) * 100); // Convert to cents
@@ -1161,7 +1161,7 @@ async function cardTransactions(opts) {
   try {
     // For now, we'll reuse the escrows endpoint since transactions endpoint 
     // would require additional API implementation
-    const client = getTempest TouchClient();
+    const client = getTempestTouchClient();
     const options = {};
     if (business) options.businessId = business;
     if (status) options.status = status;

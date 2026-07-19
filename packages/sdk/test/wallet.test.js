@@ -261,7 +261,7 @@ describe.skipIf(!hasNodeSpawn)('CLI wallet commands', () => {
     // Import with known mnemonic and password
     try {
       execSync(
-        `echo "testpassword123\n${TEST_MNEMONIC}" | node ${CLI} wallet import --wallet-file ${tmpWallet} --non-interactive 2>&1`,
+        `echo "testpassword123\n${TEST_MNEMONIC}" | node "${CLI}" wallet import --wallet-file ${tmpWallet} --non-interactive 2>&1`,
         { encoding: 'utf8', timeout: 15000 }
       );
     } catch (e) {
@@ -277,7 +277,7 @@ describe.skipIf(!hasNodeSpawn)('CLI wallet commands', () => {
     expect(existsSync(tmpWallet)).toBe(true);
 
     try {
-      execSync(`echo "y" | node ${CLI} wallet delete --wallet-file ${tmpWallet} 2>&1`, {
+      execSync(`echo "y" | node "${CLI}" wallet delete --wallet-file ${tmpWallet} 2>&1`, {
         encoding: 'utf8',
         timeout: 10000,
       });

@@ -5,24 +5,24 @@
 > **Package Manager**: pnpm 10.32.1
 > **Node Version**: >= 20.9.0
 > **Analysis Date**: 2026-07-13
-> **Deployment Target**: Cloudflare Pages (OpenNext for Cloudflare)
+> **Deployment Target**: Cloudflare Workers (OpenNext for Cloudflare)
 
 ---
 
 ## 🚨 500 Error Diagnosis for `blackpayments.co.zw`
 
-The `GET https://blackpayments.co.zw/ 500 (Internal Server Error)` and favicon 500 errors indicate the Cloudflare Pages Functions worker is crashing during request handling.
+The `GET https://blackpayments.co.zw/ 500 (Internal Server Error)` and favicon 500 errors indicate the Cloudflare Worker is crashing during request handling.
 
 ### Deployment Configuration
 
 | Setting | Value | Source |
 |---------|-------|--------|
-| Platform | Cloudflare Pages (OpenNext for Cloudflare) | [`wrangler.toml`](wrangler.toml:1) |
-| Build Output | `.open-next/assets` (`pages_build_output_dir`) | [`wrangler.toml`](wrangler.toml:36) |
-| Pages Functions | `.open-next/assets/_worker.js` (from `prepare-pages.mjs`) | [`scripts/prepare-pages.mjs`](scripts/prepare-pages.mjs:1) |
-| Compatibility | `nodejs_compat` (set on Pages project, not wrangler.toml) | [`wrangler.toml`](wrangler.toml:4) |
+| Platform | Cloudflare Workers (OpenNext for Cloudflare) | [`wrangler.toml`](wrangler.toml:1) |
+| Build Output | `.open-next/assets` (served via `ASSETS` binding) | [`wrangler.toml`](wrangler.toml:33) |
+| Worker Entry | `.open-next/worker.js` (from `opennextjs-cloudflare build`) | [`wrangler.toml`](wrangler.toml:2) |
+| Compatibility | `nodejs_compat` (set in `wrangler.toml`) | [`wrangler.toml`](wrangler.toml:4) |
 | Adapter | `@opennextjs/cloudflare` | [`open-next.config.ts`](open-next.config.ts:1) |
-| Build Script | `opennextjs-cloudflare build && node scripts/prepare-pages.mjs` | [`package.json`](package.json:33) |
+| Build Script | `opennextjs-cloudflare build` | [`package.json`](package.json:33) |
 
 ### Primary Suspects (Worker Crash on Every Request)
 
@@ -50,16 +50,14 @@ If these are undefined in Cloudflare's environment, the module throws, preventin
 
 1. **Check Cloudflare build logs**: Dashboard → Pages → Your project → Builds
 2. **Check Cloudflare function logs**: Dashboard → Pages → Functions → Logs
-3. **Verify env vars in Cloudflare**:
+3. **Verify env vars / secrets in Cloudflare**:
    ```bash
    wrangler secret list
-   # or for Pages:
-   wrangler pages project secret list
    ```
 4. **Test build locally**:
-   ```bash
-   pnpm build:pages
-   ```
+    ```bash
+    pnpm build:worker
+    ```
 5. **Temporarily disable instrumentation**:
    - Set `ENABLE_BACKGROUND_MONITOR=false`
    - Unset `POSTHOG_LOGS_AUTH_TOKEN`
@@ -240,7 +238,7 @@ If these are undefined in Cloudflare's environment, the module throws, preventin
 
 | Dependency | Version | Purpose |
 |------------|---------|---------|
-| [`@opennextjs/cloudflare`](https://opennext.js.org/) | ^1.0.0 | Adapter for deploying Next.js to Cloudflare Pages/Workers. |
+| [`@opennextjs/cloudflare`](https://opennext.js.org/) | ^1.0.0 | Adapter for deploying Next.js to Cloudflare Workers. |
 | [`tsx`](https://github.com/privatenumber/tsx) | ^4.21.0 | TypeScript execution engine for running `.ts`/`.mts` scripts directly (used in scripts/). |
 | [`chalk`](https://github.com/chalk/chalk) | ^5.6.2 | Terminal string styling for CLI output (used in scripts). |
 | [`inquirer`](https://github.com/SBoudrias/Inquirer.js) | ^13.0.1 | Interactive command-line prompts for CLI tools. |
@@ -305,7 +303,7 @@ If these are undefined in Cloudflare's environment, the module throws, preventin
 | **Docker** | Containerized deployment using multi-stage builds (Node 20 Alpine). |
 | **Docker Compose** | Orchestrates the app container with port 8080 exposed. |
 | **Coolify** | Self-hosted PaaS for one-click deployments (recommended in README). |
-| **Cloudflare Pages** | Alternative deployment target via `@opennextjs/cloudflare`. |
+| **Cloudflare Workers** | Primary deployment target via `@opennextjs/cloudflare`. |
 | **GitHub Actions** | CI/CD for automated builds and tests (referenced in README). |
 
 ---

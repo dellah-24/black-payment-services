@@ -24,7 +24,7 @@ Renaming these without a transition **breaks every live merchant, every stored w
 every issued DID**. The plan below uses a **dual-support window** so the rebrand ships without
 an instant outage, then old identifiers are deprecated later.
 
-**The Cloudflare Pages build we just fixed MUST stay green** throughout. Every phase ends with
+**The Cloudflare Workers build we just fixed MUST stay green** throughout. Every phase ends with
 a build check.
 
 ---
@@ -79,7 +79,7 @@ a build check.
 - [ ] `src/lib/webauthn/config.ts`: `getRpName()` → `'Tempest Touch'`.
 - [ ] Docs (`docs/**`, `src/app/docs/**`): prose `Tempest Touch`/`Tempest Touch` → `Tempest Touch`.
 - [ ] Logo `alt` text and any `Tempest Touch` SVG/wordmark assets.
-- [ ] **Build check:** `pnpm run build:pages` stays green.
+- [ ] **Build check:** `pnpm run build:worker` stays green.
 
 ### Phase 2 — Tier B: dual-support identifiers (backward compatible)
 - [ ] **Webhook header:** server (`src/lib/webhooks/service.ts`) sends BOTH
@@ -115,9 +115,9 @@ a build check.
 - [ ] **Build check:** green.
 
 ### Phase 6 — Verify & deploy
-- [ ] Full `pnpm run build:pages` passes; `Validating asset output directory` OK; Function publishes
+- [ ] Full `pnpm run build:worker` passes; `Validating asset output directory` OK; Worker publishes
       (Workers Paid active).
-- [ ] Push to `main`; confirm Cloudflare Pages deploy succeeds.
+- [ ] Push to `main`; confirm Cloudflare Workers deploy succeeds.
 - [ ] Smoke-test: login, create payment, webhook verify (old + new header), wallet load (old key
       migrates), DID resolve (old + new).
 

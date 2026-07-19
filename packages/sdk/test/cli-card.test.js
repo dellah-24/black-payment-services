@@ -23,7 +23,7 @@ try {
  */
 function runCLI(args, options = {}) {
   const { cwd, env: extraEnv, home } = options;
-  const cmd = `node ${CLI_PATH} ${args} 2>&1`;
+  const cmd = `node "${CLI_PATH}" ${args} 2>&1`;
   const opts = {
     encoding: 'utf-8',
     stdio: ['pipe', 'pipe', 'pipe'],

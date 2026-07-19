@@ -1,29 +1,38 @@
-name = "black-payment-services"
+name = "tempest-touch"
+main = ".open-next/worker.js"
 compatibility_date = "2025-06-01"
 compatibility_flags = ["nodejs_compat"]
 
-# Cloudflare Pages deployment (the live project is a Cloudflare Pages project
-# with build command `pnpm run build:pages`).
+# Cloudflare Workers deployment (OpenNext for Cloudflare).
 #
-# OpenNext Cloudflare builds a Worker (`.open-next/worker.js`) plus static
-# assets (`.open-next/assets`). Cloudflare Pages deploys the contents of
-# `pages_build_output_dir` and uses a `_worker.js` inside it as the Pages
-# Functions worker that handles every request (API routes + SSR), serving
-# static files through the auto-provided `ASSETS` binding.
+# OpenNext for Cloudflare produces a Cloudflare Worker (`.open-next/worker.js`)
+# plus static assets (`.open-next/assets`). We deploy it as a **Worker** so that
+# `compatibility_flags = ["nodejs_compat"]` is reliably applied by `wrangler deploy`.
 #
-# `scripts/prepare-pages.mjs` (run by `pnpm run build:pages`) copies the ENTIRE
-# OpenNext worker runtime into `.open-next/assets` and names the entry
-# `_worker.js`, so every relative import resolves next to it.
+# The app relies on Node.js built-ins (crypto, stream, async_hooks, fs, path,
+# ...) via the Node.js runtime, so `nodejs_compat` is required. With Workers it
+# is honored directly from this file.
 #
-# NOTE on nodejs_compat: Cloudflare Pages applies the `nodejs_compat`
-# compatibility flag from the **Pages project's** compatibility settings
-# (Dashboard → Settings → Functions → Compatibility flags), NOT from
-# wrangler.toml. That flag has been enabled on the project, which is what lets
-# the app's Node.js built-ins (crypto, stream, async_hooks, fs, path, ...)
-# resolve. Keep it enabled there.
+# Deploy with: `pnpm build:worker && pnpm deploy`
+# (or `pnpm opennextjs-cloudflare build && pnpm opennextjs-cloudflare deploy`)
 #
 # NOTE: The bundled OpenNext worker (worker.js + Next.js server handler) is
 # larger than 3 MiB, so deploying requires the Cloudflare **Workers Paid** plan
 # ($5/mo) which raises the Worker script size limit to 10 MiB. The Free plan
-# (3 MiB) will fail at "Failed to publish your Function".
-pages_build_output_dir = ".open-next/assets"
+# (3 MiB) will fail at "Failed to publish your Worker".
+
+# Static assets are served through the auto-provided `ASSETS` binding.
+#
+# `run_worker_first = true` is REQUIRED for OpenNext: it makes the Worker
+# (Next.js routing) handle every request and serve static assets via the
+# OpenNext asset-resolver. Without it, Cloudflare serves static assets
+# directly and bypasses the Worker, so SSR routes like `/` have no static
+# `index.html` and return 404 ("page can't be found").
+assets = { directory = ".open-next/assets", binding = "ASSETS", run_worker_first = true }
+
+# Uncomment and set if you need environment variables / secrets at build/runtime.
+# [vars]
+# EXAMPLE = "value"
+
+# [observability]
+# enabled = true

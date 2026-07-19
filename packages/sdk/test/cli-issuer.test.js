@@ -20,7 +20,7 @@ try {
 
 function run(args) {
   try {
-    return execSync(`node ${CLI} ${args} 2>&1`, {
+    return execSync(`node "${CLI}" ${args} 2>&1`, {
       encoding: 'utf-8',
       timeout: 5000,
       env: { ...process.env, TEMPESTTOUCH_API_KEY: 'test-key-123' },

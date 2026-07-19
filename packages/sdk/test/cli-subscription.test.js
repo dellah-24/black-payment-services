@@ -19,7 +19,7 @@ try {
 describe.skipIf(!hasNodeSpawn)('CLI Subscription Commands', () => {
   describe('help output', () => {
     it('should show subscription in help', () => {
-      const output = execSync(`node ${CLI_PATH} help`, { encoding: 'utf-8' });
+      const output = execSync(`node "${CLI_PATH}" help`, { encoding: 'utf-8' });
       expect(output).toContain('subscription');
       expect(output).toContain('create-plan');
       expect(output).toContain('subscribe');
@@ -30,7 +30,7 @@ describe.skipIf(!hasNodeSpawn)('CLI Subscription Commands', () => {
   describe('subscription create-plan', () => {
     it('should error without required flags', () => {
       try {
-        execSync(`node ${CLI_PATH} subscription create-plan`, {
+        execSync(`node "${CLI_PATH}" subscription create-plan`, {
           encoding: 'utf-8',
           env: { ...process.env, TEMPESTTOUCH_API_KEY: 'test_key' },
           stdio: ['pipe', 'pipe', 'pipe'],
@@ -45,7 +45,7 @@ describe.skipIf(!hasNodeSpawn)('CLI Subscription Commands', () => {
   describe('subscription subscribe', () => {
     it('should error without required flags', () => {
       try {
-        execSync(`node ${CLI_PATH} subscription subscribe`, {
+        execSync(`node "${CLI_PATH}" subscription subscribe`, {
           encoding: 'utf-8',
           env: { ...process.env, TEMPESTTOUCH_API_KEY: 'test_key' },
           stdio: ['pipe', 'pipe', 'pipe'],
@@ -60,7 +60,7 @@ describe.skipIf(!hasNodeSpawn)('CLI Subscription Commands', () => {
   describe('subscription cancel', () => {
     it('should error without subscription ID', () => {
       try {
-        execSync(`node ${CLI_PATH} subscription cancel`, {
+        execSync(`node "${CLI_PATH}" subscription cancel`, {
           encoding: 'utf-8',
           env: { ...process.env, TEMPESTTOUCH_API_KEY: 'test_key' },
           stdio: ['pipe', 'pipe', 'pipe'],
@@ -75,7 +75,7 @@ describe.skipIf(!hasNodeSpawn)('CLI Subscription Commands', () => {
   describe('subscription unknown subcommand', () => {
     it('should error on unknown subcommand', () => {
       try {
-        execSync(`node ${CLI_PATH} subscription foobar`, {
+        execSync(`node "${CLI_PATH}" subscription foobar`, {
           encoding: 'utf-8',
           stdio: ['pipe', 'pipe', 'pipe'],
         });

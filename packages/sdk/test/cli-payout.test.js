@@ -25,7 +25,7 @@ describe.skipIf(!hasNodeSpawn)('CLI Payout Commands', () => {
 
   it('should show error for unknown payout subcommand', () => {
     try {
-      execSync(`node ${CLI_PATH} payout unknown`, { env, encoding: 'utf8', stdio: 'pipe' });
+      execSync(`node "${CLI_PATH}" payout unknown`, { env, encoding: 'utf8', stdio: 'pipe' });
     } catch (e) {
       expect(e.stderr || e.stdout).toMatch(/unknown|Unknown/i);
     }
@@ -33,7 +33,7 @@ describe.skipIf(!hasNodeSpawn)('CLI Payout Commands', () => {
 
   it('should require --amount for payout create', () => {
     try {
-      execSync(`node ${CLI_PATH} payout create`, { env, encoding: 'utf8', stdio: 'pipe' });
+      execSync(`node "${CLI_PATH}" payout create`, { env, encoding: 'utf8', stdio: 'pipe' });
     } catch (e) {
       expect(e.stderr || e.stdout).toMatch(/amount/i);
     }
@@ -41,7 +41,7 @@ describe.skipIf(!hasNodeSpawn)('CLI Payout Commands', () => {
 
   it('should require id for payout get', () => {
     try {
-      execSync(`node ${CLI_PATH} payout get`, { env, encoding: 'utf8', stdio: 'pipe' });
+      execSync(`node "${CLI_PATH}" payout get`, { env, encoding: 'utf8', stdio: 'pipe' });
     } catch (e) {
       expect(e.stderr || e.stdout).toMatch(/usage|id/i);
     }
