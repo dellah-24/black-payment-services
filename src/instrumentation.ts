@@ -79,6 +79,20 @@ async function registerPostHogLoggerNonBlocking(): Promise<void> {
 export async function register() {
   // Only run on the server
   if (process.env.NEXT_RUNTIME === 'nodejs') {
+    // Always install global error handlers so that Worker-level crashes
+    // (including the empty 500s seen on static assets like /icons/favicon.png)
+    // log their full stack to the Cloudflare Workers log instead of failing
+    // silently. This is the server-side source of truth for debugging.
+    process.on('uncaughtException', (err) => {
+      console.error('[FATAL] Uncaught exception (caught by handler):', err?.message || err);
+      console.error(err?.stack || '');
+      // Don't exit — let the server keep running
+    });
+
+    process.on('unhandledRejection', (reason) => {
+      console.error('[FATAL] Unhandled rejection (caught by handler):', reason);
+    });
+
     // Non-blocking: do not await PostHog logger — it runs in the background
     registerPostHogLoggerNonBlocking().catch((err) => {
       console.error('[Instrumentation] PostHog logger registration failed:', err);
@@ -89,16 +103,6 @@ export async function register() {
       console.log('[Instrumentation] Background monitor disabled (ENABLE_BACKGROUND_MONITOR != true)');
       return;
     }
-    // Catch unhandled errors to prevent server crashes
-    process.on('uncaughtException', (err) => {
-      console.error('[FATAL] Uncaught exception (caught by handler):', err?.message || err);
-      console.error(err?.stack || '');
-      // Don't exit — let the server keep running
-    });
-
-    process.on('unhandledRejection', (reason) => {
-      console.error('[FATAL] Unhandled rejection (caught by handler):', reason);
-    });
 
     console.log('[Instrumentation] Starting background services...');
     
