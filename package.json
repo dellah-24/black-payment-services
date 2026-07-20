@@ -31,7 +31,7 @@
     "opennext": "opennextjs-cloudflare build",
     "cf:build": "opennextjs-cloudflare build",
     "build:worker": "opennextjs-cloudflare build",
-    "deploy": "opennextjs-cloudflare deploy",
+    "deploy": "wrangler deploy",
     "preview": "opennextjs-cloudflare preview"
   },
   "dependencies": {
@@ -110,6 +110,7 @@
     "inquirer": "^13.0.1",
     "jsdom": "^23.2.0",
     "@opennextjs/cloudflare": "^1.0.0",
+    "wrangler": "^4.107.1",
     "postcss": "^8.5.10",
     "prettier": "^3.2.4",
     "supabase": "^2.84.4",
